@@ -57,6 +57,10 @@ jobs:
             # 기존 컨테이너 종료 및 삭제
             docker rm -f spring-miruni-backend || true
 
+            # 중지된 컨테이너 및 안쓰는 이미지 삭제
+            docker container prune -f || true
+            docker image prune -a -f || true
+
             # 최신 이미지 다운로드
             docker pull ${{ secrets.DOCKER_USERNAME }}/spring-miruni-backend:latest
 
