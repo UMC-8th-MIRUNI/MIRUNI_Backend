@@ -52,4 +52,10 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private OauthProvider oauthProvider;
+
+    @Enumerated(EnumType.STRING)
+    private ThemeType theme;
+
+    @Column(length = 10)
+    private Language language;
 }
