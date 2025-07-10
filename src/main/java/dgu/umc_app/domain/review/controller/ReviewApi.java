@@ -13,6 +13,6 @@ public interface ReviewApi {
 
     @Operation(summary = "회고 작성 후 저장 API",
             description = "특정 일정에 대한 회고(기분, 성취도, 만족도, 메모 등)를 작성하고 저장합니다.")
-    ApiResponse<ReviewCreateResponse> createReview(@RequestBody @Valid ReviewCreateRequest request);
+    ReviewCreateResponse createReview(@RequestBody @Valid ReviewCreateRequest request);
 
 }

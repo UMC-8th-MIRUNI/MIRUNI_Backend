@@ -9,7 +9,6 @@ import dgu.umc_app.domain.review.dto.ReviewCreateRequest;
 import dgu.umc_app.domain.review.dto.ReviewCreateResponse;
 import dgu.umc_app.domain.review.entity.Review;
 import dgu.umc_app.domain.review.exception.ReviewErrorCode;
-import dgu.umc_app.domain.review.exception.ReviewException;
 import dgu.umc_app.domain.review.repository.ReviewRepository;
 import dgu.umc_app.global.exception.BaseException;
 import dgu.umc_app.global.exception.CommonErrorCode;
@@ -34,10 +33,10 @@ public class ReviewCommandService {
     @Transactional
     public ReviewCreateResponse saveReview(ReviewCreateRequest request) {
         AiPlan aiPlan = aiPlanRepository.findById(request.aiPlanId())
-                .orElseThrow(() -> new ReviewException(ReviewErrorCode.AI_PLAN_NOT_FOUND));
+                .orElseThrow(() -> BaseException.type(ReviewErrorCode.AI_PLAN_NOT_FOUND));
 
         Plan plan = planRepository.findById(request.planId())
-                .orElseThrow(() -> new ReviewException(ReviewErrorCode.PLAN_NOT_FOUND));
+                .orElseThrow(() -> BaseException.type(ReviewErrorCode.PLAN_NOT_FOUND));
 
         Review review = request.toEntity(aiPlan, plan);
         Review saved = reviewRepository.save(review);

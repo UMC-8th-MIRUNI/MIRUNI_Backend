@@ -25,9 +25,8 @@ public class ReviewController implements ReviewApi{
      * 회고 작성 후 저장
      */
     @PostMapping
-    public ApiResponse<ReviewCreateResponse> createReview(@RequestBody @Valid ReviewCreateRequest request) {
-        ReviewCreateResponse response = reviewCommandService.saveReview(request);
-        return ApiResponse.success(response);
+    public ReviewCreateResponse createReview(@RequestBody @Valid ReviewCreateRequest request) {
+        return reviewCommandService.saveReview(request);
     }
 
 }
