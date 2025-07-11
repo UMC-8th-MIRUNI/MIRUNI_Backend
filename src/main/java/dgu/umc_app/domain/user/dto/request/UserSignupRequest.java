@@ -27,7 +27,6 @@ public record UserSignupRequest(
         @Size(max = 20, message = "닉네임은 20자 이하여야 합니다.")
         String nickname,
         
-        @NotBlank(message = "사용자 선호도는 필수입니다.")
         String userPreference
 ) {
         public User toEntity(String encodedPassword) {
