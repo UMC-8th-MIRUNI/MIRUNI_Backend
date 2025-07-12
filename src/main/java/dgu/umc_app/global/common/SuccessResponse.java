@@ -1,26 +1,41 @@
 package dgu.umc_app.global.common;
 
-import dgu.umc_app.global.response.ApiResponse;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @Getter
+@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class SuccessResponse<T> {
 
-    public static <T> ResponseEntity<ApiResponse<T>> ok(T result) {
-        return ResponseEntity.ok(ApiResponse.success(result));
+    private int status;
+    private String message;
+    private T data;
+
+    public static <T> ResponseEntity<SuccessResponse<?>> ok(T data) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(SuccessResponse.of(SuccessCode.OK, data));
     }
 
-    public static <T> ResponseEntity<ApiResponse<T>> created(T result) {
-        return ResponseEntity.status(SuccessCode.CREATED.getHttpStatus())
-                .body(ApiResponse.success(result));
+    public static <T> ResponseEntity<SuccessResponse<?>> created(T data) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(SuccessResponse.of(SuccessCode.CREATED, data));
     }
 
-    public static <T> ResponseEntity<ApiResponse<T>> noContent() {
-        return ResponseEntity.status(SuccessCode.NO_CONTENT.getHttpStatus())
-                .body(ApiResponse.success(null));
+    public static ResponseEntity<SuccessResponse<?>> noContent() {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .body(SuccessResponse.of(SuccessCode.NO_CONTENT, null));
+    }
+
+    public static <T> SuccessResponse<?> of(SuccessCode successCode, T data) {
+        return SuccessResponse.builder()
+                .status(successCode.getHttpStatus().value())
+                .message(successCode.getMessage())
+                .data(data)
+                .build();
     }
 } 

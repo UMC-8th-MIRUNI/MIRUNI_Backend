@@ -10,7 +10,6 @@ import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.response.UserSignupResponse;
 import dgu.umc_app.domain.user.dto.response.UserLoginResponse;
-import dgu.umc_app.global.response.ApiResponse;
 import dgu.umc_app.global.common.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +22,13 @@ public class UserController implements UserApi {
     private final UserService userService;
     
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<UserSignupResponse>> signup(@Valid @RequestBody UserSignupRequest request) {
+    public ResponseEntity<SuccessResponse<?>> signup(@Valid @RequestBody UserSignupRequest request) {
         UserSignupResponse response = userService.signup(request);
         return SuccessResponse.created(response);
     }
     
-    @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserLoginResponse>> login(@Valid @RequestBody UserLoginRequest request) {
+    @PostMapping("/auth/normal")
+    public ResponseEntity<SuccessResponse<?>> login(@Valid @RequestBody UserLoginRequest request) {
         UserLoginResponse response = userService.login(request);
         return SuccessResponse.ok(response);
     }
