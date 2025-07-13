@@ -12,17 +12,17 @@ public enum SuccessCode {
     /**
      * 200 Ok
      */
-    OK(HttpStatus.OK, "요청이 성공했습니다."),
+    OK(HttpStatus.OK, "OK"),
 
     /**
      * 201 Created
      */
-    CREATED(HttpStatus.CREATED, "요청이 성공했습니다."),
+    CREATED(HttpStatus.CREATED, "OK"),
 
     /**
      * 204 No Content
      */
-    NO_CONTENT(HttpStatus.NO_CONTENT, "요청이 성공했습니다.");
+    NO_CONTENT(HttpStatus.NO_CONTENT, "OK");
 
     private final HttpStatus httpStatus;
     private final String message;

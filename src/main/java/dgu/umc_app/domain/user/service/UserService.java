@@ -50,7 +50,9 @@ public class UserService {
 
         String accessToken = jwtUtil.generateAccessToken(user.getEmail());
         String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
+        long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
+        long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
 
-        return UserLoginResponse.from(user, accessToken, refreshToken);
+        return UserLoginResponse.from(accessToken, refreshToken, accessTokenExp, refreshTokenExp);
     }
 }

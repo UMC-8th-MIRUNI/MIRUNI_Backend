@@ -35,7 +35,8 @@ public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
 
         if(path.startsWith("/v3/api-docs") ||
                 path.startsWith("/swagger") ||
-                path.startsWith("/error")){
+                path.startsWith("/error") ||
+                path.startsWith("/api/auth/normal")) {
             return body;
         }
 

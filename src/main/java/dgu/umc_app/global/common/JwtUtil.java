@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtUtil {
     private final Algorithm algorithm;
+    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 60;         // 1시간
+    private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24 * 7; // 7일
 
     public JwtUtil(@Value("${jwt.secret-key}") String secretKey) {
         this.algorithm = Algorithm.HMAC256(secretKey);
@@ -18,17 +20,26 @@ public class JwtUtil {
         return JWT.create()
                 .withSubject(email)  
                 .withIssuedAt(new Date())  
-                .withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60))  
+                .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))  
                 .sign(algorithm);  
+    }
+
+    public long getAccessTokenExpirationInSeconds() {
+        return ACCESS_TOKEN_EXPIRATION / 1000;
     }
 
     public String generateRefreshToken(String email) {
         return JWT.create()
                 .withSubject(email)  
                 .withIssuedAt(new Date()) 
-                .withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7))  
+                .withExpiresAt(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))  
                 .sign(algorithm); 
     }
+
+    public long getRefreshTokenExpirationInSeconds() {
+        return REFRESH_TOKEN_EXPIRATION / 1000;
+    }
+
 
     public String getEmail(String token) {
         return JWT.require(algorithm)

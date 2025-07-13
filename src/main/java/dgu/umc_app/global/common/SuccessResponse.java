@@ -1,5 +1,6 @@
 package dgu.umc_app.global.common;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,11 +11,12 @@ import org.springframework.http.ResponseEntity;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@JsonPropertyOrder({"errorCode", "message", "result"})
 public class SuccessResponse<T> {
 
-    private int status;
+    private String errorCode;
     private String message;
-    private T data;
+    private T result;
 
     public static <T> ResponseEntity<SuccessResponse<?>> ok(T data) {
         return ResponseEntity.status(HttpStatus.OK)
@@ -33,9 +35,9 @@ public class SuccessResponse<T> {
 
     public static <T> SuccessResponse<?> of(SuccessCode successCode, T data) {
         return SuccessResponse.builder()
-                .status(successCode.getHttpStatus().value())
+                .errorCode(null)
                 .message(successCode.getMessage())
-                .data(data)
+                .result(data)
                 .build();
     }
 } 
