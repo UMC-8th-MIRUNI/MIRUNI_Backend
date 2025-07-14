@@ -24,16 +24,10 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<CustomErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
         log.warn("[Validation Error] message: {}", message);
-
+    
         ErrorCode errorCode = CommonErrorCode.VALIDATION_ERROR;
-        CustomErrorResponse errorResponse = new CustomErrorResponse(
-                errorCode.getStatus().value(),
-                errorCode.getErrorCode(),
-                message
-        );
-        return ResponseEntity.status(errorCode.getStatus()).body(errorResponse);
+        return convert(errorCode);
     }
-
 
     /*
     커스텀 예외 처리
