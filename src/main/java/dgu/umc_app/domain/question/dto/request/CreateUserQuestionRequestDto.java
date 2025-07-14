@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.question.dto.request;
 
 import dgu.umc_app.domain.question.entity.QuestionCategory;
+import dgu.umc_app.domain.question.entity.UserQuestion;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,4 +22,12 @@ public record CreateUserQuestionRequestDto(
                 allowableValues = {"ACCOUNT", "PLANNING", "ALARM", "FOCUS_MODE", "ETC"} )
         QuestionCategory questionCategory
 ) {
+
+        public UserQuestion toEntity() {
+                return UserQuestion.builder()
+                        .title(this.title())
+                        .content(this.content())
+                        .category(this.questionCategory())
+                        .build();
+        }
 }

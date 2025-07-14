@@ -18,15 +18,9 @@ public class UserQuestionCommandService {
     @Transactional
     public CreateUserQuestionResponseDto createQuestion(CreateUserQuestionRequestDto request) {
 
-        UserQuestion userQuestion =  UserQuestion.builder() // User 부분 JWT 구현 후 추가 //
-                                            .title(request.title())
-                                            .content(request.content())
-                                            .category(request.questionCategory())
-                                            .build();
-
+        UserQuestion userQuestion = request.toEntity();
 
         userQuestionRepository.save(userQuestion);
-
 
         return CreateUserQuestionResponseDto.from(userQuestion);
 
