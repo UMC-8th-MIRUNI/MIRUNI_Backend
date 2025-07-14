@@ -2,16 +2,13 @@ package dgu.umc_app.domain.user.controller;
 
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
-import dgu.umc_app.domain.user.dto.response.UserLoginResponse;
-import dgu.umc_app.domain.user.dto.response.UserSignupResponse;
-import dgu.umc_app.global.common.SuccessResponse;
+import dgu.umc_app.domain.user.dto.response.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "User", description = "회원가입, 로그인 API")
@@ -26,11 +23,11 @@ public interface UserApi {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "회원가입 성공",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = UserSignupResponse.class))),
+                            schema = @Schema(implementation = UserResponse.class))),
             @ApiResponse(responseCode = "409", description = "이미 이메일이 존재함"),
             @ApiResponse(responseCode = "400", description = "입력값 검증 실패")
     })
-    ResponseEntity<SuccessResponse<?>> signup(@RequestBody UserSignupRequest request);
+    UserResponse signup(@RequestBody UserSignupRequest request);
 
     @Operation(
             summary = "로그인",
@@ -40,10 +37,10 @@ public interface UserApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그인 성공",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = UserLoginResponse.class))),
+                            schema = @Schema(implementation = UserResponse.class))),
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음"),
             @ApiResponse(responseCode = "401", description = "비밀번호가 틀림"),
             @ApiResponse(responseCode = "400", description = "입력값 검증 실패")
     })
-    ResponseEntity<SuccessResponse<?>> login(@RequestBody UserLoginRequest request);
+    UserResponse login(@RequestBody UserLoginRequest request);
 } 

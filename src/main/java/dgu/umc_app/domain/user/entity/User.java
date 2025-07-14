@@ -3,6 +3,7 @@ package dgu.umc_app.domain.user.entity;
 import dgu.umc_app.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class User extends BaseEntity {
 
     @Id
@@ -59,24 +62,4 @@ public class User extends BaseEntity {
 
     @Column(length = 10)
     private Language language;
-
-    @Builder
-    public User(String name, String email, String phoneNumber, String nickname, String password,
-                boolean passwordExpired, LocalDateTime lastPasswordChanged, boolean agreedPrivacyPolicy,
-                int peanutCount, Integer popupAlarmInterval, Integer bannerAlarmInterval,
-                String userPreference, OauthProvider oauthProvider) {
-        this.name = name;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.nickname = nickname;
-        this.password = password;
-        this.passwordExpired = passwordExpired;
-        this.lastPasswordChanged = lastPasswordChanged;
-        this.agreedPrivacyPolicy = agreedPrivacyPolicy;
-        this.peanutCount = peanutCount;
-        this.popupAlarmInterval = popupAlarmInterval;
-        this.bannerAlarmInterval = bannerAlarmInterval;
-        this.userPreference = userPreference;
-        this.oauthProvider = oauthProvider;
-    }
 }
