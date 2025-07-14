@@ -25,16 +25,12 @@ public class PlanCommandService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
 
-        if (request.getDeadline().isBefore(java.time.LocalDateTime.now())){
+        if (request.deadline().isBefore(java.time.LocalDateTime.now())){
             throw BaseException.type(PlanErrorCode.INVALID_DATE_RANGE);
         }
 
-        Plan plan = Plan.builder()
+        Plan plan = request.toEntity().toBuilder()
                 .user(user)
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .deadline(request.getDeadline())
-                .isDone(false)
                 .build();
 
         Plan savedPlan = planRepository.save(plan);
