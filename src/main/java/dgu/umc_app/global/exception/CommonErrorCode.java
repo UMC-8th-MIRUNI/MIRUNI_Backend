@@ -20,17 +20,10 @@ public enum CommonErrorCode implements ErrorCode {
     ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON_009", "엔티티를 찾을 수 없습니다."),
     CONFLICT(HttpStatus.CONFLICT, "COMMON_010", "이미 존재하는 리소스입니다."),
 
-
     // ===== 서버 에러 (5xx) =====
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SERVER_001", "서버 내부 오류가 발생했습니다."),
     DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SERVER_002", "데이터베이스 오류가 발생했습니다."),
-    EXTERNAL_API_ERROR(HttpStatus.BAD_GATEWAY, "SERVER_003", "외부 API 호출에 실패했습니다."),
-
-    // ===== User =====
-    USER_EMAIL_EXIST(HttpStatus.CONFLICT, "USER_001", "해당 이메일이 존재합니다."),
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_002", "해당 회원을 찾을 수 없습니다."),
-    USER_WRONG_PASSWORD(HttpStatus.UNAUTHORIZED, "USER_003", "비밀번호가 틀립니다.");
-
+    EXTERNAL_API_ERROR(HttpStatus.BAD_GATEWAY, "SERVER_003", "외부 API 호출에 실패했습니다.");
 
     private final HttpStatus status;
     private final String errorCode;

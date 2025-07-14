@@ -2,8 +2,8 @@ package dgu.umc_app.global.authorize;
 
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.domain.user.repository.UserRepository;
+import dgu.umc_app.domain.user.exception.UserErrorCode;
 import dgu.umc_app.global.exception.BaseException;
-import dgu.umc_app.global.exception.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,7 +18,7 @@ public class CustomUserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> BaseException.type(CommonErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
         
             return new CustomUserDetails(user);
     }
