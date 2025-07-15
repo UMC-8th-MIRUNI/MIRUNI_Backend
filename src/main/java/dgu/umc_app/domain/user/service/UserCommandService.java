@@ -14,7 +14,7 @@ import dgu.umc_app.domain.user.exception.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
 public class UserService {
 
@@ -22,7 +22,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    @Transactional
     public UserResponse signup(UserSignupRequest userSignupRequest) {
         if (userRepository.existsByEmail(userSignupRequest.email())) {
             throw BaseException.type(UserErrorCode.USER_EMAIL_EXIST);
