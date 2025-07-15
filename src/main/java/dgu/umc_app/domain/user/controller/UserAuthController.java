@@ -4,7 +4,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import dgu.umc_app.domain.user.service.UserService;
+
+import dgu.umc_app.domain.user.service.UserCommandService;
 import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
@@ -16,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserAuthController implements UserAuthApi {
 
-    private final UserService userService;
+    private final UserCommandService userService;
     
     @PostMapping("/signup")
     public UserResponse signup(@Valid @RequestBody UserSignupRequest request) {
