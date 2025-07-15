@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "User", description = "회원가입, 로그인 API")
-public interface UserApi {
+public interface UserAuthApi {
 
     @Operation(
             summary = "회원가입",
