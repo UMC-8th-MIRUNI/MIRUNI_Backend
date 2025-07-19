@@ -19,7 +19,7 @@ import java.util.List;
 public class FCMConfig {
 
 
-    @Value("${fcm.key.path:firebase/miruni-9718b-firebase-adminsdk-fbsvc-c1afc8bb2e.json")
+    @Value("${fcm.key.path}")
     private String fcmKeyPath;
 
     @Bean

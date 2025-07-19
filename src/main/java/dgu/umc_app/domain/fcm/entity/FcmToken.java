@@ -25,6 +25,9 @@ public class FcmToken extends BaseEntity {
     @Column(nullable = false)
     private boolean isActive = true; //토큰 유효성 체크
 
+    @Column(nullable = false)
+    private boolean notificationEnabled = true; //해당 디바이스의 알림 활성화 여부
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;  //한 사용자가 여러기기 사용가능 고려
