@@ -26,3 +26,8 @@ management:
   endpoint:
     health:
       show-details: always
+
+# fcm 설정
+fcm:
+  key:
+    path: firebase/miruni-9718b-firebase-adminsdk-fbsvc-c1afc8bb2e.json
