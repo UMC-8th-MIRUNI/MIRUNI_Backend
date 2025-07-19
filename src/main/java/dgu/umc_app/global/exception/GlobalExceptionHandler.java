@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -15,6 +16,18 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
+        
+    /*
+    입력값 검증 실패(MethodArgumentNotValidException) 처리
+    */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<CustomErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        log.warn("[Validation Error] message: {}", message);
+    
+        ErrorCode errorCode = CommonErrorCode.VALIDATION_ERROR;
+        return convert(errorCode);
+    }
 
     /*
     커스텀 예외 처리
