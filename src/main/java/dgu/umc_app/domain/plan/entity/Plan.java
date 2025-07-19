@@ -35,7 +35,7 @@ public class Plan extends BaseEntity {
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
-    @Builder
+    @Builder(toBuilder = true)
     public Plan(User user, String title, String description, LocalDateTime deadline, boolean isDone) {
         this.user = user;
         this.title = title;
