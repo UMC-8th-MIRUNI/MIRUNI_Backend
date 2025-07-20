@@ -30,16 +30,20 @@ public class Plan extends BaseEntity {
     private String description; // 일정 내용
 
     @Column(nullable = false)
+    private LocalDateTime startTime; // 시작 시간
+
+    @Column(nullable = false)
     private LocalDateTime deadline; // 마감 기한
 
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
     @Builder(toBuilder = true)
-    public Plan(User user, String title, String description, LocalDateTime deadline, boolean isDone) {
+    public Plan(User user, String title, String description, LocalDateTime startTime, LocalDateTime deadline, boolean isDone) {
         this.user = user;
         this.title = title;
         this.description = description;
+        this.startTime = startTime;
         this.deadline = deadline;
         this.isDone = isDone;
     }
