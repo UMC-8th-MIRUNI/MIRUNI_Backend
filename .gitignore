@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### fire base ###
+src/main/resources/firebase/
