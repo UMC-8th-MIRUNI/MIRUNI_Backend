@@ -6,6 +6,7 @@ import dgu.umc_app.domain.review.entity.Review;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Builder
@@ -36,7 +37,7 @@ public record ReviewDetailResponse(
         String memo,
 
         @Schema(description = "작성일시")
-        LocalDateTime createdAt
+        LocalDate createdAt
 
 ) {
     public static ReviewDetailResponse from(Review review) {
@@ -49,7 +50,7 @@ public record ReviewDetailResponse(
                 .achievement(review.getAchievement())
                 .satisfaction(review.getSatisfaction())
                 .memo(review.getMemo())
-                .createdAt(review.getCreatedAt())
+                .createdAt(review.getCreatedAt().toLocalDate())
                 .build();
     }
 }
