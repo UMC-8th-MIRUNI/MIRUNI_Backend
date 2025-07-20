@@ -1,15 +1,13 @@
 package dgu.umc_app.domain.review.controller;
 
-import dgu.umc_app.domain.review.dto.ReviewCreateRequest;
-import dgu.umc_app.domain.review.dto.ReviewCreateResponse;
+import dgu.umc_app.domain.review.dto.request.ReviewCreateRequest;
+import dgu.umc_app.domain.review.dto.response.ReviewCreateResponse;
+import dgu.umc_app.domain.review.dto.response.ReviewDetailResponse;
 import dgu.umc_app.domain.review.service.ReviewCommandService;
-import dgu.umc_app.global.response.ApiResponse;
+import dgu.umc_app.domain.review.service.ReviewQueryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * ReviewController - 회고 작성 API
@@ -20,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReviewController implements ReviewApi{
 
     private final ReviewCommandService reviewCommandService;
+    private final ReviewQueryService reviewQueryService;
 
     /**
      * 회고 작성 후 저장
@@ -29,4 +28,9 @@ public class ReviewController implements ReviewApi{
         return reviewCommandService.saveReview(request);
     }
 
+    //개별 회고 상세조회
+    @GetMapping("/{reviewId}")
+    public ReviewDetailResponse getReview(@PathVariable Long reviewId) {
+        return reviewQueryService.getReview(reviewId);
+    }
 }
