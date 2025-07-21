@@ -47,8 +47,7 @@ public class SecurityConfig {
                                 "/api/auth/kakao",
                                 "/api/signup/duplicate",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/api/schedule"     // jwt 완료 후 지울 예정
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

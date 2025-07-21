@@ -21,11 +21,9 @@ public class PlanCommandService {
     private final UserRepository userRepository;
 
     @Transactional
-    public PlanCreateResponse createPlan(PlanCreateRequest request, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+    public PlanCreateResponse createPlan(PlanCreateRequest request, User user) {
 
-        if (request.deadline().isBefore(java.time.LocalDateTime.now())){
+        if (request.deadline().isBefore(java.time.LocalDate.now())){
             throw BaseException.type(PlanErrorCode.INVALID_DATE_RANGE);
         }
 

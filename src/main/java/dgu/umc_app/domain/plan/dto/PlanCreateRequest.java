@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record PlanCreateRequest(
@@ -21,7 +22,7 @@ public record PlanCreateRequest(
 
         @NotNull(message = "마감 기한은 필수입니다.")
         @Schema(description = "마감 기한")
-        LocalDateTime deadline
+        LocalDate deadline
 
 ) {
     // 사용 시점에 User는 별도로 설정
