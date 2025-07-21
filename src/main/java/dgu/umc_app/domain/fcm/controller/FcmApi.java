@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
+
 @Tag(name = "fcm", description = "FCM 관련 API")
 public interface FcmApi {
 
@@ -52,7 +54,7 @@ public interface FcmApi {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = CustomErrorResponse.class)))
     })
-    ResponseEntity<Void> sendBannerNotification(@Valid @RequestBody BannerNotificationSendRequestDto request);
+    void sendBannerNotification(@Valid @RequestBody BannerNotificationSendRequestDto request);
 
     @Operation(
             summary = "활성화된 FCM 토큰 조회 API",
@@ -64,5 +66,5 @@ public interface FcmApi {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = CustomErrorResponse.class)))
     })
-    ResponseEntity<java.util.List<String>> getActiveTokens();
+    List<String> getActiveTokens();
 }

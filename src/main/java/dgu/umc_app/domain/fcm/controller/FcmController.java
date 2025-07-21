@@ -38,24 +38,25 @@ public class FcmController implements FcmApi {
 
     @Override
     @PostMapping("/notification/banner")
-    public ResponseEntity<Void> sendBannerNotification(BannerNotificationSendRequestDto request) {
+    public void sendBannerNotification(BannerNotificationSendRequestDto request) {
         log.info("배너 알림 전송 요청 - 타입: {}, 대상 ID: {}, 리마인더 타입: {}", 
                 request.type(), request.targetId(), request.reminderType());
         
         fcmTokenCommandService.sendBannerNotification(request);
         
         log.info("배너 알림 전송 완료 - 타입: {}, 대상 ID: {}", request.type(), request.targetId());
-        return ResponseEntity.ok().build();
+
     }
 
     @Override
     @GetMapping("/tokens")
-    public ResponseEntity<List<String>> getActiveTokens() {
+    public List<String> getActiveTokens() {
         log.info("활성화된 FCM 토큰 조회 요청");
         
         List<String> activeTokens = fcmTokenQueryService.getActiveTokenByUser();
         
         log.info("활성화된 FCM 토큰 조회 완료 - 토큰 개수: {}", activeTokens.size());
-        return ResponseEntity.ok(activeTokens);
+        return activeTokens;
     }
+
 }
