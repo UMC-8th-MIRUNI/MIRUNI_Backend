@@ -44,5 +44,4 @@ public class Plan extends BaseEntity {
         this.deadline = deadline;
         this.isDone = isDone;
     }
-
 }
