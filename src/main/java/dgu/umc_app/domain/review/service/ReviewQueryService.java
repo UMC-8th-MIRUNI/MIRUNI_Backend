@@ -16,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ReviewQueryService {
 
     private final ReviewRepository reviewRepository;
@@ -24,7 +25,6 @@ public class ReviewQueryService {
     /**
      * 단일 회고 상세 조회
      */
-    @Transactional(readOnly = true)
     public ReviewDetailResponse getReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> BaseException.type(ReviewErrorCode.REVIEW_NOT_FOUND));
@@ -34,7 +34,6 @@ public class ReviewQueryService {
     /**
      * 전체 회고 목록 조회 (최신순 정렬)
      */
-    @Transactional(readOnly = true)
     public List<ReviewListResponse> getReviewListByUserId(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw BaseException.type(UserErrorCode.USER_NOT_FOUND);

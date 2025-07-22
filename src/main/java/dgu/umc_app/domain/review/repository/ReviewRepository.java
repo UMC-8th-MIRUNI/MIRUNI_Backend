@@ -11,10 +11,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("""
     select r
     from Review r
-    join fetch r.aiPlan ap
-    join fetch ap.plan p
-    join fetch p.user u
-    where u.id = :userId
+    where r.aiPlan.plan.user.id = :userId
     order by r.createdAt desc
 """)
     List<Review> findAllByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
