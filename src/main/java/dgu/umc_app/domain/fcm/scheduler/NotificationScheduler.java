@@ -41,7 +41,7 @@ public class NotificationScheduler {
     private void checkPlansForReminder(LocalDateTime targetTime, ReminderType reminderType) {
         try {
             // 해당 시간에 시작해야 하는 미완료 Plan들 조회
-            List<Plan> upcomingPlans = planRepository.findPlansStartingAt(targetTime, targetTime.plusMinutes(1));
+            List<Plan> upcomingPlans = planRepository.findByStartTimeBetweenAndIsDoneFalse(targetTime, targetTime.plusMinutes(1));
             
             for (Plan plan : upcomingPlans) {
                 BannerNotificationSendRequestDto request = new BannerNotificationSendRequestDto(
@@ -62,7 +62,7 @@ public class NotificationScheduler {
     private void checkAiPlansForReminder(LocalDateTime targetTime, ReminderType reminderType) {
         try {
             // 해당 시간에 시작해야 하는 미완료 AiPlan들 조회
-            List<AiPlan> upcomingAiPlans = aiPlanRepository.findAiPlansStartingAt(
+            List<AiPlan> upcomingAiPlans = aiPlanRepository.findByStartTimeBetweenAndIsDoneFalse(
                 targetTime, targetTime.plusMinutes(1));
             
             for (AiPlan aiPlan : upcomingAiPlans) {

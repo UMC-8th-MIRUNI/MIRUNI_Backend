@@ -3,16 +3,15 @@ package dgu.umc_app.domain.ai_plan.entity;
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.global.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AiPlan extends BaseEntity {
 
@@ -42,14 +41,5 @@ public class AiPlan extends BaseEntity {
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
-    @Builder
-    public AiPlan(Plan plan, Long stepOrder, String description, Long expectedDuration, LocalDateTime startTime, LocalDate scheduledDate, boolean isDone) {
-        this.plan = plan;
-        this.stepOrder = stepOrder;
-        this.description = description;
-        this.expectedDuration = expectedDuration;
-        this.startTime = startTime;
-        this.scheduledDate = scheduledDate;
-        this.isDone = isDone;
-    }
+
 }

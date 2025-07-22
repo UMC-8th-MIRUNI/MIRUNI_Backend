@@ -34,14 +34,7 @@ public class FcmTokenCommandService {
     private final FcmTokenQueryService fcmTokenQueryService;
     private final FirebaseMessaging firebaseMessaging;
 
-    public FcmTokenRegisterResponseDto registerToken(FcmTokenRegisterRequestDto request) {
-        User currentUser = getCurrentUser();
 
-        FcmToken savedFcmtoken = fcmTokenRepository.save(request.toEntity(currentUser));
-
-        return FcmTokenRegisterResponseDto.of(savedFcmtoken.getId());
-    }
-    
     // Controller에서 사용할 메서드 (User 객체를 직접 받음)
     public FcmTokenRegisterResponseDto registerTokenWithUser(FcmTokenRegisterRequestDto request, User user) {
         FcmToken savedFcmtoken = fcmTokenRepository.save(request.toEntity(user));
