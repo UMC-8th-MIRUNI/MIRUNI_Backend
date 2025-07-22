@@ -8,8 +8,9 @@ import dgu.umc_app.domain.user.service.UserQueryService;
 import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.request.GoogleLoginRequest;
+import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
-import dgu.umc_app.domain.user.dto.response.GoogleLoginResponse;
+import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,12 @@ public class UserAuthController implements UserAuthApi {
     }
 
     @PostMapping("/auth/google")
-    public GoogleLoginResponse googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+    public AuthLoginResponse googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
         return userCommandService.loginWithGoogle(request);
+    }
+
+    @PostMapping("/auth/kakao")
+    public AuthLoginResponse kakaoLogin(@Valid @RequestBody KakaoLoginRequest request) {
+        return userCommandService.loginWithKakao(request);
     }
 }
