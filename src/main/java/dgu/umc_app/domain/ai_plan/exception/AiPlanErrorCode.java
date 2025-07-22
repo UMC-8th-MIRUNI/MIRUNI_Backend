@@ -1,4 +1,4 @@
-package dgu.umc_app.domain.review.exception;
+package dgu.umc_app.domain.ai_plan.exception;
 
 import dgu.umc_app.global.exception.ErrorCode;
 import lombok.AllArgsConstructor;
@@ -7,9 +7,9 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum ReviewErrorCode implements ErrorCode {
+public enum AiPlanErrorCode implements ErrorCode {
 
-    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REVIEW404_3", "해당 회고가 존재하지 않습니다.");
+    AI_PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "REVIEW404_1", "해당 AI 계획이 존재하지 않습니다.");
 
     private final HttpStatus status;
     private final String errorCode;

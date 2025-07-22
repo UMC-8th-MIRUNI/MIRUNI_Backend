@@ -9,6 +9,8 @@ import dgu.umc_app.domain.review.dto.request.ReviewCreateRequest;
 import dgu.umc_app.domain.review.dto.response.ReviewCreateResponse;
 import dgu.umc_app.domain.review.entity.Review;
 import dgu.umc_app.domain.review.exception.ReviewErrorCode;
+import dgu.umc_app.domain.plan.exception.PlanErrorCode;
+import dgu.umc_app.domain.ai_plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.review.repository.ReviewRepository;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
@@ -32,10 +34,10 @@ public class ReviewCommandService {
     @Transactional
     public ReviewCreateResponse saveReview(ReviewCreateRequest request) {
         AiPlan aiPlan = aiPlanRepository.findById(request.aiPlanId())
-                .orElseThrow(() -> BaseException.type(ReviewErrorCode.AI_PLAN_NOT_FOUND));
+                .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AI_PLAN_NOT_FOUND));
 
         Plan plan = planRepository.findById(request.planId())
-                .orElseThrow(() -> BaseException.type(ReviewErrorCode.PLAN_NOT_FOUND));
+                .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
 
         Review review = request.toEntity(aiPlan, plan);
         Review saved = reviewRepository.save(review);
