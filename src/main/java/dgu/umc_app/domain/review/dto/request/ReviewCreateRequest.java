@@ -1,4 +1,4 @@
-package dgu.umc_app.domain.review.dto;
+package dgu.umc_app.domain.review.dto.request;
 
 import dgu.umc_app.domain.ai_plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.entity.Plan;
