@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -30,18 +31,28 @@ public class Plan extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description; // 일정 내용
 
+
+
     @Column(nullable = false)
-    private LocalDate deadline; // 마감 기한
+    private LocalDateTime deadline; // 마감 기한
+
+    @Column
+    private LocalTime startTime; // 시작 시간
+
+    @Column
+    private LocalTime endTime;  // 종료 시간
 
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
     @Builder(toBuilder = true)
-    public Plan(User user, String title, String description, LocalDate deadline, boolean isDone) {
+    public Plan(User user, String title, String description, LocalDateTime deadline, LocalTime startTime, LocalTime endTime, boolean isDone) {
         this.user = user;
         this.title = title;
         this.description = description;
         this.deadline = deadline;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.isDone = isDone;
     }
 }

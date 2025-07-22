@@ -15,7 +15,7 @@ public record PlanCreateResponse(
         String title,
 
         @Schema(description = "일정 마감 기한")
-        LocalDate deadline,
+        LocalDateTime deadline,
 
         @Schema(description = "일정 완료 여부")
         boolean isDone

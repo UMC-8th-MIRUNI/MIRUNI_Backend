@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -33,18 +34,26 @@ public class AiPlan extends BaseEntity {
     private Long expectedDuration; // 예상 실행 시간
 
     @Column(nullable = false)
-    private LocalDate scheduledDate; // 진행 날짜
+    private LocalDate scheduledDate; // 진행 날짜(ex:2025-05-01)
+
+    @Column(nullable = false)
+    private LocalTime startTime;    // 시작 시간(ex: 18:00)
+
+    @Column(nullable = false)
+    private LocalTime endTime;      // 종료 시간(ex: 19:00)
 
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
     @Builder
-    public AiPlan(Plan plan, Long stepOrder, String description, Long expectedDuration, LocalDate scheduledDate, boolean isDone) {
+    public AiPlan(Plan plan, Long stepOrder, String description, Long expectedDuration, LocalDate scheduledDate, LocalTime startTime, LocalTime endTime, boolean isDone) {
         this.plan = plan;
         this.stepOrder = stepOrder;
         this.description = description;
         this.expectedDuration = expectedDuration;
         this.scheduledDate = scheduledDate;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.isDone = isDone;
     }
 }

@@ -4,6 +4,7 @@ import dgu.umc_app.domain.ai_plan.entity.AiPlan;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AiPlanRepository extends JpaRepository<AiPlan, Long> {

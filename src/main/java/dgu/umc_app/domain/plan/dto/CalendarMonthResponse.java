@@ -7,30 +7,26 @@ import lombok.Getter;
 import java.time.LocalDate;
 import java.util.List;
 
-@Getter
-@AllArgsConstructor
-public class CalendarMonthResponse {
+public record CalendarMonthResponse (
 
     @Schema(description = "일정 마감기한(yyyy-mm-dd")
-    private LocalDate deadline;
+    LocalDate deadline,
 
     @Schema(description = "일정 목록")
-    private List<ScheduleInfo> schedules;
+    List<ScheduleInfo> schedules
+) {
+    public static record ScheduleInfo(
+            @Schema(description = "일정 ID")
+            Long scheduleId,
 
-    @Getter
-    @AllArgsConstructor
-    public static class ScheduleInfo {
-        @Schema(description = "일정 ID")
-        private Long scheduleId;
+            @Schema(description = "일정 제목")
+            String title,
 
-        @Schema(description = "일정 제목")
-        private String title;
+            @Schema(description = "완료 여부")
+            boolean isDone,
 
-        @Schema(description = "완료 여부")
-        private boolean isDone;
-
-        @Schema(description = "일정 유형 (NORMAL / AI_SPLIT)")
-        private String type;
-    }
+            @Schema(description = "일정 유형 (NORMAL / AI_SPLIT)")
+            String type
+    ) { }
 }
 

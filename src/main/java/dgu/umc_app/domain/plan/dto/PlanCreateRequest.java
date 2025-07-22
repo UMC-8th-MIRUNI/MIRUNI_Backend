@@ -22,7 +22,7 @@ public record PlanCreateRequest(
 
         @NotNull(message = "마감 기한은 필수입니다.")
         @Schema(description = "마감 기한")
-        LocalDate deadline
+        LocalDateTime deadline
 
 ) {
     // 사용 시점에 User는 별도로 설정

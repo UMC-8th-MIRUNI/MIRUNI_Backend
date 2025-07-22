@@ -3,6 +3,7 @@ package dgu.umc_app.domain.plan.service;
 import dgu.umc_app.domain.ai_plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.dto.CalendarDayResponse;
 import dgu.umc_app.domain.plan.dto.CalendarMonthResponse;
+import dgu.umc_app.domain.plan.dto.RecommendedPlanResponse;
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.ai_plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,15 +31,18 @@ public class PlanQueryService{
         LocalDate start = LocalDate.of(year, month, 1);
         LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
 
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.atTime(23, 59, 59);
+
         Long userId = user.getId();
-        List<Plan> plans = planRepository.findByUserIdAndDeadlineBetween(userId, start, end);
+        List<Plan> plans = planRepository.findByUserIdAndDeadlineBetween(userId, startDateTime, endDateTime);
         List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledDateBetween(userId, start, end);
 
         // 날짜 별로 일정들을 그룹핑
         Map<LocalDate, List<CalendarMonthResponse.ScheduleInfo>> grouped = new HashMap<>();
 
         for (Plan plan : plans) {
-            grouped.computeIfAbsent(plan.getDeadline(), k -> new ArrayList<>())
+            grouped.computeIfAbsent(plan.getDeadline().toLocalDate(), k -> new ArrayList<>())
                     .add(new CalendarMonthResponse.ScheduleInfo(
                             plan.getId(),
                             plan.getTitle(),
@@ -55,13 +61,17 @@ public class PlanQueryService{
 
         return grouped.entrySet().stream()
                 .map(entry -> new CalendarMonthResponse(entry.getKey(), entry.getValue()))
-                .sorted(Comparator.comparing(CalendarMonthResponse::getDeadline))
+                .sorted(Comparator.comparing(CalendarMonthResponse::deadline))
                 .collect(Collectors.toList());
     }
 
     public List<CalendarDayResponse> getSchedulesByDate(LocalDate date, User user) {
         Long userId = user.getId();
-        List<Plan> plans = planRepository.findByUserIdAndDeadline(userId, date);
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        List<Plan> plans = planRepository.findByUserIdAndDeadlineBetween(userId, startOfDay, endOfDay);
         List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledDate(userId, date);
 
         List<CalendarDayResponse> result = new ArrayList<>();
@@ -69,6 +79,18 @@ public class PlanQueryService{
         aiPlans.forEach(aiPlan -> result.add(CalendarDayResponse.from(aiPlan)));
 
         return result;
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecommendedPlanResponse> getRecommendedSchedules(LocalDate today, User user) {
+
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(2).atTime(23, 59, 59);
+
+        List<Plan> candidates = planRepository.findByUserIdAndDeadlineBetween(user.getId(), startOfDay, endOfDay);
+        return candidates.stream()
+                .map(RecommendedPlanResponse::from)
+                .collect(Collectors.toList());
     }
 }
 
