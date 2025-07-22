@@ -22,4 +22,11 @@ public class UserQueryService {
 
         return UserResponseDto.from(user);
     }
+
+    public void duplicateCheck(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw BaseException.type(UserErrorCode.USER_EMAIL_EXIST);
+        }
+    }
+
 }
