@@ -7,7 +7,9 @@ import dgu.umc_app.domain.user.service.UserCommandService;
 import dgu.umc_app.domain.user.service.UserQueryService;
 import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
+import dgu.umc_app.domain.user.dto.request.GoogleLoginRequest;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
+import dgu.umc_app.domain.user.dto.response.GoogleLoginResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +36,10 @@ public class UserAuthController implements UserAuthApi {
     @PostMapping("/auth/normal")
     public UserResponse login(@Valid @RequestBody UserLoginRequest request) {
         return userCommandService.login(request);
+    }
+
+    @PostMapping("/auth/google")
+    public GoogleLoginResponse googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+        return userCommandService.loginWithGoogle(request);
     }
 }
