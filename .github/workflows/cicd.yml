@@ -75,6 +75,7 @@ jobs:
               --name spring-miruni-backend \
               -p 8080:8080 \
               -v ~/application.yml:/app/application.yml \
+              -v ~/firebase:/app/firebase \
               ${{ secrets.DOCKER_USERNAME }}/spring-miruni-backend:latest
 
             # 헬스체크 대기 및 실행
