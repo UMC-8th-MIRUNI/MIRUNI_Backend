@@ -45,12 +45,5 @@ public interface PlanApi {
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
-    @Operation(summary = "추천 일정 조회", description = "특정 날짜 기준 D+2 일정 추천")
-    @GetMapping("/recommend")
-    List<RecommendedPlanResponse> getRecommendedSchedules(
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
-    );
-
 
 }

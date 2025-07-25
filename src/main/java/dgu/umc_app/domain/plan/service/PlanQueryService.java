@@ -3,7 +3,6 @@ package dgu.umc_app.domain.plan.service;
 import dgu.umc_app.domain.ai_plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.dto.CalendarDayResponse;
 import dgu.umc_app.domain.plan.dto.CalendarMonthResponse;
-import dgu.umc_app.domain.plan.dto.RecommendedPlanResponse;
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.ai_plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
@@ -81,16 +80,5 @@ public class PlanQueryService{
         return result;
     }
 
-    @Transactional(readOnly = true)
-    public List<RecommendedPlanResponse> getRecommendedSchedules(LocalDate today, User user) {
-
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.plusDays(2).atTime(23, 59, 59);
-
-        List<Plan> candidates = planRepository.findByUserIdAndDeadlineBetween(user.getId(), startOfDay, endOfDay);
-        return candidates.stream()
-                .map(RecommendedPlanResponse::from)
-                .collect(Collectors.toList());
-    }
 }
 

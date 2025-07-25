@@ -45,11 +45,4 @@
             return planQueryService.getSchedulesByDate(date, userDetails.getUser());
         }
 
-        @GetMapping("/recommend")
-        public List<RecommendedPlanResponse> getRecommendedSchedules(
-                @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                @AuthenticationPrincipal CustomUserDetails userDetails
-        ) {
-            return planQueryService.getRecommendedSchedules(date, userDetails.getUser());
-        }
     }
