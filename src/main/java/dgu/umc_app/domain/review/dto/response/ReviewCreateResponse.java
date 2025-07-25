@@ -1,4 +1,4 @@
-package dgu.umc_app.domain.review.dto;
+package dgu.umc_app.domain.review.dto.response;
 
 import dgu.umc_app.domain.review.entity.Mood;
 import dgu.umc_app.domain.review.entity.Review;

@@ -12,6 +12,7 @@ public enum AiPlanErrorCode implements ErrorCode {
     AIPLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "AIPLAN404_1", "해당 일정이 존재하지 않습니다.");
 
 
+
     private final HttpStatus status;
     private final String errorCode;
     private final String message;

@@ -11,14 +11,28 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import jakarta.validation.ConstraintViolationException;
+
 
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    /*
+    @RequestParam 입력값 검증 실패(ConstraintViolationException) 처리
+    */
+    @ExceptionHandler(ConstraintViolationException.class)
+    protected ResponseEntity<CustomErrorResponse> handleConstraintViolationException(ConstraintViolationException e) {
+        String message = e.getConstraintViolations().iterator().next().getMessage();
+        log.warn("[Validation Error] message: {}", message);
+
+        ErrorCode errorCode = CommonErrorCode.VALIDATION_ERROR;
+        return convert(errorCode);
+    }
         
     /*
-    입력값 검증 실패(MethodArgumentNotValidException) 처리
+    DTO 입력값 검증 실패(MethodArgumentNotValidException) 처리
     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<CustomErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
