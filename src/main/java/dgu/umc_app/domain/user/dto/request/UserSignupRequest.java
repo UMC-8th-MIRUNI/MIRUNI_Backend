@@ -40,8 +40,6 @@ public record UserSignupRequest(
                         .lastPasswordChanged(LocalDateTime.now())
                         .agreedPrivacyPolicy(true)
                         .peanutCount(0)
-                        .popupAlarmInterval(60)
-                        .bannerAlarmInterval(60)
                         .userPreference(userPreference)
                         .oauthProvider(null)
                         .build();

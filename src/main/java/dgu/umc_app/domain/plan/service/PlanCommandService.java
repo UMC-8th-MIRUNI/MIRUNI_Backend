@@ -29,11 +29,9 @@ public class PlanCommandService {
             throw BaseException.type(PlanErrorCode.INVALID_DATE_RANGE);
         }
 
-        Plan plan = request.toEntity().toBuilder()
-                .user(user)
-                .build();
 
-        Plan savedPlan = planRepository.save(plan);
+
+        Plan savedPlan = planRepository.save(request.toEntity());
         return PlanCreateResponse.from(savedPlan);
     }
 }

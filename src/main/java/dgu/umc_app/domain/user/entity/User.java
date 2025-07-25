@@ -47,10 +47,6 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private int peanutCount = 0;
 
-    private Integer popupAlarmInterval;
-
-    private Integer bannerAlarmInterval;
-
     @Column(nullable = false, length = 50)
     private String userPreference;
 
