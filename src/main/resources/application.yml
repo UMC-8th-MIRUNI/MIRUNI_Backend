@@ -1,0 +1,33 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: local
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        user_sql_comments: true
+        default_batch_fetch_size: 500
+
+# JWT 설정 -> 배포시 환경변수 설정으로 변경
+jwt:
+  secret-key: ${JWT_SECRET_KEY:default-secret-key-for-development-only}
+
+# actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+
+# fcm 설정
+fcm:
+  key:
+    path: firebase/miruni-9718b-firebase-adminsdk-fbsvc-c1afc8bb2e.json
