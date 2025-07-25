@@ -4,7 +4,7 @@ import dgu.umc_app.domain.fcm.entity.NotificationType;
 import dgu.umc_app.domain.fcm.entity.ReminderType;
 import jakarta.validation.constraints.NotNull;
 
-public record BannerNotificationSendRequestDto(
+public record SendBannerNotificationRequestDto(
 
         @NotNull
         NotificationType type,

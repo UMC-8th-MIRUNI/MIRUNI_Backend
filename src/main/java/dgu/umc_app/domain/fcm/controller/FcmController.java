@@ -1,19 +1,16 @@
 package dgu.umc_app.domain.fcm.controller;
 
-import dgu.umc_app.domain.fcm.dto.request.FcmTokenRegisterRequestDto;
-import dgu.umc_app.domain.fcm.dto.request.BannerNotificationSendRequestDto;
-import dgu.umc_app.domain.fcm.dto.response.FcmTokenRegisterResponseDto;
+import dgu.umc_app.domain.fcm.dto.request.RegisterFcmTokenRequestDto;
+import dgu.umc_app.domain.fcm.dto.request.SendBannerNotificationRequestDto;
+import dgu.umc_app.domain.fcm.dto.request.UpdateFcmNotificationRequestDto;
+import dgu.umc_app.domain.fcm.dto.response.RegisterTokenResponseDto;
 import dgu.umc_app.domain.fcm.service.FcmTokenCommandService;
-import dgu.umc_app.domain.fcm.service.FcmTokenQueryService;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -22,12 +19,11 @@ import java.util.List;
 public class FcmController implements FcmApi {
 
     private final FcmTokenCommandService fcmTokenCommandService;
-    private final FcmTokenQueryService fcmTokenQueryService;
 
     @Override
     @PostMapping("/token")
-    public FcmTokenRegisterResponseDto registerToken(FcmTokenRegisterRequestDto request,
-                                                    Authentication authentication) {
+    public RegisterTokenResponseDto registerToken(RegisterFcmTokenRequestDto request,
+                                                  Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         User currentUser = userDetails.getUser();
         
@@ -38,7 +34,7 @@ public class FcmController implements FcmApi {
 
     @Override
     @PostMapping("/notification/banner")
-    public void sendBannerNotification(BannerNotificationSendRequestDto request) {
+    public void sendBannerNotification(SendBannerNotificationRequestDto request) {
         log.info("배너 알림 전송 요청 - 타입: {}, 대상 ID: {}, 리마인더 타입: {}", 
                 request.type(), request.targetId(), request.reminderType());
         
@@ -49,14 +45,12 @@ public class FcmController implements FcmApi {
     }
 
     @Override
-    @GetMapping("/tokens")
-    public List<String> getActiveTokens() {
-        log.info("활성화된 FCM 토큰 조회 요청");
-        
-        List<String> activeTokens = fcmTokenQueryService.getActiveTokenByUser();
-        
-        log.info("활성화된 FCM 토큰 조회 완료 - 토큰 개수: {}", activeTokens.size());
-        return activeTokens;
-    }
+    @PatchMapping("/notification/setting")
+    public void updateFcmNotification(UpdateFcmNotificationRequestDto request, Authentication authentication) {
 
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User currentUser = userDetails.getUser();
+
+        fcmTokenCommandService.updateFcmNotification(request, currentUser);
+    }
 }

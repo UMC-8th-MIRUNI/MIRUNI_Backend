@@ -4,7 +4,7 @@ import dgu.umc_app.domain.fcm.entity.FcmToken;
 import dgu.umc_app.domain.user.entity.User;
 import jakarta.validation.constraints.NotBlank;
 
-public record FcmTokenRegisterRequestDto(
+public record RegisterFcmTokenRequestDto(
 
         @NotBlank
         String token,

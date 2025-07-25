@@ -2,7 +2,7 @@ package dgu.umc_app.domain.fcm.scheduler;
 
 import dgu.umc_app.domain.ai_plan.entity.AiPlan;
 import dgu.umc_app.domain.ai_plan.repository.AiPlanRepository;
-import dgu.umc_app.domain.fcm.dto.request.BannerNotificationSendRequestDto;
+import dgu.umc_app.domain.fcm.dto.request.SendBannerNotificationRequestDto;
 import dgu.umc_app.domain.fcm.entity.NotificationType;
 import dgu.umc_app.domain.fcm.entity.ReminderType;
 import dgu.umc_app.domain.fcm.service.FcmTokenCommandService;
@@ -44,7 +44,7 @@ public class NotificationScheduler {
             List<Plan> upcomingPlans = planRepository.findByStartTimeBetweenAndIsDoneFalse(targetTime, targetTime.plusMinutes(1));
             
             for (Plan plan : upcomingPlans) {
-                BannerNotificationSendRequestDto request = new BannerNotificationSendRequestDto(
+                SendBannerNotificationRequestDto request = new SendBannerNotificationRequestDto(
                     NotificationType.PLAN,
                     plan.getId(),
                     reminderType
@@ -66,7 +66,7 @@ public class NotificationScheduler {
                 targetTime, targetTime.plusMinutes(1));
             
             for (AiPlan aiPlan : upcomingAiPlans) {
-                BannerNotificationSendRequestDto request = new BannerNotificationSendRequestDto(
+                SendBannerNotificationRequestDto request = new SendBannerNotificationRequestDto(
                     NotificationType.AI_PLAN,
                     aiPlan.getId(),
                     reminderType

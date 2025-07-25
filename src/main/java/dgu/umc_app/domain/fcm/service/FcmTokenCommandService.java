@@ -4,9 +4,10 @@ import com.google.firebase.messaging.*;
 import dgu.umc_app.domain.ai_plan.entity.AiPlan;
 import dgu.umc_app.domain.ai_plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.ai_plan.repository.AiPlanRepository;
-import dgu.umc_app.domain.fcm.dto.request.BannerNotificationSendRequestDto;
-import dgu.umc_app.domain.fcm.dto.request.FcmTokenRegisterRequestDto;
-import dgu.umc_app.domain.fcm.dto.response.FcmTokenRegisterResponseDto;
+import dgu.umc_app.domain.fcm.dto.request.SendBannerNotificationRequestDto;
+import dgu.umc_app.domain.fcm.dto.request.RegisterFcmTokenRequestDto;
+import dgu.umc_app.domain.fcm.dto.request.UpdateFcmNotificationRequestDto;
+import dgu.umc_app.domain.fcm.dto.response.RegisterTokenResponseDto;
 import dgu.umc_app.domain.fcm.entity.FcmToken;
 import dgu.umc_app.domain.fcm.entity.ReminderType;
 import dgu.umc_app.domain.fcm.exception.FcmErrorCode;
@@ -15,12 +16,10 @@ import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.user.entity.User;
-import dgu.umc_app.global.authorize.CustomUserDetails;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -35,13 +34,14 @@ public class FcmTokenCommandService {
     private final FirebaseMessaging firebaseMessaging;
 
 
-    // Controller에서 사용할 메서드 (User 객체를 직접 받음)
-    public FcmTokenRegisterResponseDto registerTokenWithUser(FcmTokenRegisterRequestDto request, User user) {
+    @Transactional
+    public RegisterTokenResponseDto registerTokenWithUser(RegisterFcmTokenRequestDto request, User user) {
         FcmToken savedFcmtoken = fcmTokenRepository.save(request.toEntity(user));
-        return FcmTokenRegisterResponseDto.of(savedFcmtoken.getId());
+        return RegisterTokenResponseDto.of(savedFcmtoken.getId());
     }
 
-    public void sendBannerNotification(BannerNotificationSendRequestDto request) {
+    @Transactional
+    public void sendBannerNotification(SendBannerNotificationRequestDto request) {
 
         NotificationInfo notificationInfo = createNotificationInfo(request);
 
@@ -57,7 +57,17 @@ public class FcmTokenCommandService {
 
     }
 
-    private NotificationInfo createNotificationInfo(BannerNotificationSendRequestDto request) {
+    @Transactional
+    public void updateFcmNotification(UpdateFcmNotificationRequestDto request, User user){
+
+
+        FcmToken fcmToken = fcmTokenRepository.findByUserAndDeviceId(user, request.deviceId())
+                        .orElseThrow(() -> BaseException.type(FcmErrorCode.NOT_FOUND_FCM_TOKEN));
+
+        fcmToken.updateNotificationEnabled(request.enabled());
+    }
+
+    private NotificationInfo createNotificationInfo(SendBannerNotificationRequestDto request) {
         return switch (request.type()){
             case PLAN -> {
                 Plan plan = planRepository.findById(request.targetId())
@@ -94,7 +104,7 @@ public class FcmTokenCommandService {
         };
     }
 
-    private void sendFcmMessage(List<String> tokens, NotificationInfo info, BannerNotificationSendRequestDto request) {
+    private void sendFcmMessage(List<String> tokens, NotificationInfo info, SendBannerNotificationRequestDto request) {
         try{
             MulticastMessage message = MulticastMessage.builder()
                     .putData("type", request.type().name())
@@ -118,9 +128,4 @@ public class FcmTokenCommandService {
     private record NotificationInfo(Long userId, String title, String body){}
 
 
-    private User getCurrentUser(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        return userDetails.getUser();
-    }
 }

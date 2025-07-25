@@ -10,8 +10,8 @@ import org.springframework.http.HttpStatus;
 public enum FcmErrorCode implements ErrorCode {
 
 
-    FCM_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FCM500_1", "FCM 토큰 발송 실패");
-
+    FCM_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FCM001", "FCM 토큰 발송 실패"),
+    NOT_FOUND_FCM_TOKEN(HttpStatus.NOT_FOUND, "FCM002", "FCM 토큰을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String errorCode;
