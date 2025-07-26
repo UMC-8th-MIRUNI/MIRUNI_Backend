@@ -28,8 +28,6 @@ public class ReviewCommandService {
 
     /**
      * 회고 저장
-     * @param request 회고 작성 요청 DTO
-     * @return 저장된 회고 ID
      */
     @Transactional
     public ReviewCreateResponse saveReview(ReviewCreateRequest request) {
@@ -39,11 +37,17 @@ public class ReviewCommandService {
         Plan plan = planRepository.findById(request.planId())
                 .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
 
-        Review review = request.toEntity(aiPlan, plan);
-        Review saved = reviewRepository.save(review);
+        Review review = Review.builder()
+                .aiPlan(aiPlan)
+                .plan(plan)
+                .title(plan.getTitle())                   // Plan.title 복사
+                .description(aiPlan.getDescription())     // AiPlan.description 복사
+                .mood(request.mood())
+                .achievement((byte) request.achievement())
+                .memo(request.memo())
+                .build();
 
+        Review saved = reviewRepository.save(review);
         return ReviewCreateResponse.from(saved);
     }
-
-
 }

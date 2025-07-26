@@ -27,7 +27,10 @@ public class Review extends BaseEntity {
     private Plan plan; // 일정 외래키 (id2에 해당)
 
     @Column(nullable = false, length = 50)
-    private String title;
+    private String title;       // Plan.title
+
+    @Column(nullable = false, length = 50)
+    private String description; // AiPlan.description
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -36,20 +39,17 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private byte achievement; // 성취도
 
-    @Column(nullable = false)
-    private byte satisfaction; // 만족도
-
     @Column(nullable = false, length = 255)
     private String memo; // 2줄 정도의 회고 메모
 
     @Builder
-    public Review(AiPlan aiPlan, Plan plan, String title, Mood mood, byte achievement, byte satisfaction, String memo) {
+    public Review(AiPlan aiPlan, Plan plan, String title, String description, Mood mood, byte achievement, String memo) {
         this.aiPlan = aiPlan;
         this.plan = plan;
         this.title = title;
+        this.description = description;
         this.mood = mood;
         this.achievement = achievement;
-        this.satisfaction = satisfaction;
         this.memo = memo;
     }
 }
