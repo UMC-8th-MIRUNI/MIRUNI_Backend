@@ -1,7 +1,6 @@
 package dgu.umc_app.domain.fcm.controller;
 
 import dgu.umc_app.domain.fcm.dto.request.RegisterFcmTokenRequestDto;
-import dgu.umc_app.domain.fcm.dto.request.SendBannerNotificationRequestDto;
 import dgu.umc_app.domain.fcm.dto.request.UpdateFcmNotificationRequestDto;
 import dgu.umc_app.domain.fcm.dto.response.RegisterTokenResponseDto;
 import dgu.umc_app.domain.fcm.service.FcmTokenCommandService;
@@ -30,18 +29,6 @@ public class FcmController implements FcmApi {
         log.info("FCM 토큰 등록 요청 - 사용자 ID: {}, 디바이스 ID: {}", currentUser.getId(), request.deviceId());
         
         return fcmTokenCommandService.registerTokenWithUser(request, currentUser);
-    }
-
-    @Override
-    @PostMapping("/notification/banner")
-    public void sendBannerNotification(SendBannerNotificationRequestDto request) {
-        log.info("배너 알림 전송 요청 - 타입: {}, 대상 ID: {}, 리마인더 타입: {}", 
-                request.type(), request.targetId(), request.reminderType());
-        
-        fcmTokenCommandService.sendBannerNotification(request);
-        
-        log.info("배너 알림 전송 완료 - 타입: {}, 대상 ID: {}", request.type(), request.targetId());
-
     }
 
     @Override

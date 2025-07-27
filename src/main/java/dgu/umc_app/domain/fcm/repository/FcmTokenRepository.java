@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface FcmTokenRepository extends JpaRepository<FcmToken, Long> {
 
     //사용자별 활성 토큰 조회
-    List<FcmToken> findByUserIdAndIsActiveTrue(Long userId);
+    List<FcmToken> findByUserIdAndIsActiveTrueAndNotificationEnabledTrue(Long userId);
 
     Optional<FcmToken> findByUserAndDeviceId(User user, String deviceId);
 
