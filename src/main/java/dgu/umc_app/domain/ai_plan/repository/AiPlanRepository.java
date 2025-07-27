@@ -8,7 +8,5 @@ import java.util.List;
 
 public interface AiPlanRepository extends JpaRepository<AiPlan, Long> {
 
-    // 특정 시간에 시작하는 미완료 AiPlan들 조회
-    List<AiPlan> findByStartTimeBetweenAndIsDoneFalse(LocalDateTime startTime,
-                                                      LocalDateTime endTime);
+   List<AiPlan> findByIsDoneFalse();
 }

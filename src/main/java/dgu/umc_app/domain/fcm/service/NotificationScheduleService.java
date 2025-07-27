@@ -5,14 +5,18 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
 import dgu.umc_app.domain.ai_plan.entity.AiPlan;
+import dgu.umc_app.domain.ai_plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.fcm.entity.NotificationType;
 import dgu.umc_app.domain.fcm.entity.ReminderType;
 import dgu.umc_app.domain.fcm.exception.FcmErrorCode;
 import dgu.umc_app.domain.plan.entity.Plan;
+import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -35,15 +39,8 @@ public class NotificationScheduleService {
     private final Map<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
     private final FcmTokenQueryService fcmTokenQueryService;
     private final FirebaseMessaging firebaseMessaging;
-
-    @Builder
-    private record NotificationTask(Long userId,
-                                    String title,
-                                    String body,
-                                    NotificationType type,
-                                    Long targetId,
-                                    ReminderType reminderType,
-                                    LocalDateTime notificationTime){}
+    private final PlanRepository planRepository;
+    private final AiPlanRepository aiPlanRepository;
 
 
     //Plan 알림 등록
@@ -109,6 +106,85 @@ public class NotificationScheduleService {
         log.info("AiPlan 알림 스케줄 등록 완료: planId = {}, startTime = {}", aiplan.getId(), aiplan.getStartTime());
     }
 
+    // Plan 알림등록 취소
+    public void cancelNotification(Plan plan){
+
+        String oneHourKey = createScheduleKey(NotificationTask.builder()
+                .type(NotificationType.PLAN)
+                .targetId(plan.getId())
+                .reminderType(ReminderType.ONE_HOUR_BEFORE)
+                .build());
+
+        cancelExistingSchedule(oneHourKey);
+
+        String tenMinutesKey = createScheduleKey(NotificationTask.builder()
+                .type(NotificationType.PLAN)
+                .targetId(plan.getId())
+                .reminderType(ReminderType.TEN_MINUTES_BEFORE)
+                .build());
+
+        cancelExistingSchedule(tenMinutesKey);
+
+        log.info("알림 스케줄 취소 완료: type = {}, targetId = {}", NotificationType.PLAN, plan.getId());
+    }
+
+    // AiPlan 알림등록 취소
+    public void cancelNotification(AiPlan aiplan){
+
+        String oneHourKey = createScheduleKey(NotificationTask.builder()
+                .type(NotificationType.AI_PLAN)
+                .targetId(aiplan.getId())
+                .reminderType(ReminderType.ONE_HOUR_BEFORE)
+                .build());
+
+        cancelExistingSchedule(oneHourKey);
+
+        String tenMinutesKey = createScheduleKey(NotificationTask.builder()
+                .type(NotificationType.AI_PLAN)
+                .targetId(aiplan.getId())
+                .reminderType(ReminderType.TEN_MINUTES_BEFORE)
+                .build());
+
+        cancelExistingSchedule(tenMinutesKey);
+
+        log.info("알림 스케줄 취소 완료: type = {}, targetId = {}", NotificationType.AI_PLAN, aiplan.getId());
+    }
+
+    //앱시작시 미완료 task들 재스케줄링
+    @EventListener(ApplicationReadyEvent.class)
+    public void rescheduleExistingPlans(){
+        log.info("기존 Plan들 재스케줄링 시작");
+
+        try{
+            //미완료 Plan 재스케줄링
+            List<Plan> incompletePlans = planRepository.findByIsDoneFalse();
+            for (Plan plan : incompletePlans) {
+                scheduleNotification(plan);
+            }
+            //미완료 AiPlan 재스케줄링
+            List<AiPlan> incompleteAiPlans = aiPlanRepository.findByIsDoneFalse();
+            for (AiPlan aiplan : incompleteAiPlans) {
+                scheduleNotification(aiplan);
+            }
+
+            log.info("기존 Task들 재스케줄링 완료: Plan = {}, AiPlan = {}",
+                    incompletePlans.size(), incompleteAiPlans.size());
+
+        }catch(Exception e){
+            log.error("재스케줄링 중 오류 발생: {}", e.getMessage());
+        }
+
+
+    }
+
+    // == 스케줄키 생성 메서드 == //
+    private String createScheduleKey(NotificationTask task){
+        return String.format("%s_%d_%s", task.type().name(), task.targetId(), task.reminderType().name());
+    }
+
+    // == 알림 생성 관련 메서드 == //
+
+    // 스케줄링 메서드 //
     private void scheduleNotificationAtTime(NotificationTask task){
 
         if(task.notificationTime().isBefore(LocalDateTime.now())){
@@ -116,7 +192,7 @@ public class NotificationScheduleService {
                     task.type(), task.targetId(), task.notificationTime());
             throw BaseException.type(FcmErrorCode.PASSED_AWAY_TIME);
         }
-        //스케줄 키를 생성하는 이유?
+
         String scheduleKey = createScheduleKey(task);
 
         Runnable scheduledTask = () -> sendNotification(task);
@@ -129,10 +205,9 @@ public class NotificationScheduleService {
 
     }
 
-    private String createScheduleKey(NotificationTask task){
-        return String.format("%s_%d_%s", task.type().name(), task.targetId(), task.reminderType().name());
-    }
 
+
+    // == 알림 전송 메서드(전체 과정) == /
     private void sendNotification(NotificationTask task){
         try{
             sendFcmMessage(task);
@@ -148,6 +223,7 @@ public class NotificationScheduleService {
 
     }
 
+    // == 메시지 생성 후 전송 메서드 == //
     private void sendFcmMessage(NotificationTask task){
 
         List<String> activeTokens = fcmTokenQueryService.getActiveTokenByUserId(task.userId());
@@ -175,6 +251,26 @@ public class NotificationScheduleService {
         }
 
     }
+
+    // == 알림 삭제 관련 메서드 == //
+    private void cancelExistingSchedule(String scheduleKey){
+        ScheduledFuture<?> existingFuture = scheduledTasks.remove(scheduleKey);
+        if (existingFuture != null && !existingFuture.isDone()) {
+            boolean cancelled = existingFuture.cancel(false);
+            log.debug("스케줄 취소: key = {}, 성공 = {}", scheduleKey, cancelled);
+        }
+    }
+
+
+    // == 관련 record == //
+    @Builder
+    private record NotificationTask(Long userId,
+                                    String title,
+                                    String body,
+                                    NotificationType type,
+                                    Long targetId,
+                                    ReminderType reminderType,
+                                    LocalDateTime notificationTime){}
 
 
 }
