@@ -17,8 +17,8 @@ jobs:
       - name: Create Firebase Admin SDK JSON
         run: |
           mkdir -p src/main/resources/firebase
-          echo "${{ secrets.FIREBASE_JSON }}" > src/main/resources/firebase/miruni-9718b-firebase-adminsdk-fbsvc-c1afc8bb2e.json
-
+          echo "${{ secrets.FIREBASE_JSON }}" | base64 -d > src/main/resources/firebase/miruni-9718b-firebase-adminsdk-fbsvc-c1afc8bb2e.json
+ 
       # JDK 설정
       - name: Set up JDK 17
         uses: actions/setup-java@v4
