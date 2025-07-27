@@ -9,7 +9,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "User", description = "회원가입, 로그인 API")
 public interface UserAuthApi {
@@ -27,8 +31,19 @@ public interface UserAuthApi {
             @ApiResponse(responseCode = "409", description = "이미 이메일이 존재함"),
             @ApiResponse(responseCode = "400", description = "입력값 검증 실패")
     })
-    UserResponse signup(@RequestBody UserSignupRequest request);
+    UserResponse signup(@Valid @RequestBody UserSignupRequest request);
 
+    @Operation(
+        summary = "이메일 중복 확인",
+        description = "회원가입 시 이메일 중복 여부를 확인합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "사용 가능한 이메일"),
+        @ApiResponse(responseCode = "409", description = "이미 존재하는 이메일"),
+        @ApiResponse(responseCode = "400", description = "입력값 검증 실패")
+    })
+    void duplicateCheck(@RequestParam @Email String email);
+    
     @Operation(
             summary = "로그인",
             description = "사용자 로그인을 처리합니다. \n" +
@@ -42,5 +57,5 @@ public interface UserAuthApi {
             @ApiResponse(responseCode = "401", description = "비밀번호가 틀림"),
             @ApiResponse(responseCode = "400", description = "입력값 검증 실패")
     })
-    UserResponse login(@RequestBody UserLoginRequest request);
+    UserResponse login(@Valid @RequestBody UserLoginRequest request);
 } 
