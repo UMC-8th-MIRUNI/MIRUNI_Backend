@@ -31,7 +31,7 @@ public interface ReviewApi {
     List<ReviewCountByDateResponse> getReviewCountByDate(@AuthenticationPrincipal CustomUserDetails userDetails);
 
     @Operation(summary = "단일 회고 상세 조회 API", description = "작성된 회고의 상세 정보를 조회합니다.")
-    ReviewDetailResponse getReview(@PathVariable Long reviewId);
+    ReviewDetailResponse getReview(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long reviewId);
 
     @Operation(summary = "특정 날짜의 회고 목록 조회 API", description = "현재 로그인한 사용자의 특정 날짜 회고 목록(날짜, 제목, 부제목)을 최신순으로 조회합니다.")
     List<ReviewListResponse> getReviewListByDate(
@@ -39,4 +39,9 @@ public interface ReviewApi {
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     );
 
+    @Operation(summary = "특정 회고 날짜 검색 API", description = "검색된 날짜에 작성된 회고의 갯수를 조회합니다.")
+    ReviewCountByDateResponse getReviewSearch(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    );
 }

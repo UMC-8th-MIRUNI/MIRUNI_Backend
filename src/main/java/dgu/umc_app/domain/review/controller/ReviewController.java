@@ -43,9 +43,11 @@ public class ReviewController implements ReviewApi{
 
     //개별 회고 상세 조회
     @GetMapping("/{reviewId}")
-    public ReviewDetailResponse getReview(@PathVariable Long reviewId) {
-        return reviewQueryService.getReview(reviewId);
+    public ReviewDetailResponse getReview(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                          @PathVariable Long reviewId) {
+        return reviewQueryService.getReview(userDetails.getId(), reviewId);
     }
+
 
     // 특정 날짜의 회고 목록 조회
     @GetMapping("/date")
@@ -55,6 +57,16 @@ public class ReviewController implements ReviewApi{
     ) {
         return reviewQueryService.getReviewListByUserIdAndDate(userDetails.getId(), date);
     }
+
+    //날짜 검색으로 인한 회고 블럭 조회
+    @GetMapping("/search")
+    public ReviewCountByDateResponse getReviewSearch(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        return reviewQueryService.getReviewSearch(userDetails.getUser().getId(), date);
+    }
+
 
 
 }
