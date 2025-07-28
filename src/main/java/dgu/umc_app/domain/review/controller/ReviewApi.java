@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.review.controller;
 
 import dgu.umc_app.domain.review.dto.request.ReviewCreateRequest;
+import dgu.umc_app.domain.review.dto.request.ReviewUpdateRequest;
 import dgu.umc_app.domain.review.dto.response.ReviewCountByDateResponse;
 import dgu.umc_app.domain.review.dto.response.ReviewCreateResponse;
 import dgu.umc_app.domain.review.dto.response.ReviewDetailResponse;
@@ -44,4 +45,9 @@ public interface ReviewApi {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     );
+
+    @Operation(summary = "회고 수정 API", description = "회고의 내용을 수정합니다.(기분, 성취도, 메모)")
+    public ReviewDetailResponse updateReview(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @PathVariable Long reviewId,
+                                             @RequestBody @Valid ReviewUpdateRequest request);
 }

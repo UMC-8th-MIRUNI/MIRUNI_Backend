@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.review.controller;
 
 import dgu.umc_app.domain.review.dto.request.ReviewCreateRequest;
+import dgu.umc_app.domain.review.dto.request.ReviewUpdateRequest;
 import dgu.umc_app.domain.review.dto.response.ReviewCountByDateResponse;
 import dgu.umc_app.domain.review.dto.response.ReviewCreateResponse;
 import dgu.umc_app.domain.review.dto.response.ReviewDetailResponse;
@@ -11,6 +12,7 @@ import dgu.umc_app.global.authorize.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,6 +68,15 @@ public class ReviewController implements ReviewApi{
     ) {
         return reviewQueryService.getReviewSearch(userDetails.getUser().getId(), date);
     }
+
+    //회고 수정
+    @PatchMapping("/update/{reviewId}")
+    public ReviewDetailResponse updateReview(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @PathVariable Long reviewId,
+                                             @RequestBody @Valid ReviewUpdateRequest request) {
+        return reviewCommandService.updateReview(userDetails.getId(), reviewId, request);
+    }
+
 
 
 

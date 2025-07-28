@@ -6,7 +6,9 @@ import dgu.umc_app.domain.ai_plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.review.dto.request.ReviewCreateRequest;
+import dgu.umc_app.domain.review.dto.request.ReviewUpdateRequest;
 import dgu.umc_app.domain.review.dto.response.ReviewCreateResponse;
+import dgu.umc_app.domain.review.dto.response.ReviewDetailResponse;
 import dgu.umc_app.domain.review.entity.Review;
 import dgu.umc_app.domain.review.exception.ReviewErrorCode;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ReviewCommandService {
 
     private final ReviewRepository reviewRepository;
@@ -29,7 +32,6 @@ public class ReviewCommandService {
     /**
      * 회고 저장
      */
-    @Transactional
     public ReviewCreateResponse saveReview(ReviewCreateRequest request) {
         AiPlan aiPlan = aiPlanRepository.findById(request.aiPlanId())
                 .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AI_PLAN_NOT_FOUND));
@@ -50,4 +52,14 @@ public class ReviewCommandService {
         Review saved = reviewRepository.save(review);
         return ReviewCreateResponse.from(saved);
     }
+    /**
+     * 회고 수정
+     */
+    public ReviewDetailResponse updateReview(Long userId, Long reviewId, ReviewUpdateRequest request) {
+        Review review = reviewRepository.findByIdAndUserId(reviewId, userId)
+                .orElseThrow(() -> BaseException.type(ReviewErrorCode.REVIEW_NOT_FOUND));
+        review.update(request.mood(), (byte) request.achievement(), request.memo());
+        return ReviewDetailResponse.from(review);
+    }
+
 }
