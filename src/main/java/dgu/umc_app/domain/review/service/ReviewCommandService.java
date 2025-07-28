@@ -32,11 +32,12 @@ public class ReviewCommandService {
     /**
      * 회고 저장
      */
-    public ReviewCreateResponse saveReview(ReviewCreateRequest request) {
-        AiPlan aiPlan = aiPlanRepository.findById(request.aiPlanId())
+
+    public ReviewCreateResponse saveReview(Long userId, ReviewCreateRequest request) {
+        AiPlan aiPlan = aiPlanRepository.findByIdAndUserId(request.aiPlanId(), userId)
                 .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AI_PLAN_NOT_FOUND));
 
-        Plan plan = planRepository.findById(request.planId())
+        Plan plan = planRepository.findByIdAndUserId(request.planId(), userId)
                 .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
 
         Review review = Review.builder()

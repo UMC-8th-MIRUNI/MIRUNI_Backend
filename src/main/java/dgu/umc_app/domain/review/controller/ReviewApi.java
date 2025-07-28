@@ -25,7 +25,8 @@ public interface ReviewApi {
 
     @Operation(summary = "회고 작성 후 저장 API",
             description = "특정 일정에 대한 회고(기분, 성취도, 만족도, 메모 등)를 작성하고 저장합니다.")
-    ReviewCreateResponse createReview(@RequestBody @Valid ReviewCreateRequest request);
+    ReviewCreateResponse createReview(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @RequestBody @Valid ReviewCreateRequest request);
 
     @Operation(summary = "날짜별 회고 목록 갯수 조회 API",
             description = "날짜에 작성된 회고의 갯수 목록을 날짜순으로 반환합니다.")

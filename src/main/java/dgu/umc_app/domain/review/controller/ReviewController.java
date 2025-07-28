@@ -32,10 +32,12 @@ public class ReviewController implements ReviewApi{
 
 
      //회고 작성 후 저장
-    @PostMapping
-    public ReviewCreateResponse createReview(@RequestBody @Valid ReviewCreateRequest request) {
-        return reviewCommandService.saveReview(request);
-    }
+     @PostMapping
+     public ReviewCreateResponse createReview(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                              @RequestBody @Valid ReviewCreateRequest request) {
+         Long userId = userDetails.getId();
+         return reviewCommandService.saveReview(userId, request);
+     }
 
     //회고록 날짜별 갯수 조회
     @GetMapping("/countByDate")
