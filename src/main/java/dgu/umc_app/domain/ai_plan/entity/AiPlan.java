@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -33,7 +34,7 @@ public class AiPlan extends BaseEntity {
     private Long expectedDuration; // 예상 실행 시간
 
     @Column(nullable = false)
-    private LocalDateTime startTime; // 시작 시간
+    private LocalTime startTime; // 시작 시간
 
     @Column(nullable = false)
     private LocalDate scheduledDate; // 진행 날짜
@@ -41,5 +42,8 @@ public class AiPlan extends BaseEntity {
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
+    public LocalDateTime getTaskTime() {
+        return LocalDateTime.of(scheduledDate, startTime);
+    }
 
 }

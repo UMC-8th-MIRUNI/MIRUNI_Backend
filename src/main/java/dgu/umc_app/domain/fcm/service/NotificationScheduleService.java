@@ -57,7 +57,7 @@ public class NotificationScheduleService {
                 .type(NotificationType.PLAN)
                 .targetId(plan.getId())
                 .reminderType(ReminderType.ONE_HOUR_BEFORE)
-                .notificationTime(plan.getStartTime().minusHours(1))
+                .notificationTime(plan.getExecuteDate().minusHours(1))
                 .build());
 
         scheduleNotificationAtTime(NotificationTask.builder()
@@ -67,11 +67,11 @@ public class NotificationScheduleService {
                 .type(NotificationType.PLAN)
                 .targetId(plan.getId())
                 .reminderType(ReminderType.TEN_MINUTES_BEFORE)
-                .notificationTime(plan.getStartTime().minusMinutes(10))
+                .notificationTime(plan.getExecuteDate().minusMinutes(10))
                 .build());
 
 
-        log.info("Plan 알림 스케줄 등록 완료: planId = {}, startTime = {}", plan.getId(), plan.getStartTime());
+        log.info("Plan 알림 스케줄 등록 완료: planId = {}, startTime = {}", plan.getId(), plan.getExecuteDate());
     }
 
     //AIPlan 알림 등록
@@ -88,7 +88,7 @@ public class NotificationScheduleService {
                 .type(NotificationType.AI_PLAN)
                 .targetId(aiplan.getId())
                 .reminderType(ReminderType.ONE_HOUR_BEFORE)
-                .notificationTime(aiplan.getStartTime().minusHours(1))
+                .notificationTime(aiplan.getTaskTime().minusHours(1))
                 .build());
 
 
@@ -99,11 +99,11 @@ public class NotificationScheduleService {
                 .type(NotificationType.AI_PLAN)
                 .targetId(aiplan.getId())
                 .reminderType(ReminderType.TEN_MINUTES_BEFORE)
-                .notificationTime(aiplan.getStartTime().minusMinutes(10))
+                .notificationTime(aiplan.getTaskTime().minusMinutes(10))
                 .build());
 
 
-        log.info("AiPlan 알림 스케줄 등록 완료: planId = {}, startTime = {}", aiplan.getId(), aiplan.getStartTime());
+        log.info("AiPlan 알림 스케줄 등록 완료: planId = {}, startTime = {}", aiplan.getId(), aiplan.getTaskTime());
     }
 
     // Plan 알림등록 취소

@@ -29,13 +29,14 @@ public class Plan extends BaseEntity {
     private String description; // 일정 내용
 
     @Column(nullable = false)
-    private LocalDateTime startTime; // 시작 시간
+    private LocalDateTime executeDate; //실제 수행 시작날짜
 
     @Column(nullable = false)
     private LocalDateTime deadline; // 마감 기한
 
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
+
 
 
 }
