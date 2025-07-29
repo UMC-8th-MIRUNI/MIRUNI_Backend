@@ -13,7 +13,7 @@ import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import dgu.umc_app.domain.user.entity.User;
-import dgu.umc_app.global.annotation.CurrentUser;
+import dgu.umc_app.global.authorize.LoginUser;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +53,7 @@ public class UserAuthController implements UserAuthApi {
     }
 
     @PatchMapping("/auth/google/complete")
-    public UserResponse googleSignUp(@Valid @RequestBody GoogleSignUpRequest request, @CurrentUser User user) {
-        return userCommandService.googleSignUp(request, user);
+    public UserResponse googleSignUp(@Valid @RequestBody GoogleSignUpRequest request, @LoginUser Long userId) {
+        return userCommandService.googleSignUp(request, userId);
     }
 }

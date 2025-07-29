@@ -8,7 +8,7 @@ import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.entity.User;
-import dgu.umc_app.global.annotation.CurrentUser;
+import dgu.umc_app.global.authorize.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -100,5 +100,5 @@ public interface UserAuthApi {
         @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 이미 완료된 회원가입"),
         @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
     })
-    UserResponse googleSignUp(@Valid @RequestBody GoogleSignUpRequest request, @CurrentUser User user);
+    UserResponse googleSignUp(@Valid @RequestBody GoogleSignUpRequest request, @LoginUser Long userId);
 } 

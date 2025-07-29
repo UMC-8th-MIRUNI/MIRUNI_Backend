@@ -70,6 +70,8 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Status status = Status.ACTIVE;
 
+
+    // == User 상태 변경 메서드들 == //
     public void activate() {
         this.status = Status.ACTIVE;
     }

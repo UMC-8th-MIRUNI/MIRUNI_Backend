@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
 import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.validator.UserValidator;
-import dgu.umc_app.global.annotation.CurrentUser;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -39,7 +38,7 @@ public class UserCommandService {
     private final UserValidator userValidator;
 
     public UserResponse signup(UserSignupRequest userSignupRequest) {
-        // 이메일 중복 검증
+
         userValidator.existEmail(userSignupRequest.email());
 
         String encodedPassword = passwordEncoder.encode(userSignupRequest.password());
@@ -160,7 +159,10 @@ public class UserCommandService {
         }
     }
 
-    public UserResponse googleSignUp(GoogleSignUpRequest request, @CurrentUser User user) {
+    public UserResponse googleSignUp(GoogleSignUpRequest request, Long userId) {
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
         
         userValidator.checkPendingUser(user.getStatus());
 
