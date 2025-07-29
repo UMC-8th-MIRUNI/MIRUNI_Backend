@@ -22,20 +22,25 @@ import org.springframework.http.HttpStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
+import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
+import dgu.umc_app.domain.user.validator.UserValidator;
+import dgu.umc_app.global.annotation.CurrentUser;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class UserCommandService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final UserValidator userValidator;
 
     public UserResponse signup(UserSignupRequest userSignupRequest) {
-        if (userRepository.existsByEmail(userSignupRequest.email())) {
-            throw BaseException.type(UserErrorCode.USER_EMAIL_EXIST);
-        }
+        // 이메일 중복 검증
+        userValidator.existEmail(userSignupRequest.email());
 
         String encodedPassword = passwordEncoder.encode(userSignupRequest.password());
         User user = userSignupRequest.toEntity(encodedPassword);
@@ -48,9 +53,7 @@ public class UserCommandService {
         User user = userRepository.findByEmail(userLoginRequest.email())
                 .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
 
-        if (!passwordEncoder.matches(userLoginRequest.password(), user.getPassword())) {
-            throw BaseException.type(UserErrorCode.USER_WRONG_PASSWORD);
-        }
+        userValidator.matchPassword(userLoginRequest.password(), user.getPassword());
 
         return issueTokenResponse(user);
     }
@@ -58,26 +61,19 @@ public class UserCommandService {
     public AuthLoginResponse loginWithGoogle(GoogleLoginRequest request) {
         
         AuthUserInfoDto googleUserInfo = verifyGoogleIdToken(request.googleIdToken());
+        User user = findOrCreateUser(googleUserInfo, OauthProvider.GOOGLE);
+        boolean isNewUser = userRepository.findByEmail(googleUserInfo.email()).isEmpty();
 
-        User user = userRepository.findByEmail(googleUserInfo.email()).orElse(null);
-        boolean isNewUser = false;
-
-        if (user == null) {
-            user = googleUserInfo.toSocialUser(OauthProvider.GOOGLE);
-            userRepository.save(user);
-            isNewUser = true;
+        if (user.isDeleted()) {
+            user.restore();
         }
 
-        String accessToken = jwtUtil.generateAccessToken(user.getEmail());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
-        long expiresIn = jwtUtil.getAccessTokenExpirationInSeconds();
+        if (user.isPending()) {
+            String tempToken = generateTempToken(user);
+            return AuthLoginResponse.signUpNeeded(tempToken, isNewUser);
+        }
 
-        return AuthLoginResponse.of(
-            accessToken,
-            refreshToken,
-            expiresIn,
-            isNewUser
-        );
+        return generateLoginTokens(user, isNewUser);
     }
 
     public AuthLoginResponse loginWithKakao(KakaoLoginRequest request) {
@@ -92,16 +88,7 @@ public class UserCommandService {
             isNewUser = true;
         }
 
-        String accessToken = jwtUtil.generateAccessToken(user.getEmail());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
-        long expiresIn = jwtUtil.getAccessTokenExpirationInSeconds();
-
-        return AuthLoginResponse.of(
-            accessToken,
-            refreshToken,
-            expiresIn,
-            isNewUser
-        );
+        return generateLoginTokens(user, isNewUser);
     }
 
     private UserResponse issueTokenResponse(User user) {
@@ -171,5 +158,43 @@ public class UserCommandService {
         } catch (Exception e) {
             throw BaseException.type(UserErrorCode.INVALID_SOCIAL_TOKEN);
         }
+    }
+
+    public UserResponse googleSignUp(GoogleSignUpRequest request, @CurrentUser User user) {
+        
+        userValidator.checkPendingUser(user.getStatus());
+
+        user.updateGoogleSignUpInfo(
+            request.name(),
+            request.birthday(),
+            request.phoneNumber(),
+            request.agreedPrivacyPolicy(),
+            request.nickname()
+        );
+
+        user.activate();
+
+        User savedUser = userRepository.save(user);
+
+        return issueTokenResponse(savedUser);
+    }
+
+    private User findOrCreateUser(AuthUserInfoDto userInfo, OauthProvider provider) {
+        return userRepository.findByEmail(userInfo.email())
+                .orElseGet(() -> userRepository.save(userInfo.toSocialUser(provider)));
+    }
+
+    private String generateTempToken(User user) {
+        return jwtUtil.generateTempToken(user.getEmail());
+    }
+
+    private AuthLoginResponse generateLoginTokens(User user, boolean isNewUser) {
+        
+        String accessToken = jwtUtil.generateAccessToken(user.getEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
+        long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
+        long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
+        
+        return AuthLoginResponse.login(accessToken, refreshToken, accessTokenExp, refreshTokenExp, isNewUser);
     }
 }

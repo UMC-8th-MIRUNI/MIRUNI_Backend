@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.user.dto;
 
 import dgu.umc_app.domain.user.entity.OauthProvider;
+import dgu.umc_app.domain.user.entity.Status;
 import dgu.umc_app.domain.user.entity.User;
 import lombok.Builder;
 import java.time.LocalDateTime;
@@ -18,11 +19,11 @@ public record AuthUserInfoDto(
 
     public User toSocialUser(OauthProvider provider) {
         return User.builder()
-                .name(this.name)
+                .name("") 
                 .email(this.email)
-                .phoneNumber("")
-                .password("")
-                .nickname(this.name)
+                .phoneNumber("") 
+                .password("") 
+                .nickname("") 
                 .passwordExpired(false)
                 .lastPasswordChanged(LocalDateTime.now())
                 .agreedPrivacyPolicy(true)
@@ -31,6 +32,7 @@ public record AuthUserInfoDto(
                 .bannerAlarmInterval(60)
                 .userPreference("")
                 .oauthProvider(provider)
+                .status(Status.PENDING) 
                 .build();
     }
 } 

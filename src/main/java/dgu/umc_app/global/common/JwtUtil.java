@@ -56,4 +56,25 @@ public class JwtUtil {
             return false; 
         }
     }
+
+    public String generateTempToken(String email) {
+        return JWT.create()
+                .withSubject(email)  
+                .withIssuedAt(new Date())  
+                .withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 5)) // 5분
+                .withClaim("type", "TEMP")
+                .sign(algorithm);  
+    }
+
+    public String getTokenType(String token) {
+        try {
+            return JWT.require(algorithm)
+                    .build()
+                    .verify(token)
+                    .getClaim("type")
+                    .asString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

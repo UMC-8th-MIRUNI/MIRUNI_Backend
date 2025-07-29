@@ -7,16 +7,32 @@ public record AuthLoginResponse(
     String accessToken,
     String refreshToken,
     String tokenType,
-    long expiresIn,
-    boolean isNewUser
+    Long accessTokenExpiresIn,
+    Long refreshTokenExpiresIn,
+    boolean isNewUser,
+    boolean isPending
 ) {
-    public static AuthLoginResponse of(String accessToken, String refreshToken, long expiresIn, boolean isNewUser) {
+    public static AuthLoginResponse login(String accessToken, String refreshToken, long accessTokenExp, long refreshTokenExp, boolean isNewUser) {
         return AuthLoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
-                .expiresIn(expiresIn)
+                .accessTokenExpiresIn(accessTokenExp)
+                .refreshTokenExpiresIn(refreshTokenExp)
                 .isNewUser(isNewUser)
+                .isPending(false)
+                .build();
+    }
+
+    public static AuthLoginResponse signUpNeeded(String tempToken, boolean isNewUser) {
+        return AuthLoginResponse.builder()
+                .accessToken(tempToken)
+                .refreshToken(null)
+                .tokenType("Bearer")
+                .accessTokenExpiresIn(300L) // 5분 임시 토큰
+                .refreshTokenExpiresIn(null)
+                .isNewUser(isNewUser)
+                .isPending(true)
                 .build();
     }
 } 

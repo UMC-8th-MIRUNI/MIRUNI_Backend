@@ -34,6 +34,12 @@ public class JwtFilter extends OncePerRequestFilter {
                 if (jwtUtil.validateToken(token)) {
                     String email = jwtUtil.getEmail(token);
                     
+                    // 임시 토큰인지 확인
+                    String tokenType = jwtUtil.getTokenType(token);
+                    if ("TEMP".equals(tokenType)) {
+                        log.debug("임시 토큰 사용: {}", email);
+                    }
+                    
                     UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                     
                     UsernamePasswordAuthenticationToken authentication =
