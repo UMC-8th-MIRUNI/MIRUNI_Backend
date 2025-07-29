@@ -1,8 +1,8 @@
 package dgu.umc_app.domain.review.service;
 
 
-import dgu.umc_app.domain.ai_plan.entity.AiPlan;
-import dgu.umc_app.domain.ai_plan.repository.AiPlanRepository;
+import dgu.umc_app.domain.plan.entity.AiPlan;
+import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.review.dto.request.ReviewCreateRequest;
@@ -10,7 +10,7 @@ import dgu.umc_app.domain.review.dto.response.ReviewCreateResponse;
 import dgu.umc_app.domain.review.entity.Review;
 import dgu.umc_app.domain.review.exception.ReviewErrorCode;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
-import dgu.umc_app.domain.ai_plan.exception.AiPlanErrorCode;
+import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.review.repository.ReviewRepository;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;

@@ -1,18 +1,17 @@
-package dgu.umc_app.domain.ai_plan.entity;
+package dgu.umc_app.domain.plan.entity;
 
-import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.global.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class AiPlan extends BaseEntity {
 
     @Id
@@ -26,6 +25,10 @@ public class AiPlan extends BaseEntity {
     @Column(nullable = false)
     private Long stepOrder; // 실행 순서
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Priority priority;  // 우선순위
+
     @Column(nullable = false, length = 50)
     private String description; // 실행 내용
 
@@ -33,18 +36,18 @@ public class AiPlan extends BaseEntity {
     private Long expectedDuration; // 예상 실행 시간
 
     @Column(nullable = false)
-    private LocalDate scheduledDate; // 진행 날짜
+    private LocalDate scheduledDate; // 진행 날짜(ex:2025-05-01)
+
+    @Column(nullable = false)
+    private LocalTime startTime;    // 시작 시간(ex: 18:00)
+
+    @Column(nullable = false)
+    private LocalTime endTime;      // 종료 시간(ex: 19:00)
 
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
-    @Builder
-    public AiPlan(Plan plan, Long stepOrder, String description, Long expectedDuration, LocalDate scheduledDate, boolean isDone) {
-        this.plan = plan;
-        this.stepOrder = stepOrder;
-        this.description = description;
-        this.expectedDuration = expectedDuration;
-        this.scheduledDate = scheduledDate;
-        this.isDone = isDone;
-    }
+    @Column(nullable = false)
+    private boolean isDelayed = false;  // 미루기 여부
+
 }
