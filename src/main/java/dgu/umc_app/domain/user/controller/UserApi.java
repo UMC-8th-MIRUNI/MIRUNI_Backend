@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.user.controller;
 
 import dgu.umc_app.domain.user.dto.UserResponseDto;
+import dgu.umc_app.global.authorize.LoginUser;
 import dgu.umc_app.global.exception.CustomErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -8,7 +9,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "user", description = "사용자 관련 API")
 public interface UserApi {
@@ -25,5 +25,5 @@ public interface UserApi {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = CustomErrorResponse.class)))
     })
-    UserResponseDto getUserInfo(@RequestParam Long userId);
+    UserResponseDto getUserInfo(@LoginUser Long userId);
 }

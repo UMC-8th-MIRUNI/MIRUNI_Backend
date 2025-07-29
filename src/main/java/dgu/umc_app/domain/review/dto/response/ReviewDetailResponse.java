@@ -1,14 +1,17 @@
-package dgu.umc_app.domain.review.dto;
+package dgu.umc_app.domain.review.dto.response;
 
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import dgu.umc_app.domain.review.entity.Mood;
 import dgu.umc_app.domain.review.entity.Review;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Builder
-public record ReviewCreateResponse(
+public record ReviewDetailResponse(
 
         @Schema(description = "회고 ID")
         Long id,
@@ -25,30 +28,32 @@ public record ReviewCreateResponse(
         @Schema(description = "회고 제목")
         String title,
 
+        @Schema(description = "회고 부제목")
+        String description,
+
         @Schema(description = "성취도")
         byte achievement,
 
-        @Schema(description = "만족도")
-        byte satisfaction,
-
-        @Schema(description = "메모")
+        @Schema(description = "회고 메모")
         String memo,
 
-        @Schema(description = "생성일시")
+        @Schema(description = "작성일시")
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime createdAt
+
 ) {
-    public static ReviewCreateResponse from(Review review) {
-        return ReviewCreateResponse.builder()
+    public static ReviewDetailResponse from(Review review) {
+        return ReviewDetailResponse.builder()
                 .id(review.getId())
                 .aiPlanId(review.getAiPlan().getId())
                 .planId(review.getPlan().getId())
                 .mood(review.getMood())
                 .title(review.getTitle())
+                .description(review.getDescription())
                 .achievement(review.getAchievement())
-                .satisfaction(review.getSatisfaction())
                 .memo(review.getMemo())
                 .createdAt(review.getCreatedAt())
                 .build();
     }
-
 }
+
