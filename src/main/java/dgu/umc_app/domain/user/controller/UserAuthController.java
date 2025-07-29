@@ -5,11 +5,12 @@ import org.springframework.web.bind.annotation.*;
 
 import dgu.umc_app.domain.user.service.UserCommandService;
 import dgu.umc_app.domain.user.service.UserQueryService;
+import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
+import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.request.GoogleLoginRequest;
 import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
-import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import dgu.umc_app.domain.user.entity.User;
@@ -55,5 +56,10 @@ public class UserAuthController implements UserAuthApi {
     @PatchMapping("/auth/google/complete")
     public UserResponse googleSignUp(@Valid @RequestBody GoogleSignUpRequest request, @LoginUser Long userId) {
         return userCommandService.googleSignUp(request, userId);
+    }
+
+    @PatchMapping("/auth/kakao/complete")
+    public UserResponse kakaoSignUp(@Valid @RequestBody KakaoSignUpRequest request, @LoginUser Long userId) {
+        return userCommandService.kakaoSignUp(request, userId);
     }
 }

@@ -25,6 +25,10 @@ import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
 import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.validator.UserValidator;
 import lombok.extern.slf4j.Slf4j;
+import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
+import dgu.umc_app.global.authorize.CustomUserDetails;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 @Service
 @Transactional
@@ -77,22 +81,30 @@ public class UserCommandService {
 
     public AuthLoginResponse loginWithKakao(KakaoLoginRequest request) {
         AuthUserInfoDto kakaoUserInfo = verifyKakaoAccessToken(request.kakaoAccessToken());
+        
+        User user = findOrCreateUser(kakaoUserInfo, OauthProvider.KAKAO);
+        boolean isNewUser = userRepository.findByEmail(kakaoUserInfo.email()).isEmpty();
 
-        User user = userRepository.findByEmail(kakaoUserInfo.email()).orElse(null);
-        boolean isNewUser = false;
+        if (user.isDeleted()) {
+            user.restore();
+        }
 
-        if (user == null) {
-            user = kakaoUserInfo.toSocialUser(OauthProvider.KAKAO);
-            userRepository.save(user);
-            isNewUser = true;
+        if (user.isPending()) {
+            String tempToken = generateTempToken(user);
+            return AuthLoginResponse.signUpNeeded(tempToken, isNewUser);
         }
 
         return generateLoginTokens(user, isNewUser);
     }
 
     private UserResponse issueTokenResponse(User user) {
-        String accessToken = jwtUtil.generateAccessToken(user.getEmail());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
+        // Authentication 객체를 생성하여 토큰 생성
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        
+        String accessToken = jwtUtil.generateAccessToken(authentication);
+        String refreshToken = jwtUtil.generateRefreshToken(authentication);
         long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
         long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
 
@@ -181,19 +193,48 @@ public class UserCommandService {
         return issueTokenResponse(savedUser);
     }
 
+    public UserResponse kakaoSignUp(KakaoSignUpRequest request, Long userId) {
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+        
+        userValidator.checkPendingUser(user.getStatus());
+
+        user.updateKakaoSignUpInfo(
+            request.name(),
+            request.birthday(),
+            request.phoneNumber(),
+            request.agreedPrivacyPolicy(),
+            request.nickname()
+        );
+
+        user.activate();
+
+        User savedUser = userRepository.save(user);
+
+        return issueTokenResponse(savedUser);
+    }
+
     private User findOrCreateUser(AuthUserInfoDto userInfo, OauthProvider provider) {
         return userRepository.findByEmail(userInfo.email())
                 .orElseGet(() -> userRepository.save(userInfo.toSocialUser(provider)));
     }
 
     private String generateTempToken(User user) {
-        return jwtUtil.generateTempToken(user.getEmail());
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        return jwtUtil.generateTempToken(authentication);
     }
 
     private AuthLoginResponse generateLoginTokens(User user, boolean isNewUser) {
         
-        String accessToken = jwtUtil.generateAccessToken(user.getEmail());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        
+        String accessToken = jwtUtil.generateAccessToken(authentication);
+        String refreshToken = jwtUtil.generateRefreshToken(authentication);
         long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
         long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
         

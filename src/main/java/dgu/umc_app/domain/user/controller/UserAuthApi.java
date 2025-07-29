@@ -5,6 +5,7 @@ import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
 import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
+import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.entity.User;
@@ -101,4 +102,17 @@ public interface UserAuthApi {
         @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
     })
     UserResponse googleSignUp(@Valid @RequestBody GoogleSignUpRequest request, @LoginUser Long userId);
+
+    @Operation(
+        summary = "카카오 회원가입 완료",
+        description = "카카오 로그인 후 추가 정보 입력으로 회원가입 완료"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "회원가입 완료",
+                content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = UserResponse.class))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 이미 완료된 회원가입"),
+        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    UserResponse kakaoSignUp(@Valid @RequestBody KakaoSignUpRequest request, @LoginUser Long userId);
 } 
