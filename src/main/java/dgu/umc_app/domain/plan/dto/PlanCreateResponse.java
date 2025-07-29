@@ -3,6 +3,7 @@ package dgu.umc_app.domain.plan.dto;
 import dgu.umc_app.domain.plan.entity.Plan;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record PlanCreateResponse(
@@ -14,7 +15,7 @@ public record PlanCreateResponse(
         String title,
 
         @Schema(description = "일정 마감 기한")
-        LocalDateTime deadline,
+        LocalDate deadline,
 
         @Schema(description = "일정 완료 여부")
         boolean isDone

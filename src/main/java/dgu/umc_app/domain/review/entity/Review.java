@@ -1,6 +1,6 @@
 package dgu.umc_app.domain.review.entity;
 
-import dgu.umc_app.domain.ai_plan.entity.AiPlan;
+import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.global.common.BaseEntity;
 import jakarta.persistence.*;
