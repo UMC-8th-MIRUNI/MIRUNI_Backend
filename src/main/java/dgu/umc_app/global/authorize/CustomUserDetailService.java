@@ -20,6 +20,13 @@ public class CustomUserDetailService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
         
-            return new CustomUserDetails(user);
+        return new CustomUserDetails(user);
+    }
+    
+    public UserDetails loadUserById(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+        
+        return new CustomUserDetails(user);
     }
 } 
