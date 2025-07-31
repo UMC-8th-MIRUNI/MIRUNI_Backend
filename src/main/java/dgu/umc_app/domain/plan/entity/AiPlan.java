@@ -5,13 +5,14 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AiPlan extends BaseEntity {
 
     @Id
@@ -47,7 +48,11 @@ public class AiPlan extends BaseEntity {
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
+
     @Column(nullable = false)
     private boolean isDelayed = false;  // 미루기 여부
 
+    public LocalDateTime getTaskTime() {
+        return LocalDateTime.of(scheduledDate, startTime);
+    }
 }
