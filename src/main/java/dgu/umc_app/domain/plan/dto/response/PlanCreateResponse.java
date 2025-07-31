@@ -1,4 +1,4 @@
-package dgu.umc_app.domain.plan.dto;
+package dgu.umc_app.domain.plan.dto.response;
 
 import dgu.umc_app.domain.plan.entity.Plan;
 import io.swagger.v3.oas.annotations.media.Schema;

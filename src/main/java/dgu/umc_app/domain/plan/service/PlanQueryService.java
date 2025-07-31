@@ -1,10 +1,10 @@
 package dgu.umc_app.domain.plan.service;
 
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
-import dgu.umc_app.domain.plan.dto.CalendarDayResponse;
-import dgu.umc_app.domain.plan.dto.CalendarDayWrapperResponse;
-import dgu.umc_app.domain.plan.dto.CalendarMonthResponse;
-import dgu.umc_app.domain.plan.dto.DelayedPlanResponse;
+import dgu.umc_app.domain.plan.dto.response.CalendarDayResponse;
+import dgu.umc_app.domain.plan.dto.response.CalendarDayWrapperResponse;
+import dgu.umc_app.domain.plan.dto.response.CalendarMonthResponse;
+import dgu.umc_app.domain.plan.dto.response.DelayedPlanResponse;
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.repository.PlanRepository;

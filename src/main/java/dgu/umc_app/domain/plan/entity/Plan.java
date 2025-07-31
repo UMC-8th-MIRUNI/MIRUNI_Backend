@@ -42,5 +42,6 @@ public class Plan extends BaseEntity {
     private boolean isDelayed = false;  // 미루기 여부
 
     @Enumerated(EnumType.STRING)
+    @Column
     private Priority priority;
 }
