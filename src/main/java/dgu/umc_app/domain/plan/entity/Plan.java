@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -25,6 +26,10 @@ public class Plan extends BaseEntity {
 
     @Column(nullable = false, length = 50)
     private String title; // 일정 제목
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PlanCategory planCategory = PlanCategory.BASIC;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description; // 일정 내용

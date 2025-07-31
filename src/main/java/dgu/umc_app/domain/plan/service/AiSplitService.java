@@ -3,12 +3,10 @@ package dgu.umc_app.domain.plan.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dgu.umc_app.domain.plan.dto.response.PlanSplitResponse;
-import dgu.umc_app.domain.plan.entity.AiPlan;
-import dgu.umc_app.domain.plan.entity.Plan;
-import dgu.umc_app.domain.plan.entity.PlanType;
-import dgu.umc_app.domain.plan.entity.Priority;
+import dgu.umc_app.domain.plan.entity.*;
 import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
+import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +26,7 @@ public class AiSplitService {
     private final RestTemplate restTemplate;
     private final AiPlanRepository aiPlanRepository;
     private final ObjectMapper objectMapper;
+    private final PlanRepository planRepository;
 
     @Value("${perplexity.api-url}")
     private String apiUrl;
@@ -100,6 +99,10 @@ public class AiSplitService {
             // 4-3. Entity로 변환, 저장
             List<AiPlan> aiPlans = PlanSplitResponse.toEntities(splitResponses, savedPlan, planType, taskRange);
             aiPlanRepository.saveAll(aiPlans);
+
+            // 5. 쪼개진 상위 일정의 카테고리 "AI" 로 변경
+            savedPlan.setPlanCategory(PlanCategory.AI);
+            planRepository.save(savedPlan);
 
             return aiPlans;
 
