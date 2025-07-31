@@ -1,5 +1,6 @@
 package dgu.umc_app.domain.plan.entity;
 
+import dgu.umc_app.domain.plan.entity.Priority;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -29,14 +30,17 @@ public class Plan extends BaseEntity {
     private String description; // 일정 내용
 
     @Column(nullable = false)
-    private LocalDateTime executeDate; //실제 수행 시작날짜
+    private LocalDateTime deadline; // 마감 기한
 
     @Column(nullable = false)
-    private LocalDateTime deadline; // 마감 기한
+    private LocalDateTime executeDate; // 실제 수행 시작날짜
 
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
+    @Column(nullable = false)
+    private boolean isDelayed = false;  // 미루기 여부
 
-
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
 }

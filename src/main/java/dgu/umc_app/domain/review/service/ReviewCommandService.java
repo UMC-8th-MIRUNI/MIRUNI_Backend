@@ -1,8 +1,8 @@
 package dgu.umc_app.domain.review.service;
 
 
-import dgu.umc_app.domain.ai_plan.entity.AiPlan;
-import dgu.umc_app.domain.ai_plan.repository.AiPlanRepository;
+import dgu.umc_app.domain.plan.entity.AiPlan;
+import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.review.dto.request.ReviewCreateRequest;
@@ -10,7 +10,7 @@ import dgu.umc_app.domain.review.dto.response.ReviewCreateResponse;
 import dgu.umc_app.domain.review.entity.Review;
 import dgu.umc_app.domain.review.exception.ReviewErrorCode;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
-import dgu.umc_app.domain.ai_plan.exception.AiPlanErrorCode;
+import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.review.repository.ReviewRepository;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +28,6 @@ public class ReviewCommandService {
 
     /**
      * 회고 저장
-     * @param request 회고 작성 요청 DTO
-     * @return 저장된 회고 ID
      */
     @Transactional
     public ReviewCreateResponse saveReview(ReviewCreateRequest request) {
@@ -39,11 +37,17 @@ public class ReviewCommandService {
         Plan plan = planRepository.findById(request.planId())
                 .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
 
-        Review review = request.toEntity(aiPlan, plan);
-        Review saved = reviewRepository.save(review);
+        Review review = Review.builder()
+                .aiPlan(aiPlan)
+                .plan(plan)
+                .title(plan.getTitle())                   // Plan.title 복사
+                .description(aiPlan.getDescription())     // AiPlan.description 복사
+                .mood(request.mood())
+                .achievement((byte) request.achievement())
+                .memo(request.memo())
+                .build();
 
+        Review saved = reviewRepository.save(review);
         return ReviewCreateResponse.from(saved);
     }
-
-
 }

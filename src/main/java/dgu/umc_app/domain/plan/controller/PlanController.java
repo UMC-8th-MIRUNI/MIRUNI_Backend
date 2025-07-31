@@ -1,15 +1,17 @@
 package dgu.umc_app.domain.plan.controller;
 
-import dgu.umc_app.domain.plan.dto.PlanCreateRequest;
-import dgu.umc_app.domain.plan.dto.PlanCreateResponse;
+import dgu.umc_app.domain.plan.dto.*;
 import dgu.umc_app.domain.plan.service.PlanCommandService;
-import dgu.umc_app.domain.user.entity.User;
+import dgu.umc_app.domain.plan.service.PlanQueryService;
+import dgu.umc_app.global.authorize.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/schedule")
@@ -17,10 +19,37 @@ import org.springframework.web.bind.annotation.RestController;
 public class PlanController implements PlanApi{
 
     private final PlanCommandService planCommandService;
+    private final PlanQueryService planQueryService;
 
     @PostMapping
-    public PlanCreateResponse createPlan(@RequestBody @Valid PlanCreateRequest request) {
-        Long userId = 1L; // 테스트용으로 user 테이블에 실제 insert한 ID 값
-        return planCommandService.createPlan(request, userId);
+    public PlanCreateResponse createPlan(@RequestBody @Valid PlanCreateRequest request,
+                                         @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return planCommandService.createPlan(request, userDetails.getUser());
     }
+
+    @GetMapping
+    public List<CalendarMonthResponse> getSchedulesByMonth(
+            @RequestParam int year,
+            @RequestParam int month,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return planQueryService.getSchedulesByMonth(year, month, userDetails.getUser());
+    }
+
+    @GetMapping("/delayed")
+    public List<DelayedPlanResponse> getDelayedPlans(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return planQueryService.getDelayedPlans(userDetails.getUser());
+    }
+
+    @GetMapping("/day")
+    public CalendarDayWrapperResponse getSchedulesByDay(
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate date,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        return planQueryService.getSchedulesByDate(date, userDetails.getUser());
+    }
+
 }

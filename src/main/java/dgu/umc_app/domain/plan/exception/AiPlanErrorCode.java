@@ -1,4 +1,4 @@
-package dgu.umc_app.domain.ai_plan.exception;
+package dgu.umc_app.domain.plan.exception;
 
 import dgu.umc_app.global.exception.ErrorCode;
 import lombok.Getter;
