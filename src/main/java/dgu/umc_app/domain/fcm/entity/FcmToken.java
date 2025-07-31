@@ -32,4 +32,8 @@ public class FcmToken extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;  //한 사용자가 여러기기 사용가능 고려
 
+    // == fcmToken 비활성화 및 활성화 메서드 ==/
+    public void updateNotificationEnabled (boolean notificationEnabled) {
+        this.isActive = notificationEnabled;
+    }
 }
