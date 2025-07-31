@@ -23,6 +23,10 @@ public class Plan extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user; // 사용자 아이디 (FK)
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    PlanCategory planCategory;  // 일정 유형(BASIC or AI)
+
     @Column(nullable = false, length = 50)
     private String title; // 일정 제목
 
