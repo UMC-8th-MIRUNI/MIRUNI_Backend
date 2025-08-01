@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.plan.dto.request;
 
 import dgu.umc_app.domain.plan.entity.Plan;
+import dgu.umc_app.domain.plan.entity.PlanCategory;
 import dgu.umc_app.domain.plan.entity.Priority;
 import dgu.umc_app.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,6 +42,7 @@ public record PlanCreateRequest(
                 .executeDate(executeDate)
                 .priority(priority)
                 .isDone(false)
+                .planCategory(PlanCategory.BASIC)
                 .user(user)
                 .build();
     }

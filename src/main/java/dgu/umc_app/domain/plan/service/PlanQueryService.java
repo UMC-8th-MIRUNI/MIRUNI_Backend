@@ -1,5 +1,6 @@
 package dgu.umc_app.domain.plan.service;
 
+import dgu.umc_app.domain.plan.entity.PlanCategory;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.dto.response.CalendarDayResponse;
 import dgu.umc_app.domain.plan.dto.response.CalendarDayWrapperResponse;
@@ -35,7 +36,11 @@ public class PlanQueryService{
         LocalDateTime endDateTime = end.atTime(23, 59, 59);
 
         Long userId = user.getId();
-        List<Plan> plans = planRepository.findByUserIdAndExecuteDateBetween(userId, startDateTime, endDateTime);
+        List<Plan> plans = planRepository
+                .findByUserIdAndExecuteDateBetween(userId, startDateTime, endDateTime)
+                .stream()
+                .filter(plan -> plan.getPlanCategory() == PlanCategory.BASIC)
+                .toList();
         List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledDateBetween(userId, start, end);
 
         Map<LocalDate, List<Boolean>> doneMap = new HashMap<>();
@@ -66,9 +71,14 @@ public class PlanQueryService{
     public CalendarDayWrapperResponse getSchedulesByDate(LocalDate date, User user) {
         Long userId = user.getId();
 
-        LocalDateTime dateTime = date.atStartOfDay();
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
-        List<Plan> plans = planRepository.findByUserIdAndExecuteDate(userId, dateTime);
+        List<Plan> plans = planRepository
+                .findByUserIdAndExecuteDateBetween(userId, startOfDay, endOfDay)
+                .stream()
+                .filter(plan -> plan.getPlanCategory() == PlanCategory.BASIC)
+                .toList();
         List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledDate(userId, date);
 
         List<CalendarDayResponse> result = new ArrayList<>();

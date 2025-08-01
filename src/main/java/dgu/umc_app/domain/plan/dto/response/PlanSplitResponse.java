@@ -71,6 +71,7 @@ public record   PlanSplitResponse(
                         .scheduledDate(response.scheduledDate())
                         .startTime(response.startTime())
                         .endTime(response.endTime())
+                        .priority(parentPlan.getPriority())
                         .build()
                 ).toList();
     }

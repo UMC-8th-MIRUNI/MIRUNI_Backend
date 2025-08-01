@@ -29,7 +29,7 @@ public class Plan extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PlanCategory planCategory = PlanCategory.BASIC;
+    private PlanCategory planCategory;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description; // 일정 내용

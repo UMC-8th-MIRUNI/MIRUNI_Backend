@@ -28,7 +28,10 @@ public record CalendarDayResponse (
         LocalTime endTime,
 
         @Schema(description = "각 일정의 우선순위")
-        Priority priority
+        Priority priority,
+
+        @Schema(description = "일정 유형(개수 세기 위함)")
+        String category
 ){
 
     public static CalendarDayResponse from(Plan plan) {
@@ -39,7 +42,8 @@ public record CalendarDayResponse (
                 "NORMAL",
                 plan.getExecuteDate().toLocalTime(),
                 plan.getDeadline().toLocalTime(),
-                plan.getPriority()
+                plan.getPriority(),
+                "BASIC"
         );
     }
 
@@ -51,7 +55,8 @@ public record CalendarDayResponse (
                 "AI_SPLIT",
                 aiPlan.getStartTime(),
                 aiPlan.getEndTime(),
-                aiPlan.getPriority()
+                aiPlan.getPriority(),
+                "AI"
         );
     }
 }

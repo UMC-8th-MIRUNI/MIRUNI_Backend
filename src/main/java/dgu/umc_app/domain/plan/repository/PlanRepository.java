@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface PlanRepository extends JpaRepository<Plan, Long> {
     Optional<Plan> findByIdAndUserId(Long id, Long userId);
     List<Plan> findByUserIdAndExecuteDateBetween(Long userId, LocalDateTime start, LocalDateTime end); //월별 조회
-    List<Plan> findByUserIdAndExecuteDate(Long userId, LocalDateTime executeDate); //일자별 조회
+//    List<Plan> findByUserIdAndExecuteDate(Long userId, LocalDateTime executeDate); //일자별 조회
     List<Plan> findByUserIdAndIsDelayedTrue(Long userId);   //미룬 일정 조회
 
     List<Plan> findByIsDoneFalse();
