@@ -12,6 +12,7 @@ import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.global.exception.BaseException;
+import jakarta.transaction.Transactional;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -151,6 +152,7 @@ public class NotificationScheduleService {
     }
 
     //앱시작시 미완료 task들 재스케줄링
+    @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void rescheduleExistingPlans(){
         log.info("기존 Plan들 재스케줄링 시작");
