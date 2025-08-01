@@ -12,6 +12,7 @@ import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.global.exception.BaseException;
+import jakarta.transaction.Transactional;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -150,6 +151,7 @@ public class NotificationScheduleService {
         log.info("알림 스케줄 취소 완료: type = {}, targetId = {}", NotificationType.AI_PLAN, aiplan.getId());
     }
 
+    @Transactional
     //앱시작시 미완료 task들 재스케줄링
     @EventListener(ApplicationReadyEvent.class)
     public void rescheduleExistingPlans(){

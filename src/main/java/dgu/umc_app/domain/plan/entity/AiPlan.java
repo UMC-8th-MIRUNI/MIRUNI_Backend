@@ -27,8 +27,15 @@ public class AiPlan extends BaseEntity {
     private Long stepOrder; // 실행 순서
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private Priority priority;  // 우선순위
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PlanType planType;  // 작업 유형
+
+    @Column(nullable = false)
+    private String taskRange;   // 작업 범위
 
     @Column(nullable = false, length = 50)
     private String description; // 실행 내용
