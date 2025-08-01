@@ -1,7 +1,7 @@
 package dgu.umc_app.domain.fcm.service;
 
 import com.google.firebase.messaging.FirebaseMessaging;
-import dgu.umc_app.domain.ai_plan.repository.AiPlanRepository;
+import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.fcm.dto.request.RegisterFcmTokenRequestDto;
 import dgu.umc_app.domain.fcm.dto.request.UpdateFcmNotificationRequestDto;
 import dgu.umc_app.domain.fcm.dto.response.RegisterTokenResponseDto;

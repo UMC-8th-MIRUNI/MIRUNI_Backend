@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.review.controller;
 
 import dgu.umc_app.domain.review.dto.request.ReviewCreateRequest;
+import dgu.umc_app.domain.review.dto.request.ReviewUpdateRequest;
 import dgu.umc_app.domain.review.dto.response.ReviewCountByDateResponse;
 import dgu.umc_app.domain.review.dto.response.ReviewCreateResponse;
 import dgu.umc_app.domain.review.dto.response.ReviewDetailResponse;
@@ -24,14 +25,15 @@ public interface ReviewApi {
 
     @Operation(summary = "회고 작성 후 저장 API",
             description = "특정 일정에 대한 회고(기분, 성취도, 만족도, 메모 등)를 작성하고 저장합니다.")
-    ReviewCreateResponse createReview(@RequestBody @Valid ReviewCreateRequest request);
+    ReviewCreateResponse createReview(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @RequestBody @Valid ReviewCreateRequest request);
 
     @Operation(summary = "날짜별 회고 목록 갯수 조회 API",
             description = "날짜에 작성된 회고의 갯수 목록을 날짜순으로 반환합니다.")
     List<ReviewCountByDateResponse> getReviewCountByDate(@AuthenticationPrincipal CustomUserDetails userDetails);
 
     @Operation(summary = "단일 회고 상세 조회 API", description = "작성된 회고의 상세 정보를 조회합니다.")
-    ReviewDetailResponse getReview(@PathVariable Long reviewId);
+    ReviewDetailResponse getReview(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long reviewId);
 
     @Operation(summary = "특정 날짜의 회고 목록 조회 API", description = "현재 로그인한 사용자의 특정 날짜 회고 목록(날짜, 제목, 부제목)을 최신순으로 조회합니다.")
     List<ReviewListResponse> getReviewListByDate(
@@ -39,4 +41,14 @@ public interface ReviewApi {
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     );
 
+    @Operation(summary = "특정 회고 날짜 검색 API", description = "검색된 날짜에 작성된 회고의 갯수를 조회합니다.")
+    ReviewCountByDateResponse getReviewSearch(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    );
+
+    @Operation(summary = "회고 수정 API", description = "회고의 내용을 수정합니다.(기분, 성취도, 메모)")
+    public ReviewDetailResponse updateReview(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                             @PathVariable Long reviewId,
+                                             @RequestBody @Valid ReviewUpdateRequest request);
 }
