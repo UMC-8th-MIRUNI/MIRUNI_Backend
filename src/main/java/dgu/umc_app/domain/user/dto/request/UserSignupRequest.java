@@ -49,7 +49,7 @@ public record UserSignupRequest(
                         .peanutCount(0)
                         .popupAlarmInterval(60)
                         .bannerAlarmInterval(60)
-                        .userPreference(userPreference != null ? userPreference : "")
+                        .userPreference(userPreference)
                         .oauthProvider(null)
                         .status(Status.ACTIVE)
                         .build();
