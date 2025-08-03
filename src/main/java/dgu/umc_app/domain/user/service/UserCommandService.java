@@ -64,44 +64,17 @@ public class UserCommandService {
     public AuthLoginResponse loginWithGoogle(GoogleLoginRequest request) {
         
         AuthUserInfoDto googleUserInfo = verifyGoogleIdToken(request.googleIdToken());
-        User user = findOrCreateUser(googleUserInfo, OauthProvider.GOOGLE);
-        boolean isNewUser = userRepository.findByEmail(googleUserInfo.email()).isEmpty();
-
-        if (user.isDeleted()) {
-            user.restore();
-        }
-
-        if (user.isPending()) {
-            String tempToken = generateTempToken(user);
-            return AuthLoginResponse.signUpNeeded(tempToken, isNewUser);
-        }
-
-        return generateLoginTokens(user, isNewUser);
+        return processSocialLogin(googleUserInfo, OauthProvider.GOOGLE);
     }
 
     public AuthLoginResponse loginWithKakao(KakaoLoginRequest request) {
         AuthUserInfoDto kakaoUserInfo = verifyKakaoAccessToken(request.kakaoAccessToken());
-        
-        User user = findOrCreateUser(kakaoUserInfo, OauthProvider.KAKAO);
-        boolean isNewUser = userRepository.findByEmail(kakaoUserInfo.email()).isEmpty();
-
-        if (user.isDeleted()) {
-            user.restore();
-        }
-
-        if (user.isPending()) {
-            String tempToken = generateTempToken(user);
-            return AuthLoginResponse.signUpNeeded(tempToken, isNewUser);
-        }
-
-        return generateLoginTokens(user, isNewUser);
+        return processSocialLogin(kakaoUserInfo, OauthProvider.KAKAO);
     }
 
     private UserResponse issueTokenResponse(User user) {
-        // Authentication 객체를 생성하여 토큰 생성
-        CustomUserDetails userDetails = new CustomUserDetails(user);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
+
+        Authentication authentication = createAuthentication(user);
         
         String accessToken = jwtUtil.generateAccessToken(authentication);
         String refreshToken = jwtUtil.generateRefreshToken(authentication);
@@ -172,46 +145,57 @@ public class UserCommandService {
     }
 
     public UserResponse googleSignUp(GoogleSignUpRequest request, Long userId) {
-        
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
-        
-        userValidator.checkPendingUser(user.getStatus());
-
-        user.updateGoogleSignUpInfo(
-            request.name(),
-            request.birthday(),
-            request.phoneNumber(),
-            request.agreedPrivacyPolicy(),
-            request.nickname()
-        );
-
-        user.activate();
-
-        User savedUser = userRepository.save(user);
-
-        return issueTokenResponse(savedUser);
+        return processSocialSignUp(userId, user -> {
+            user.updateGoogleSignUpInfo(
+                request.name(),
+                request.birthday(),
+                request.phoneNumber(),
+                request.agreedPrivacyPolicy(),
+                request.nickname()
+            );
+        });
     }
 
     public UserResponse kakaoSignUp(KakaoSignUpRequest request, Long userId) {
-        
+        return processSocialSignUp(userId, user -> {
+            user.updateKakaoSignUpInfo(
+                request.name(),
+                request.birthday(),
+                request.phoneNumber(),
+                request.agreedPrivacyPolicy(),
+                request.nickname()
+            );
+        });
+    }
+
+    // 소셜 로그인 공통 처리 로직
+    private AuthLoginResponse processSocialLogin(AuthUserInfoDto userInfo, OauthProvider provider) {
+        User user = findOrCreateUser(userInfo, provider);
+        boolean isNewUser = userRepository.findByEmail(userInfo.email()).isEmpty();
+
+        if (user.isDeleted()) {
+            user.restore();
+        }
+
+        if (user.isPending()) {
+            String tempToken = generateTempToken(user);
+            return AuthLoginResponse.signUpNeeded(tempToken, isNewUser);
+        }
+
+        return generateLoginTokens(user, isNewUser);
+    }
+
+    // 소셜 회원가입 공통 처리 로직
+    private UserResponse processSocialSignUp(Long userId, java.util.function.Consumer<User> updateUserInfo) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
         
         userValidator.checkPendingUser(user.getStatus());
 
-        user.updateKakaoSignUpInfo(
-            request.name(),
-            request.birthday(),
-            request.phoneNumber(),
-            request.agreedPrivacyPolicy(),
-            request.nickname()
-        );
-
+        updateUserInfo.accept(user);
         user.activate();
 
         User savedUser = userRepository.save(user);
-
         return issueTokenResponse(savedUser);
     }
 
@@ -221,17 +205,13 @@ public class UserCommandService {
     }
 
     private String generateTempToken(User user) {
-        CustomUserDetails userDetails = new CustomUserDetails(user);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
+        Authentication authentication = createAuthentication(user);
         return jwtUtil.generateTempToken(authentication);
     }
 
     private AuthLoginResponse generateLoginTokens(User user, boolean isNewUser) {
         
-        CustomUserDetails userDetails = new CustomUserDetails(user);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
+        Authentication authentication = createAuthentication(user);
         
         String accessToken = jwtUtil.generateAccessToken(authentication);
         String refreshToken = jwtUtil.generateRefreshToken(authentication);
@@ -239,5 +219,11 @@ public class UserCommandService {
         long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
         
         return AuthLoginResponse.login(accessToken, refreshToken, accessTokenExp, refreshTokenExp, isNewUser);
+    }
+
+    private Authentication createAuthentication(User user) {
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+        return new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
     }
 }
