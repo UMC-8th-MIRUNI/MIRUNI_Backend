@@ -7,6 +7,7 @@ import lombok.Builder;
 public record UserResponseDto(
         Long id,
         String name,
+        String birthday,
         String email,
         String phoneNumber,
         String nickname,
@@ -17,6 +18,7 @@ public record UserResponseDto(
         return UserResponseDto.builder()
                 .id(user.getId())
                 .name(user.getName())
+                .birthday(user.getBirthday())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .nickname(user.getNickname())

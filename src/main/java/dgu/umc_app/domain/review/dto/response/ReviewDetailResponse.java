@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.review.dto.response;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import dgu.umc_app.domain.review.entity.Mood;
 import dgu.umc_app.domain.review.entity.Review;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,17 +28,18 @@ public record ReviewDetailResponse(
         @Schema(description = "회고 제목")
         String title,
 
+        @Schema(description = "회고 부제목")
+        String description,
+
         @Schema(description = "성취도")
         byte achievement,
-
-        @Schema(description = "만족도")
-        byte satisfaction,
 
         @Schema(description = "회고 메모")
         String memo,
 
         @Schema(description = "작성일시")
-        LocalDate createdAt
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        LocalDateTime createdAt
 
 ) {
     public static ReviewDetailResponse from(Review review) {
@@ -47,10 +49,10 @@ public record ReviewDetailResponse(
                 .planId(review.getPlan().getId())
                 .mood(review.getMood())
                 .title(review.getTitle())
+                .description(review.getDescription())
                 .achievement(review.getAchievement())
-                .satisfaction(review.getSatisfaction())
                 .memo(review.getMemo())
-                .createdAt(review.getCreatedAt().toLocalDate())
+                .createdAt(review.getCreatedAt())
                 .build();
     }
 }

@@ -2,6 +2,7 @@ package dgu.umc_app.domain.question.controller;
 
 import dgu.umc_app.domain.question.dto.request.CreateUserQuestionRequestDto;
 import dgu.umc_app.domain.question.dto.response.CreateUserQuestionResponseDto;
+import dgu.umc_app.global.authorize.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -39,6 +40,6 @@ public interface UserQuestionApi {
             )
 
     ))
-    public CreateUserQuestionResponseDto createQuestion(
+    public CreateUserQuestionResponseDto createQuestion(@LoginUser Long userId,
             @Valid @RequestBody CreateUserQuestionRequestDto request);
 }

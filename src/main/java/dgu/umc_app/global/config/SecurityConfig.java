@@ -12,12 +12,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final WebConfig webConfig;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,8 +34,11 @@ public class SecurityConfig {
                 // form login 비활성화
                 .formLogin(AbstractHttpConfigurer::disable)
 
-                //http Basic 인증 비활성화
+                // http Basic 인증 비활성화
                 .httpBasic(AbstractHttpConfigurer::disable)
+
+                // cors 설정 추가
+                .addFilterBefore(webConfig.corsFilter(), UsernamePasswordAuthenticationFilter.class)
 
                 // JWT 필터 추가
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
@@ -48,7 +53,6 @@ public class SecurityConfig {
                                 "/api/signup/duplicate",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api/schedule",     // jwt 완료 후 지울 예정
                                 "/actuator/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")

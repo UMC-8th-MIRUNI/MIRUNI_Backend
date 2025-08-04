@@ -1,7 +1,7 @@
 package dgu.umc_app.domain.review.dto.response;
 
-import java.time.LocalDate;
-
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import dgu.umc_app.domain.review.entity.Review;
 import lombok.Builder;
 
@@ -9,15 +9,16 @@ import lombok.Builder;
 public record ReviewListResponse(
         Long reviewId,
         String title,
-        String memo,
-        LocalDate createdAt
+        String description,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+        LocalDateTime createdAt
 ) {
     public static ReviewListResponse from(Review review) {
         return ReviewListResponse.builder()
                 .reviewId(review.getId())
                 .title(review.getTitle())
-                .memo(review.getMemo())
-                .createdAt(review.getCreatedAt().toLocalDate())
+                .description(review.getDescription())
+                .createdAt(review.getCreatedAt())
                 .build();
     }
 }
