@@ -28,8 +28,6 @@ public record AuthUserInfoDto(
                 .lastPasswordChanged(LocalDateTime.now())
                 .agreedPrivacyPolicy(true)
                 .peanutCount(0)
-                .popupAlarmInterval(60)
-                .bannerAlarmInterval(60)
                 .userPreference("")
                 .oauthProvider(provider)
                 .status(Status.PENDING) 
