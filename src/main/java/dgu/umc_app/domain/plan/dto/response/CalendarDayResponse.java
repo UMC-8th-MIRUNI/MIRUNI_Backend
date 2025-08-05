@@ -1,4 +1,4 @@
-package dgu.umc_app.domain.plan.dto;
+package dgu.umc_app.domain.plan.dto.response;
 
 import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.entity.Priority;
@@ -12,7 +12,7 @@ public record CalendarDayResponse (
         @Schema(description = "일정 ID")
         Long id,
 
-        @Schema(description = "AI 쪼개기 일정일 경우 상위일정 제목")
+        @Schema(description = "AI 쪼개기 일정일 경우 상위 일정 제목")
         String parentTitle,
 
         @Schema(description = "일반 일정일 경우 상위일정 제목")
@@ -36,7 +36,7 @@ public record CalendarDayResponse (
                 plan.getId(),
                 null,
                 plan.getTitle(),
-                plan.getExecuteDate().toLocalTime(),
+                plan.getScheduledStart().toLocalTime(),
                 plan.getDeadline().toLocalTime(),
                 plan.getPriority(),
                 "BASIC"
@@ -48,8 +48,8 @@ public record CalendarDayResponse (
                 aiPlan.getId(),
                 aiPlan.getPlan().getTitle(),
                 aiPlan.getDescription(),
-                aiPlan.getStartTime(),
-                aiPlan.getEndTime(),
+                aiPlan.getScheduledStart().toLocalTime(),
+                aiPlan.getScheduledEnd().toLocalTime(),
                 aiPlan.getPriority(),
                 "AI"
         );

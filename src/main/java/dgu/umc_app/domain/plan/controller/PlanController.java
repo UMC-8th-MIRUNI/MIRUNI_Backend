@@ -1,6 +1,8 @@
 package dgu.umc_app.domain.plan.controller;
 
-import dgu.umc_app.domain.plan.dto.*;
+import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
+import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
+import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.service.PlanCommandService;
 import dgu.umc_app.domain.plan.service.PlanQueryService;
 import dgu.umc_app.global.authorize.CustomUserDetails;
@@ -9,10 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/schedule")
 @RequiredArgsConstructor
@@ -50,6 +54,16 @@ public class PlanController implements PlanApi{
             @AuthenticationPrincipal CustomUserDetails userDetails
     ){
         return planQueryService.getSchedulesByDate(date, userDetails.getUser());
+    }
+
+    @PostMapping("/{planId}/split")
+    public List<PlanSplitResponse> splitPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanSplitRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        log.info("현재 로그인된 사용자 ID: {}", userDetails.getUser().getId()); // 이 로그로 확인
+        return planCommandService.splitPlan(planId, request, userDetails.getUser());
     }
 
 }

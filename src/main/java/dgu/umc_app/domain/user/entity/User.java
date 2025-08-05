@@ -27,6 +27,9 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String email;
 
+    @Column(nullable = true, length = 20)
+    private String birthday;
+
     @Column(nullable = false, length = 255)
     private String phoneNumber;
 
@@ -58,4 +61,54 @@ public class User extends BaseEntity {
 
     @Column(length = 10)
     private Language language;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status = Status.ACTIVE;
+
+
+    // == User 상태 변경 메서드들 == //
+    public void activate() {
+        this.status = Status.ACTIVE;
+    }
+
+    public void setPending() {
+        this.status = Status.PENDING;
+    }
+
+    public void delete() {
+        this.status = Status.DELETED;
+    }
+
+    public void restore() {
+        this.status = Status.ACTIVE;
+    }
+
+    public boolean isActive() {
+        return this.status == Status.ACTIVE;
+    }
+
+    public boolean isPending() {
+        return this.status == Status.PENDING;
+    }
+
+    public boolean isDeleted() {
+        return this.status == Status.DELETED;
+    }
+
+    public void updateGoogleSignUpInfo(String name, String birthday, String phoneNumber, Boolean agreedPrivacyPolicy, String nickname) {
+        this.name = name;
+        this.birthday = birthday;
+        this.phoneNumber = phoneNumber;
+        this.agreedPrivacyPolicy = agreedPrivacyPolicy != null ? agreedPrivacyPolicy : false;
+        this.nickname = nickname;
+    }
+
+    public void updateKakaoSignUpInfo(String name, String birthday, String phoneNumber, Boolean agreedPrivacyPolicy, String nickname) {
+        this.name = name;
+        this.birthday = birthday;
+        this.phoneNumber = phoneNumber;
+        this.agreedPrivacyPolicy = agreedPrivacyPolicy != null ? agreedPrivacyPolicy : false;
+        this.nickname = nickname;
+    }
 }

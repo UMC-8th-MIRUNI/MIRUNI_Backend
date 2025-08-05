@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -34,11 +35,12 @@ public class ReviewQueryService {
     /**
      * 단일 회고 상세 조회
      */
-    public ReviewDetailResponse getReview(Long reviewId) {
-        Review review = reviewRepository.findById(reviewId)
+    public ReviewDetailResponse getReview(Long userId, Long reviewId) {
+        Review review = reviewRepository.findByIdAndUserId(reviewId, userId)
                 .orElseThrow(() -> BaseException.type(ReviewErrorCode.REVIEW_NOT_FOUND));
         return ReviewDetailResponse.from(review);
     }
+
 
     /**
      * 특정 날짜 회고 목록 조회 (최신순 정렬)
@@ -55,6 +57,17 @@ public class ReviewQueryService {
         return reviews.stream()
                 .map(ReviewListResponse::from)
                 .toList();
+    }
+
+    /**
+     * 특정 날짜 검색으로 인한 회고 블럭 조회
+     */
+    public ReviewCountByDateResponse getReviewSearch(Long userId, LocalDate date) {
+        ReviewCountByDateResponse result = reviewRepository.countByUserIdAndDate(userId, Date.valueOf(date));
+        if (result == null) {
+            throw BaseException.type(ReviewErrorCode.REVIEW_NOT_FOUND_BY_DATE);
+        }
+        return result;
     }
 
 }

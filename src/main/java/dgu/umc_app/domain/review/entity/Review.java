@@ -52,4 +52,10 @@ public class Review extends BaseEntity {
         this.achievement = achievement;
         this.memo = memo;
     }
+
+    public void update(Mood mood, byte achievement, String memo) {
+        this.mood = mood;
+        this.achievement = achievement;
+        this.memo = memo;
+    }
 }

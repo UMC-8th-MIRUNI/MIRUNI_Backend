@@ -36,8 +36,8 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
         }
 
         Object principal = authentication.getPrincipal();
-
-        // principal 이 String(email)라서 email -> userId 조회
+        
+        // principal이 CustomUserDetails 객체이므로 바로 userId 반환
         if (principal instanceof CustomUserDetails userDetails) {
             return userDetails.getId();
         }

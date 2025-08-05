@@ -12,12 +12,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final WebConfig webConfig;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,8 +34,11 @@ public class SecurityConfig {
                 // form login 비활성화
                 .formLogin(AbstractHttpConfigurer::disable)
 
-                //http Basic 인증 비활성화
+                // http Basic 인증 비활성화
                 .httpBasic(AbstractHttpConfigurer::disable)
+
+                // cors 설정 추가
+                .addFilterBefore(webConfig.corsFilter(), UsernamePasswordAuthenticationFilter.class)
 
                 // JWT 필터 추가
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
