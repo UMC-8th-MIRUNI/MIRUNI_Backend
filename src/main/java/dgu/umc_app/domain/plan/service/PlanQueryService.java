@@ -1,11 +1,8 @@
 package dgu.umc_app.domain.plan.service;
 
+import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.entity.PlanCategory;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
-import dgu.umc_app.domain.plan.dto.response.CalendarDayResponse;
-import dgu.umc_app.domain.plan.dto.response.CalendarDayWrapperResponse;
-import dgu.umc_app.domain.plan.dto.response.CalendarMonthResponse;
-import dgu.umc_app.domain.plan.dto.response.DelayedPlanResponse;
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
@@ -110,6 +107,22 @@ public class PlanQueryService{
 
         return result;
     }
+
+    public List<UnfinishedPlanResponse> getUnfinishedPlans(User user) {
+        Long userId = user.getId();
+
+        List<Plan> unfinishedPlans = planRepository.findByUserIdAndIsDoneFalseAndIsDelayedFalse(userId);
+        List<AiPlan> unfinishedAiPlans = aiPlanRepository.findByPlan_UserIdAndIsDoneFalseAndIsDelayedFalse(userId);
+
+        List<UnfinishedPlanResponse> result = new ArrayList<>();
+
+        unfinishedPlans.forEach(plan -> result.add(UnfinishedPlanResponse.from(plan)));
+        unfinishedAiPlans.forEach(aiPlan -> result.add(UnfinishedPlanResponse.from(aiPlan)));
+
+        return result;
+    }
+
+
 
 }
 
