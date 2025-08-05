@@ -34,6 +34,6 @@ public class FcmToken extends BaseEntity {
 
     // == fcmToken 비활성화 및 활성화 메서드 ==/
     public void updateNotificationEnabled (boolean notificationEnabled) {
-        this.isActive = notificationEnabled;
+        this.notificationEnabled = notificationEnabled;
     }
 }
