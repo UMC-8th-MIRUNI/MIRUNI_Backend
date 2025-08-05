@@ -61,7 +61,7 @@ public class PlanCommandService {
                 plan
         );
 
-        aiPlanRepository.saveAll(aiPlans);
+//        aiPlanRepository.saveAll(aiPlans);
 
         return PlanSplitResponse.fromList(aiPlans);
     }

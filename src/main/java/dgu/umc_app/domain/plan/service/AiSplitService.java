@@ -101,7 +101,7 @@ public class AiSplitService {
             aiPlanRepository.saveAll(aiPlans);
 
             // 5. 쪼개진 상위 일정의 카테고리 "AI" 로 변경
-            savedPlan.setPlanCategory(PlanCategory.AI);
+            savedPlan.updateCategory();
             planRepository.save(savedPlan);
 
             return aiPlans;

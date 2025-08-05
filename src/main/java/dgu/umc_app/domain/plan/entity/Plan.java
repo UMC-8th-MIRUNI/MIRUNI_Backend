@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -49,4 +48,8 @@ public class Plan extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column
     private Priority priority;
+
+    public void updateCategory(){
+        this.planCategory = PlanCategory.AI;
+    }
 }
