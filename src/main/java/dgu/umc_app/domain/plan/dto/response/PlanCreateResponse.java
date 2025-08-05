@@ -1,4 +1,4 @@
-package dgu.umc_app.domain.plan.dto;
+package dgu.umc_app.domain.plan.dto.response;
 
 import dgu.umc_app.domain.plan.entity.Plan;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,6 +16,9 @@ public record PlanCreateResponse(
         @Schema(description = "일정 마감 기한")
         LocalDateTime deadline,
 
+        @Schema(description = "일정 수행 시작날짜")
+        LocalDateTime scheduledStart,
+
         @Schema(description = "일정 완료 여부")
         boolean isDone
 
@@ -25,6 +28,7 @@ public record PlanCreateResponse(
                 plan.getId(),
                 plan.getTitle(),
                 plan.getDeadline(),
+                plan.getScheduledStart(),
                 plan.isDone()
         );
     }

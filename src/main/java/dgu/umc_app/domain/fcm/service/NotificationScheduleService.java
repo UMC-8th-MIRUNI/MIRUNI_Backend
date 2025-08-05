@@ -12,6 +12,7 @@ import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.global.exception.BaseException;
+import jakarta.transaction.Transactional;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +58,7 @@ public class NotificationScheduleService {
                 .type(NotificationType.PLAN)
                 .targetId(plan.getId())
                 .reminderType(ReminderType.ONE_HOUR_BEFORE)
-                .notificationTime(plan.getExecuteDate().minusHours(1))
+                .notificationTime(plan.getScheduledStart().minusHours(1))
                 .build());
 
         scheduleNotificationAtTime(NotificationTask.builder()
@@ -67,11 +68,11 @@ public class NotificationScheduleService {
                 .type(NotificationType.PLAN)
                 .targetId(plan.getId())
                 .reminderType(ReminderType.TEN_MINUTES_BEFORE)
-                .notificationTime(plan.getExecuteDate().minusMinutes(10))
+                .notificationTime(plan.getScheduledStart().minusMinutes(10))
                 .build());
 
 
-        log.info("Plan 알림 스케줄 등록 완료: planId = {}, startTime = {}", plan.getId(), plan.getExecuteDate());
+        log.info("Plan 알림 스케줄 등록 완료: planId = {}, startTime = {}", plan.getId(), plan.getScheduledStart());
     }
 
     //AIPlan 알림 등록
@@ -150,6 +151,7 @@ public class NotificationScheduleService {
         log.info("알림 스케줄 취소 완료: type = {}, targetId = {}", NotificationType.AI_PLAN, aiplan.getId());
     }
 
+    @Transactional
     //앱시작시 미완료 task들 재스케줄링
     @EventListener(ApplicationReadyEvent.class)
     public void rescheduleExistingPlans(){

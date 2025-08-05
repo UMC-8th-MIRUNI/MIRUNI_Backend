@@ -4,7 +4,6 @@ import dgu.umc_app.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -27,32 +26,35 @@ public class AiPlan extends BaseEntity {
     private Long stepOrder; // 실행 순서
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private Priority priority;  // 우선순위
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PlanType planType;  // 작업 유형
+
+    @Column(nullable = false)
+    private String taskRange;   // 작업 범위
 
     @Column(nullable = false, length = 50)
     private String description; // 실행 내용
 
     @Column(nullable = false)
-    private Long expectedDuration; // 예상 실행 시간
+    private Long expectedDuration; // 예상 소요 시간
 
     @Column(nullable = false)
-    private LocalDate scheduledDate; // 진행 날짜(ex:2025-05-01)
+    private LocalDateTime scheduledStart; // 수행시작 예정 날짜&시간(ex: 2025-05-01T21:00:00)
 
     @Column(nullable = false)
-    private LocalTime startTime;    // 시작 시간(ex: 18:00)
+    private LocalDateTime scheduledEnd; // 수행끝 예정 날짜&시간(ex: 2025-05-01T22:00:00)
 
     @Column(nullable = false)
-    private LocalTime endTime;      // 종료 시간(ex: 19:00)
-
-    @Column(nullable = false)
-    private boolean isDone; // 완료 체크
-
+    private boolean isDone; // 완료 여부
 
     @Column(nullable = false)
     private boolean isDelayed = false;  // 미루기 여부
 
     public LocalDateTime getTaskTime() {
-        return LocalDateTime.of(scheduledDate, startTime);
+        return LocalDateTime.of(scheduledStart.toLocalDate(), scheduledStart.toLocalTime());
     }
 }

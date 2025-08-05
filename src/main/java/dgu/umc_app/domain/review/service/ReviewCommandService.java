@@ -10,7 +10,6 @@ import dgu.umc_app.domain.review.dto.request.ReviewUpdateRequest;
 import dgu.umc_app.domain.review.dto.response.ReviewCreateResponse;
 import dgu.umc_app.domain.review.dto.response.ReviewDetailResponse;
 import dgu.umc_app.domain.review.entity.Review;
-import dgu.umc_app.domain.review.exception.ReviewErrorCode;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
 import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.review.repository.ReviewRepository;
