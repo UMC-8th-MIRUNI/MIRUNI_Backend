@@ -14,6 +14,6 @@ public record PlanSplitRequest (
         @Schema(description = "일정범위")
         String taskRange,
 
-        @Schema(description = "세부 요청사항(프롬프트 활용)")
+        @Schema(description = "세부 요청사항")
         String detailRequest
 ) { }

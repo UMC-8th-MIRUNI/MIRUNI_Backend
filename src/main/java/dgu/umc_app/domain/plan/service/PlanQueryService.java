@@ -37,30 +37,30 @@ public class PlanQueryService{
 
         Long userId = user.getId();
         List<Plan> plans = planRepository
-                .findByUserIdAndExecuteDateBetween(userId, startDateTime, endDateTime)
+                .findByUserIdAndScheduledStartBetween(userId, startDateTime, endDateTime)
                 .stream()
                 .filter(plan -> plan.getPlanCategory() == PlanCategory.BASIC)
                 .toList();
-        List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledDateBetween(userId, start, end);
+        List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledStartBetween(userId, startDateTime, endDateTime);
 
         Map<LocalDate, List<Boolean>> doneMap = new HashMap<>();
 
         for (Plan plan : plans) {
-            LocalDateTime executeDate = plan.getExecuteDate();
-            doneMap.computeIfAbsent(executeDate.toLocalDate(), k -> new ArrayList<>())
+            LocalDateTime scheduledStart = plan.getScheduledStart();
+            doneMap.computeIfAbsent(scheduledStart.toLocalDate(), k -> new ArrayList<>())
                     .add(plan.isDone());
         }
 
         for (AiPlan aiPlan : aiPlans) {
-            LocalDate scheduleDate = aiPlan.getScheduledDate();
-            doneMap.computeIfAbsent(scheduleDate, k -> new ArrayList<>())
+            LocalDateTime scheduledStart = aiPlan.getScheduledStart();
+            doneMap.computeIfAbsent(scheduledStart.toLocalDate(), k -> new ArrayList<>())
                     .add(aiPlan.isDone());
         }
 
         return doneMap.entrySet().stream()
                 .map(entry -> new CalendarMonthResponse(
                         entry.getKey(),
-                        entry.getValue().size(),
+                        (int) entry.getValue().stream().filter(done -> !done).count(),  // 안 한 일정 갯수로 변경
                         entry.getValue().stream().allMatch(Boolean::booleanValue)
                 ))
                 .sorted(Comparator.comparing(CalendarMonthResponse::getDate))
@@ -75,11 +75,11 @@ public class PlanQueryService{
         LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
         List<Plan> plans = planRepository
-                .findByUserIdAndExecuteDateBetween(userId, startOfDay, endOfDay)
+                .findByUserIdAndScheduledStartBetween(userId, startOfDay, endOfDay)
                 .stream()
                 .filter(plan -> plan.getPlanCategory() == PlanCategory.BASIC)
                 .toList();
-        List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledDate(userId, date);
+        List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledStartBetween(userId, startOfDay, endOfDay);
 
         List<CalendarDayResponse> result = new ArrayList<>();
 

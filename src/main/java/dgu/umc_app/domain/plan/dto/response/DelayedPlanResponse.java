@@ -8,13 +8,13 @@ import java.time.LocalDateTime;
 public record DelayedPlanResponse (
         Long id,
         String title,
-        LocalDateTime executeDate
+        LocalDateTime scheduledStart
 ){
     public static DelayedPlanResponse from(Plan plan) {
         return new DelayedPlanResponse(
                 plan.getId(),
                 plan.getTitle(),
-                plan.getExecuteDate()
+                plan.getScheduledStart()
         );
     }
 
@@ -22,7 +22,7 @@ public record DelayedPlanResponse (
         return new DelayedPlanResponse(
                 aiPlan.getId(),
                 aiPlan.getDescription(),
-                aiPlan.getScheduledDate().atStartOfDay()
+                aiPlan.getScheduledStart()
         );
     }
 }

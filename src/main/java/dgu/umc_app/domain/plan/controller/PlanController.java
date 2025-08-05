@@ -62,7 +62,7 @@ public class PlanController implements PlanApi{
             @RequestBody @Valid PlanSplitRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        log.info("현재 로그인된 사용자 ID: {}", userDetails.getUser().getId()); // 🔍 이 로그로 확인
+        log.info("현재 로그인된 사용자 ID: {}", userDetails.getUser().getId()); // 이 로그로 확인
         return planCommandService.splitPlan(planId, request, userDetails.getUser());
     }
 

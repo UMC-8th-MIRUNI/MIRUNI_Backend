@@ -8,7 +8,6 @@ import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.review.dto.request.ReviewCreateRequest;
 import dgu.umc_app.domain.review.dto.response.ReviewCreateResponse;
 import dgu.umc_app.domain.review.entity.Review;
-import dgu.umc_app.domain.review.exception.ReviewErrorCode;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
 import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.review.repository.ReviewRepository;
@@ -32,7 +31,7 @@ public class ReviewCommandService {
     @Transactional
     public ReviewCreateResponse saveReview(ReviewCreateRequest request) {
         AiPlan aiPlan = aiPlanRepository.findById(request.aiPlanId())
-                .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AI_PLAN_NOT_FOUND));
+                .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AIPLAN_NOT_FOUND));
 
         Plan plan = planRepository.findById(request.planId())
                 .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));

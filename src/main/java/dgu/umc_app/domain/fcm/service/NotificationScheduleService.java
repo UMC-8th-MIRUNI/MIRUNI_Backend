@@ -58,7 +58,7 @@ public class NotificationScheduleService {
                 .type(NotificationType.PLAN)
                 .targetId(plan.getId())
                 .reminderType(ReminderType.ONE_HOUR_BEFORE)
-                .notificationTime(plan.getExecuteDate().minusHours(1))
+                .notificationTime(plan.getScheduledStart().minusHours(1))
                 .build());
 
         scheduleNotificationAtTime(NotificationTask.builder()
@@ -68,11 +68,11 @@ public class NotificationScheduleService {
                 .type(NotificationType.PLAN)
                 .targetId(plan.getId())
                 .reminderType(ReminderType.TEN_MINUTES_BEFORE)
-                .notificationTime(plan.getExecuteDate().minusMinutes(10))
+                .notificationTime(plan.getScheduledStart().minusMinutes(10))
                 .build());
 
 
-        log.info("Plan 알림 스케줄 등록 완료: planId = {}, startTime = {}", plan.getId(), plan.getExecuteDate());
+        log.info("Plan 알림 스케줄 등록 완료: planId = {}, startTime = {}", plan.getId(), plan.getScheduledStart());
     }
 
     //AIPlan 알림 등록

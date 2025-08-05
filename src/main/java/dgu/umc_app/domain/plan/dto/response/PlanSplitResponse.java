@@ -6,6 +6,7 @@ import dgu.umc_app.domain.plan.entity.PlanType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -14,20 +15,14 @@ public record   PlanSplitResponse(
         @Schema(description = "실행 순서")
         Long stepOrder,
 
-        @Schema(description = "작업 유형")
-        PlanType planType,
-
-        @Schema(description = "일정 범위")
-        String taskRange,
+        @Schema(description = "실행 날짜")
+        LocalDate scheduledDate,
 
         @Schema(description = "일정 내용")
         String description,
 
-        @Schema(description = "예상 시간")
+        @Schema(description = "예상 소요 시간(분)")
         Long expectedDuration,
-
-        @Schema(description = "실행 날짜")
-        LocalDate scheduledDate,
 
         @Schema(description = "시작 시간")
         LocalTime startTime,
@@ -38,13 +33,11 @@ public record   PlanSplitResponse(
     public static PlanSplitResponse from(AiPlan aiPlan) {
         return new PlanSplitResponse(
                 aiPlan.getStepOrder(),
-                aiPlan.getPlanType(),
-                aiPlan.getTaskRange(),
+                aiPlan.getScheduledStart().toLocalDate(),
                 aiPlan.getDescription(),
                 aiPlan.getExpectedDuration(),
-                aiPlan.getScheduledDate(),
-                aiPlan.getStartTime(),
-                aiPlan.getEndTime()
+                aiPlan.getScheduledStart().toLocalTime(),
+                aiPlan.getScheduledEnd().toLocalTime()
         );
     }
 
@@ -61,18 +54,21 @@ public record   PlanSplitResponse(
             String taskRange
     ) {
         return responses.stream()
-                .map(response -> AiPlan.builder()
-                        .plan(parentPlan)
-                        .stepOrder(response.stepOrder())
-                        .planType(planType)
-                        .taskRange(taskRange)
-                        .description(response.description())
-                        .expectedDuration(response.expectedDuration())
-                        .scheduledDate(response.scheduledDate())
-                        .startTime(response.startTime())
-                        .endTime(response.endTime())
-                        .priority(parentPlan.getPriority())
-                        .build()
-                ).toList();
+                .map(response -> {
+                            LocalDateTime scheduledStart = response.scheduledDate().atTime(response.startTime());
+                            LocalDateTime scheduledEnd = response.scheduledDate().atTime(response.endTime());
+
+                            return AiPlan.builder()
+                                    .plan(parentPlan)
+                                    .planType(planType)
+                                    .taskRange(taskRange)
+                                    .stepOrder(response.stepOrder())
+                                    .scheduledStart(scheduledStart)
+                                    .scheduledEnd(scheduledEnd)
+                                    .description(response.description())
+                                    .expectedDuration(response.expectedDuration())
+                                    .priority(parentPlan.getPriority())
+                                    .build();
+                        }).toList();
     }
 }

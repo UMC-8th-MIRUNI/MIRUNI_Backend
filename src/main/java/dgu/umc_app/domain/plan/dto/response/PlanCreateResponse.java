@@ -17,7 +17,7 @@ public record PlanCreateResponse(
         LocalDateTime deadline,
 
         @Schema(description = "일정 수행 시작날짜")
-        LocalDateTime executeDate,
+        LocalDateTime scheduledStart,
 
         @Schema(description = "일정 완료 여부")
         boolean isDone
@@ -28,7 +28,7 @@ public record PlanCreateResponse(
                 plan.getId(),
                 plan.getTitle(),
                 plan.getDeadline(),
-                plan.getExecuteDate(),
+                plan.getScheduledStart(),
                 plan.isDone()
         );
     }

@@ -34,7 +34,7 @@ public class PlanCommandService {
         LocalDateTime today = LocalDateTime.now();
 
         if (request.deadline().isBefore(today)
-                || request.executeDate().isBefore(today)) {
+                || request.scheduledStart().isBefore(today)) {
             throw BaseException.type(PlanErrorCode.INVALID_DATE_RANGE);
         }
 
@@ -50,10 +50,10 @@ public class PlanCommandService {
                 .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
 
         // 2. AI 분할 요청
-        List<AiPlan> aiPlans = aiSplitService.requestAiPlanSplit(
+        List<PlanSplitResponse> splitResponses = aiSplitService.requestSplitResponseOnly(
                 plan.getTitle(),
                 plan.getDeadline(),
-                plan.getExecuteDate(),
+                plan.getScheduledStart(),
                 plan.getPriority(),
                 request.planType(),
                 request.taskRange(),
@@ -61,8 +61,18 @@ public class PlanCommandService {
                 plan
         );
 
-//        aiPlanRepository.saveAll(aiPlans);
+        // 3. 엔티티 변환 및 저장
+        List<AiPlan> aiPlans = PlanSplitResponse.toEntities(
+                splitResponses,
+                plan,
+                request.planType(),
+                request.taskRange()
+        );
+        aiPlanRepository.saveAll(aiPlans);
 
-        return PlanSplitResponse.fromList(aiPlans);
+        plan.updateCategory();
+        planRepository.save(plan);
+
+        return splitResponses;
     }
 }

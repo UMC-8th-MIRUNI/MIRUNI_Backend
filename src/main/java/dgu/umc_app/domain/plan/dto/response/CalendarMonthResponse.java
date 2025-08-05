@@ -9,7 +9,7 @@ public record CalendarMonthResponse (
         @Schema(description = "해당날짜")
         LocalDate date,
 
-        @Schema(description = "총 일정 갯수")
+        @Schema(description = "하지 않은 총 일정 갯수")
         int scheduleCount,
 
         @Schema(description = "모두 완료되었는지에 대한 여부")
