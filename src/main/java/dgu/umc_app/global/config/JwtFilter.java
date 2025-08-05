@@ -2,6 +2,7 @@ package dgu.umc_app.global.config;
 
 import dgu.umc_app.global.common.JwtUtil;
 import dgu.umc_app.global.authorize.CustomUserDetailService;
+import dgu.umc_app.global.service.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +23,7 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CustomUserDetailService customUserDetailService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -32,6 +34,14 @@ public class JwtFilter extends OncePerRequestFilter {
             
             try {
                 if (jwtUtil.validateToken(token)) {
+                    
+                    // 블랙리스트 체크
+                    if (tokenBlacklistService.isBlacklisted(token)) {
+                        log.warn("블랙리스트된 토큰 사용 시도: {}", token);
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        return;
+                    }
+                    
                     Long userId = jwtUtil.getUserIdFromToken(token);
                     
                     // 임시 토큰인지 확인

@@ -21,14 +21,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dgu.umc_app.domain.user.exception.AuthErrorCode;
 import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
 import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.validator.UserValidator;
 import lombok.extern.slf4j.Slf4j;
 import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
 import dgu.umc_app.global.authorize.CustomUserDetails;
+import dgu.umc_app.global.service.TokenBlacklistService;
+import dgu.umc_app.global.exception.CommonErrorCode;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Service
 @Transactional
@@ -40,6 +46,7 @@ public class UserCommandService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final UserValidator userValidator;
+    private final TokenBlacklistService tokenBlacklistService;
 
     public UserResponse signup(UserSignupRequest userSignupRequest) {
 
@@ -80,6 +87,9 @@ public class UserCommandService {
         String refreshToken = jwtUtil.generateRefreshToken(authentication);
         long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
         long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
+
+        // 리프레시 토큰을 Redis에 저장
+        tokenBlacklistService.saveRefreshToken(user.getId().toString(), refreshToken, refreshTokenExp);
 
         return UserResponse.of(accessToken, refreshToken, accessTokenExp, refreshTokenExp);
     }
@@ -218,6 +228,9 @@ public class UserCommandService {
         long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
         long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
         
+        // 리프레시 토큰을 Redis에 저장
+        tokenBlacklistService.saveRefreshToken(user.getId().toString(), refreshToken, refreshTokenExp);
+        
         return AuthLoginResponse.login(accessToken, refreshToken, accessTokenExp, refreshTokenExp, isNewUser);
     }
 
@@ -225,5 +238,45 @@ public class UserCommandService {
         CustomUserDetails userDetails = new CustomUserDetails(user);
         return new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
+    }
+
+    public void logout() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                throw BaseException.type(AuthErrorCode.USER_NOT_AUTHENTICATED);
+            }
+
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            
+            String token = getCurrentToken();
+            long expirationTime = jwtUtil.getAccessTokenExpirationInSeconds();
+            
+            // Redis에 엑세스 토큰 블랙리스트 추가
+            tokenBlacklistService.addToBlacklist(token, expirationTime);
+            
+            // 리프레시 토큰 삭제
+            tokenBlacklistService.logoutUser(userId.toString());
+            
+            log.info("사용자 로그아웃 완료: userId={}", userId);
+
+        } catch (Exception e) {
+            log.error("로그아웃 처리 중 오류 발생: {}", e.getMessage());
+            throw BaseException.type(AuthErrorCode.LOGOUT_FAILED);
+        }
+    }
+
+    private String getCurrentToken() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            throw BaseException.type(CommonErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        
+        String header = attributes.getRequest().getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        throw BaseException.type(AuthErrorCode.INVALID_TOKEN);
     }
 }
