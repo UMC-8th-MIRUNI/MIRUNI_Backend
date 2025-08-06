@@ -62,5 +62,14 @@ public class ReviewCommandService {
         review.update(request.mood(), (byte) request.achievement(), request.memo());
         return ReviewDetailResponse.from(review);
     }
+    /**
+     * 회고 삭제
+     */
+    public Long deleteReview(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new BaseException(ReviewErrorCode.REVIEW_NOT_FOUND));
+        reviewRepository.delete(review);
+        return reviewId;
+    }
 
 }
