@@ -2,7 +2,6 @@ package dgu.umc_app.domain.review.entity;
 
 public enum Mood {
     HAPPY, SAD, ANGRY, RELAXED, ANXIOUS
-
 }
 
 //public enum Mood {
