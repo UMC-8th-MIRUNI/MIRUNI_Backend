@@ -40,7 +40,7 @@ public record ReviewCreateResponse(
     public static ReviewCreateResponse from(Review review) {
         return ReviewCreateResponse.builder()
                 .id(review.getId())
-                .aiPlanId(review.getAiPlan().getId())
+                .aiPlanId(review.getAiPlan() != null ? review.getAiPlan().getId() : null)
                 .planId(review.getPlan().getId())
                 .title(review.getTitle())
                 .description(review.getDescription())

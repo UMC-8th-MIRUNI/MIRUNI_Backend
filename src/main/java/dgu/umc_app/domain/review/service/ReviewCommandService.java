@@ -34,17 +34,26 @@ public class ReviewCommandService {
      */
 
     public ReviewCreateResponse saveReview(Long userId, ReviewCreateRequest request) {
-        AiPlan aiPlan = aiPlanRepository.findByIdAndUserId(request.aiPlanId(), userId)
-                .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AIPLAN_NOT_FOUND));
-
         Plan plan = planRepository.findByIdWithUserId(request.planId(), userId)
                 .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
+
+        AiPlan aiPlan = null;
+        String description;
+
+        if (request.aiPlanId() != null) {
+            aiPlan = aiPlanRepository.findByIdAndUserId(request.aiPlanId(), userId)
+                    .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AIPLAN_NOT_FOUND));
+
+            description = aiPlan.getDescription();  // AI 일정 설명
+        } else {
+            description = plan.getDescription();  // 일반 일정 설명
+        }
 
         Review review = Review.builder()
                 .aiPlan(aiPlan)
                 .plan(plan)
                 .title(plan.getTitle())                   // Plan.title 복사
-                .description(aiPlan.getDescription())     // AiPlan.description 복사
+                .description(description)     // AiPlan or Plan description 복사
                 .mood(request.mood())
                 .achievement((byte) request.achievement())
                 .memo(request.memo())
