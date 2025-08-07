@@ -45,7 +45,7 @@ public record ReviewDetailResponse(
     public static ReviewDetailResponse from(Review review) {
         return ReviewDetailResponse.builder()
                 .id(review.getId())
-                .aiPlanId(review.getAiPlan().getId())
+                .aiPlanId(review.getAiPlan() != null ? review.getAiPlan().getId() : null)
                 .planId(review.getPlan().getId())
                 .mood(review.getMood())
                 .title(review.getTitle())
