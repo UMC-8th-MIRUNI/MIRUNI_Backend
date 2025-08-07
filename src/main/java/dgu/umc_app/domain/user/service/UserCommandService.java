@@ -204,4 +204,41 @@ public class UserCommandService {
     public void logout() {
         tokenService.logout();
     }
+
+    public void withdrawUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.isDeleted()) {
+            throw BaseException.type(UserErrorCode.USER_ALREADY_DELETED);
+        }
+
+        user.delete();
+        userRepository.save(user);
+
+        tokenService.logout();
+
+        log.info("회원 탈퇴 완료: userId={}", userId);
+    }
+
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw BaseException.type(UserErrorCode.USER_WRONG_PASSWORD);
+        }
+
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw BaseException.type(UserErrorCode.SAME_PASSWORD);
+        }
+
+        // 비밀번호 암호화 후 저장
+        user.updatePassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        tokenService.logout();
+
+        log.info("비밀번호 변경 완료: userId={}", userId);
+    }
 }

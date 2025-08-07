@@ -111,4 +111,10 @@ public class User extends BaseEntity {
         this.agreedPrivacyPolicy = agreedPrivacyPolicy != null ? agreedPrivacyPolicy : false;
         this.nickname = nickname;
     }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+        this.lastPasswordChanged = LocalDateTime.now();
+        this.passwordExpired = false;
+    }
 }
