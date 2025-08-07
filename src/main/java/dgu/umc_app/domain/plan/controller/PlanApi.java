@@ -1,15 +1,16 @@
 package dgu.umc_app.domain.plan.controller;
 
-import dgu.umc_app.domain.plan.dto.*;
-import dgu.umc_app.domain.user.entity.User;
+import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
+import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
+import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.global.authorize.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -51,5 +52,14 @@ public interface PlanApi {
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
+    @Operation(
+            summary = "AI 일정 쪼개기 API",
+            description = "AI 프롬프트로 하위(세부) 일정을 분할합니다."
+    )
+    List<PlanSplitResponse> splitPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanSplitRequest request,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    );
 
 }

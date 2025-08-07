@@ -1,7 +1,9 @@
 package dgu.umc_app.domain.fcm.service;
 
 import dgu.umc_app.domain.fcm.entity.FcmToken;
+import dgu.umc_app.domain.fcm.exception.FcmErrorCode;
 import dgu.umc_app.domain.fcm.repository.FcmTokenRepository;
+import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,8 @@ public class FcmTokenQueryService {
                 .map(FcmToken::getToken)
                 .toList();
     }
+
+
 
 
 
