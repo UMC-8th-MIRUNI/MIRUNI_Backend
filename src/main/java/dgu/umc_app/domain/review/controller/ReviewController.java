@@ -81,7 +81,7 @@ public class ReviewController implements ReviewApi{
 
     //회고 삭제
     @DeleteMapping("/{reviewId}")
-    public Long deleteReview(@PathVariable Long reviewId) {
-        return reviewCommandService.deleteReview(reviewId);
+    public Long deleteReview(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long reviewId) {
+        return reviewCommandService.deleteReview(userDetails.getId(),reviewId);
     }
 }

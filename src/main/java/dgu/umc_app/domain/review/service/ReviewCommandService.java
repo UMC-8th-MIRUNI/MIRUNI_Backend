@@ -74,8 +74,8 @@ public class ReviewCommandService {
     /**
      * 회고 삭제
      */
-    public Long deleteReview(Long reviewId) {
-        Review review = reviewRepository.findById(reviewId)
+    public Long deleteReview(Long userId, Long reviewId) {
+        Review review = reviewRepository.findByIdAndUserId(reviewId, userId)
                 .orElseThrow(() -> new BaseException(ReviewErrorCode.REVIEW_NOT_FOUND));
         reviewRepository.delete(review);
         return reviewId;

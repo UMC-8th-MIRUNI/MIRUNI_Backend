@@ -55,5 +55,5 @@ public interface ReviewApi {
 
 
     @Operation(summary = "회고 삭제", description = "특정 회고를 삭제합니다.")
-    public Long deleteReview(@PathVariable Long reviewId);
+    public Long deleteReview(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long reviewId);
 }
