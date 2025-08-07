@@ -12,6 +12,7 @@ import dgu.umc_app.domain.review.dto.response.ReviewDetailResponse;
 import dgu.umc_app.domain.review.entity.Review;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
 import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
+import dgu.umc_app.domain.review.exception.ReviewErrorCode;
 import dgu.umc_app.domain.review.repository.ReviewRepository;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;

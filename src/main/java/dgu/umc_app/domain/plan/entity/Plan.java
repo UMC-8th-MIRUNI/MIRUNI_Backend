@@ -39,6 +39,7 @@ public class Plan extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime scheduledStart; // 수행시작 예정 날짜&시간(ex: 2025-05-01T21:00:00)
 
+    private LocalDateTime tempTime;
     // 일반 일정은 마감기한이 있으므로 deadline으로 대체(추후에 기획팀과 논의 후 처리)
 //    @Column(nullable = false)
 //    private LocalDateTime scheduledEnd; // 수행끝 예정 날짜&시간(ex: 2025-05-01T22:00:00)

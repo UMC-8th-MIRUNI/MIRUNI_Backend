@@ -54,6 +54,8 @@ public class AiPlan extends BaseEntity {
     @Column(nullable = false)
     private boolean isDelayed = false;  // 미루기 여부
 
+    private LocalDateTime tempTime;
+
     public LocalDateTime getTaskTime() {
         return LocalDateTime.of(scheduledStart.toLocalDate(), scheduledStart.toLocalTime());
     }

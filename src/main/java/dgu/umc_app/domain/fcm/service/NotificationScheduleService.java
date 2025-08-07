@@ -256,6 +256,12 @@ public class NotificationScheduleService {
     // == 알림 전송 메서드(전체 과정) == /
     private void sendNotification(NotificationTask task){
         try{
+
+            if(task.alarmType() == AlarmType.POPUP){
+                if(isTaskAlreadyStarted(task)){
+                    return ;
+                }
+            }
             sendFcmMessage(task);
             log.info("알림전송 성공: type = {}, targetId = {}, reminderType = {}",
                     task.type(), task.targetId(), task.reminderType());
@@ -338,6 +344,19 @@ public class NotificationScheduleService {
     // == 삭제될 토큰인지 판단 == //
     private boolean shouldDeleteToken(String errorCode){
         return FcmErrorResponse.fromErrorCode(errorCode).isShouldDeleteToken();
+    }
+
+    // == 일정 시작여부 판단 메서드 == //
+    private boolean isTaskAlreadyStarted(NotificationTask task){
+        try{
+            if(task.type() == NotificationType.PLAN){
+                return planRepository.existsByIdAndTempTimeIsNotNull(task.targetId());
+            }else{
+                    return aiPlanRepository.existsByIdAndTempTimeIsNotNull(task.targetId());
+                }
+            } catch (Exception e) {
+                return false; //오류시 알림 발송
+            }
     }
 
     // == 관련 record == //
