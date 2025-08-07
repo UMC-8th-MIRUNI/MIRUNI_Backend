@@ -11,9 +11,12 @@ import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.request.GoogleLoginRequest;
 import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
+import dgu.umc_app.domain.user.dto.request.ReissueTokenRequest;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
+import dgu.umc_app.domain.user.dto.response.ReissueTokenResponse;
 import dgu.umc_app.global.authorize.LoginUser;
+import dgu.umc_app.global.authorize.TokenService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ public class UserAuthController implements UserAuthApi {
 
     private final UserCommandService userCommandService;
     private final UserQueryService userQueryService;
+    private final TokenService tokenService;
     
     @PostMapping("/signup")
     public UserResponse signup(@Valid @RequestBody UserSignupRequest request) {
@@ -65,5 +69,10 @@ public class UserAuthController implements UserAuthApi {
     @PostMapping("/auth/logout")
     public void logout() {
         userCommandService.logout();
+    }
+
+    @PostMapping("/auth/reissue")
+    public ReissueTokenResponse reissueToken(@Valid @RequestBody ReissueTokenRequest request) {
+        return tokenService.reissueToken(request.refreshToken());
     }
 }
