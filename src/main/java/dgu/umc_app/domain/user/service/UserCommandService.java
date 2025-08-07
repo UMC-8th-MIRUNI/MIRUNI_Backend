@@ -2,7 +2,7 @@ package dgu.umc_app.domain.user.service;
 
 import org.springframework.stereotype.Service;
 import dgu.umc_app.domain.user.repository.UserRepository;
-import dgu.umc_app.global.common.JwtUtil;
+import dgu.umc_app.global.authorize.TokenService;
 import dgu.umc_app.global.exception.BaseException;
 import dgu.umc_app.domain.user.entity.User;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +26,6 @@ import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.validator.UserValidator;
 import lombok.extern.slf4j.Slf4j;
 import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
-import dgu.umc_app.global.authorize.CustomUserDetails;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 
 @Service
 @Transactional
@@ -38,7 +35,7 @@ public class UserCommandService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+    private final TokenService tokenService;
     private final UserValidator userValidator;
 
     public UserResponse signup(UserSignupRequest userSignupRequest) {
@@ -73,15 +70,7 @@ public class UserCommandService {
     }
 
     private UserResponse issueTokenResponse(User user) {
-
-        Authentication authentication = createAuthentication(user);
-        
-        String accessToken = jwtUtil.generateAccessToken(authentication);
-        String refreshToken = jwtUtil.generateRefreshToken(authentication);
-        long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
-        long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
-
-        return UserResponse.of(accessToken, refreshToken, accessTokenExp, refreshTokenExp);
+        return tokenService.issueTokenResponse(user);
     }
 
     private AuthUserInfoDto verifyGoogleIdToken(String idToken) {
@@ -205,25 +194,14 @@ public class UserCommandService {
     }
 
     private String generateTempToken(User user) {
-        Authentication authentication = createAuthentication(user);
-        return jwtUtil.generateTempToken(authentication);
+        return tokenService.generateTempTokenForUser(user);
     }
 
     private AuthLoginResponse generateLoginTokens(User user, boolean isNewUser) {
-        
-        Authentication authentication = createAuthentication(user);
-        
-        String accessToken = jwtUtil.generateAccessToken(authentication);
-        String refreshToken = jwtUtil.generateRefreshToken(authentication);
-        long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
-        long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
-        
-        return AuthLoginResponse.login(accessToken, refreshToken, accessTokenExp, refreshTokenExp, isNewUser);
+        return tokenService.generateLoginTokens(user, isNewUser);
     }
 
-    private Authentication createAuthentication(User user) {
-        CustomUserDetails userDetails = new CustomUserDetails(user);
-        return new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
+    public void logout() {
+        tokenService.logout();
     }
 }

@@ -5,9 +5,12 @@ import com.auth0.jwt.algorithms.Algorithm;
 import dgu.umc_app.global.authorize.CustomUserDetails;
 import dgu.umc_app.global.exception.BaseException;
 import dgu.umc_app.global.exception.CommonErrorCode;
+import dgu.umc_app.domain.user.exception.AuthErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Date;
 
@@ -80,6 +83,24 @@ public class JwtUtil {
         return REFRESH_TOKEN_EXPIRATION / 1000;
     }
 
+    public long getRemainingTimeInSeconds(String token) {
+        try {
+            Date expiresAt = JWT.require(algorithm)
+                    .build()
+                    .verify(token)
+                    .getExpiresAt();
+            
+            if (expiresAt == null) {
+                return 0;
+            }
+            
+            long remainingTime = expiresAt.getTime() - System.currentTimeMillis();
+            return Math.max(0, remainingTime / 1000);
+        } catch (Exception e) {
+            return 0; 
+        }
+    }
+
     public boolean validateToken(String token) {
         try {
             JWT.require(algorithm).build().verify(token);
@@ -111,5 +132,18 @@ public class JwtUtil {
 
     public boolean isRefreshToken(String token) {
         return "REFRESH".equals(getTokenType(token));
+    }
+
+    public String getCurrentToken() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            throw BaseException.type(CommonErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        
+        String header = attributes.getRequest().getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        throw BaseException.type(AuthErrorCode.INVALID_TOKEN);
     }
 }
