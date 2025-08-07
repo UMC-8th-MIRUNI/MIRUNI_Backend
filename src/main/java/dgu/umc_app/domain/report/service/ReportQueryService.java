@@ -47,13 +47,11 @@ public class ReportQueryService {
                 : 0;
 
         // 2. 이번달 리포트 오픈 여부
-        boolean isOpenedThisMonth = reportRepository.existsByUserIdAndYearAndMonthAndIsOpenedTrue(userId, year, month);
+        boolean isOpenedThisMonth = isReportOpenedForMonth(userId, year, month);
 
         // 3. 저번달 리포트 오픈 여부
-        LocalDate thisMonthDate = LocalDate.of(year, month, 1);
-        LocalDate lastMonthDate = thisMonthDate.minusMonths(1);
-        boolean isOpenedLastMonth = reportRepository.existsByUserIdAndYearAndMonthAndIsOpenedTrue(
-                userId, lastMonthDate.getYear(), lastMonthDate.getMonthValue());
+        LocalDate lastMonthDate = LocalDate.of(year, month, 1).minusMonths(1);
+        boolean isOpenedLastMonth = isReportOpenedForMonth(userId, lastMonthDate.getYear(), lastMonthDate.getMonthValue());
 
         // 4. 이번달 리포트 오픈 조건 충족 여부
         boolean canOpen = !isOpenedThisMonth && peanutCount >= 30 && completionRate >= 80;
@@ -71,6 +69,10 @@ public class ReportQueryService {
                 lockState,
                 isOpenButtonVisible
         );
+    }
+
+    private boolean isReportOpenedForMonth(Long userId, int year, int month) {
+        return reportRepository.existsByUserIdAndYearAndMonthAndIsOpenedTrue(userId, year, month);
     }
 
 }
