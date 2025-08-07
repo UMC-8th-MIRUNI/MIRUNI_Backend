@@ -1,5 +1,7 @@
 package dgu.umc_app.domain.user.service;
 
+import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
+import dgu.umc_app.domain.user.entity.ProfileImage;
 import org.springframework.stereotype.Service;
 import dgu.umc_app.domain.user.repository.UserRepository;
 import dgu.umc_app.global.authorize.TokenService;
@@ -203,5 +205,14 @@ public class UserCommandService {
 
     public void logout() {
         tokenService.logout();
+    }
+    
+    public UserInfoResponse updateProfileImage(Long userId, ProfileImage profileImage) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        user.updateProfileImage(profileImage);
+
+        return UserInfoResponse.from(user);
     }
 }
