@@ -17,7 +17,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         CAST(r.createdAt AS date), COUNT(r)
     )
     FROM Review r
-    WHERE r.aiPlan.plan.user.id = :userId
+    WHERE r.plan.user.id = :userId
     GROUP BY CAST(r.createdAt AS date)
     ORDER BY CAST(r.createdAt AS date) DESC
 """)
