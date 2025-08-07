@@ -2,7 +2,7 @@ package dgu.umc_app.global.config;
 
 import dgu.umc_app.global.common.JwtUtil;
 import dgu.umc_app.global.authorize.CustomUserDetailService;
-import dgu.umc_app.global.service.TokenBlacklistService;
+import dgu.umc_app.global.authorize.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CustomUserDetailService customUserDetailService;
-    private final TokenBlacklistService tokenBlacklistService;
+    private final TokenService tokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -36,7 +36,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 if (jwtUtil.validateToken(token)) {
                     
                     // 블랙리스트 체크
-                    if (tokenBlacklistService.isBlacklisted(token)) {
+                    if (tokenService.isTokenBlacklisted(token)) {
                         log.warn("블랙리스트된 토큰 사용 시도: {}", token);
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         return;
