@@ -137,7 +137,7 @@ public class PlanQueryService{
 
     public PlanDetailResponse getPlanDetail(Long planId, Long userId) {
         // 1. Plan 조회
-        Plan plan = planRepository.findByIdAndUserId(planId, userId)
+        Plan plan = planRepository.findByIdWithUserId(planId, userId)
                 .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
 
         // 2. 해당 Plan이 AI 일정인지 확인
