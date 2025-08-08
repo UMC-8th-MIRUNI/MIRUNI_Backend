@@ -67,6 +67,15 @@ public class PlanController implements PlanApi{
         return planCommandService.splitPlan(planId, request, userDetails.getUser());
     }
 
+    @GetMapping("/unfinished")
+    public List<UnfinishedPlanResponse> getUnfinishedPlans(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return planQueryService.getUnfinishedPlans(userDetails.getUser());
+    }
+
+
+
     @GetMapping("/{planId}")
     public PlanDetailResponse getPlanDetail(
             @PathVariable Long planId,

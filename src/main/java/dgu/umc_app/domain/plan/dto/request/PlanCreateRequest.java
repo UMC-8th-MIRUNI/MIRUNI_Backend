@@ -47,7 +47,6 @@ public record PlanCreateRequest(
                 .scheduledEnd(scheduledEnd)
                 .priority(priority)
                 .isDone(false)
-                .planCategory(PlanCategory.BASIC)
                 .user(user)
                 .build();
     }

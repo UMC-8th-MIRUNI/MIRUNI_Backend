@@ -15,7 +15,7 @@ public record CalendarDayResponse (
         @Schema(description = "AI 쪼개기 일정일 경우 상위 일정 제목")
         String parentTitle,
 
-        @Schema(description = "상위일정 제목")
+        @Schema(description = "일반 일정일 경우 상위일정 제목")
         String title,
 
         @Schema(description = "각 일정의 시작 시간")

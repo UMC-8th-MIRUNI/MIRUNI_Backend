@@ -70,7 +70,6 @@ public class PlanCommandService {
         );
         aiPlanRepository.saveAll(aiPlans);
 
-        plan.updateCategory();
         planRepository.save(plan);
 
         return splitResponses;

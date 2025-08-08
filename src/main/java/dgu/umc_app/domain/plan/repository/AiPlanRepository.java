@@ -32,4 +32,6 @@ public interface AiPlanRepository extends JpaRepository<AiPlan, Long> {
     and month(ap.scheduledStart) = :month
 """)
     List<AiPlan> findByUserIdAndMonth(Long userId, int year, int month);
+    List<AiPlan> findByPlan_UserIdAndIsDoneFalseAndIsDelayedFalse(Long userId); // 안 한 일정 조회
+
 }

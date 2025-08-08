@@ -31,3 +31,8 @@ management:
 fcm:
   key:
     path: firebase/miruni-9718b-firebase-adminsdk-fbsvc-c1afc8bb2e.json
+
+# perplexity 설정
+perplexity:
+  api-key: ${PERPLEXITY_API_KEY:default-dev-api-key}
+  api-url: https://api.perplexity.ai/chat/completions

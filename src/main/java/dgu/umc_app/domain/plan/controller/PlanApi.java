@@ -62,6 +62,12 @@ public interface PlanApi {
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
+    @Operation(summary = "안 한 일정 조회", description = "미루지도 않고 수행하지도 않은 일정을 조회합니다.")
+    @GetMapping("/unfinished")
+    List<UnfinishedPlanResponse> getUnfinishedPlans(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    );
+
     @Operation(
             summary = "일정별 세부 조회 API",
             description = "일정별 세부정보를 조회합니다."
