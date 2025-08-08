@@ -16,7 +16,6 @@ import java.util.Optional;
 
 
 public interface PlanRepository extends JpaRepository<Plan, Long> {
-    Optional<Plan> findByIdAndUserId(Long id, Long userId);
     List<Plan> findByUserIdAndScheduledStartBetween(Long userId, LocalDateTime start, LocalDateTime end); //월별,일자별 조회
     List<Plan> findByUserIdAndIsDelayedTrue(Long userId);   //미룬 일정 조회
 
@@ -25,7 +24,9 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     SELECT p FROM Plan p
     WHERE p.id = :planId AND p.user.id = :userId
 """)
-    Optional<Plan> findByIdWithUserId(@Param("planId") Long planId, @Param("userId") Long userId);
+    Optional<Plan> findByIdAndUserId(@Param("planId") Long planId, @Param("userId") Long userId);
+
+    List<Plan> findByUserIdAndIsDoneFalseAndIsDelayedFalse(Long userId);    // 안 한 일정 조회
 
     //보관함 페이지 -> AiPlan 연결 없는 일반 Plan
     @Query("""
@@ -38,6 +39,4 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     )
 """)
     List<Plan> findIndependentPlans(Long userId, int year, int month);
-
-
 }
