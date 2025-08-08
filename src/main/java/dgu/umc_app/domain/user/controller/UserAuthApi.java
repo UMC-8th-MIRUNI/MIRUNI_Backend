@@ -6,7 +6,9 @@ import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
 import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
+import dgu.umc_app.domain.user.dto.request.ReissueTokenRequest;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
+import dgu.umc_app.domain.user.dto.response.ReissueTokenResponse;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.LoginUser;
@@ -125,4 +127,18 @@ public interface UserAuthApi {
         @ApiResponse(responseCode = "401", description = "로그아웃 실패")
     })
     void logout();
+
+    @Operation(
+        summary = "토큰 재발급",
+        description = "리프레시 토큰을 사용하여 새로운 액세스 토큰과 리프레시 토큰을 발급합니다. \n" +
+                "Refresh Token Rotation을 적용하여 보안을 강화합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "토큰 재발급 성공",
+                content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = ReissueTokenResponse.class))),
+        @ApiResponse(responseCode = "401", description = "유효하지 않은 리프레시 토큰"),
+        @ApiResponse(responseCode = "400", description = "입력값 검증 실패")
+    })
+    ReissueTokenResponse reissueToken(@Valid @RequestBody ReissueTokenRequest request);
 } 

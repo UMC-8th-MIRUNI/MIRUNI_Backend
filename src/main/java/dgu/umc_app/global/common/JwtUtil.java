@@ -6,6 +6,7 @@ import dgu.umc_app.global.authorize.CustomUserDetails;
 import dgu.umc_app.global.exception.BaseException;
 import dgu.umc_app.global.exception.CommonErrorCode;
 import dgu.umc_app.domain.user.exception.AuthErrorCode;
+import dgu.umc_app.domain.user.dto.TokenDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -145,5 +146,15 @@ public class JwtUtil {
             return header.substring(7);
         }
         throw BaseException.type(AuthErrorCode.INVALID_TOKEN);
+    }
+
+    public TokenDto createTokenDto(Authentication authentication) {
+        
+        String accessToken = generateAccessToken(authentication);
+        String refreshToken = generateRefreshToken(authentication);
+        long accessTokenExp = getAccessTokenExpirationInSeconds();
+        long refreshTokenExp = getRefreshTokenExpirationInSeconds();
+        
+        return TokenDto.of(accessToken, refreshToken, accessTokenExp, refreshTokenExp);
     }
 }

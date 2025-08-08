@@ -4,6 +4,8 @@ import dgu.umc_app.global.common.JwtUtil;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
+import dgu.umc_app.domain.user.dto.response.ReissueTokenResponse;
+import dgu.umc_app.domain.user.repository.UserRepository;
 import dgu.umc_app.global.exception.BaseException;
 import dgu.umc_app.domain.user.exception.AuthErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.redis.core.RedisTemplate;
 import java.time.Duration;
+import dgu.umc_app.domain.user.dto.TokenDto;
 
 @Slf4j
 @Service
@@ -22,44 +25,34 @@ public class TokenService {
     
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
+    private final UserRepository userRepository;
     
     private static final String BLACKLIST_PREFIX = "blacklist:";
     private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
 
-    /**
-     * 토큰 발급 응답 생성 메서드들
-     */
-    public UserResponse issueTokenResponse(User user) {
+    // 공통 토큰 발급/저장 메서드
+    private TokenDto createAndStoreTokens(User user) {
         Authentication authentication = createAuthentication(user);
+        TokenDto tokenDto = jwtUtil.createTokenDto(authentication);
         
-        String accessToken = jwtUtil.generateAccessToken(authentication);
-        String refreshToken = jwtUtil.generateRefreshToken(authentication);
-        long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
-        long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
+        saveRefreshToken(user.getId().toString(), tokenDto.refreshToken(), tokenDto.refreshTokenExp());
+        
+        return tokenDto;
+    }
 
-        // 리프레시 토큰을 Redis에 저장
-        saveRefreshToken(user.getId().toString(), refreshToken, refreshTokenExp);
+    public UserResponse issueTokenResponse(User user) {
+        TokenDto token = createAndStoreTokens(user);
+        return UserResponse.of(token.accessToken(), token.refreshToken(), token.accessTokenExp(), token.refreshTokenExp());
+    }
 
-        return UserResponse.of(accessToken, refreshToken, accessTokenExp, refreshTokenExp);
+    public AuthLoginResponse generateLoginTokens(User user, boolean isNewUser) {
+        TokenDto token = createAndStoreTokens(user);
+        return AuthLoginResponse.login(token.accessToken(), token.refreshToken(), token.accessTokenExp(), token.refreshTokenExp(), isNewUser);
     }
 
     public String generateTempTokenForUser(User user) {
         Authentication authentication = createAuthentication(user);
         return jwtUtil.generateTempToken(authentication);
-    }
-
-    public AuthLoginResponse generateLoginTokens(User user, boolean isNewUser) {
-        Authentication authentication = createAuthentication(user);
-        
-        String accessToken = jwtUtil.generateAccessToken(authentication);
-        String refreshToken = jwtUtil.generateRefreshToken(authentication);
-        long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
-        long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
-        
-        // 리프레시 토큰을 Redis에 저장
-        saveRefreshToken(user.getId().toString(), refreshToken, refreshTokenExp);
-        
-        return AuthLoginResponse.login(accessToken, refreshToken, accessTokenExp, refreshTokenExp, isNewUser);
     }
 
     // 인증 객체 생성
@@ -110,6 +103,52 @@ public class TokenService {
     // 블랙리스트 체크
     public boolean isTokenBlacklisted(String token) {
         return isBlacklisted(token);
+    }
+
+    // 토큰 재발급 (Refresh Token Rotation)
+    public ReissueTokenResponse reissueToken(String refreshToken) {
+        try {
+            if (!jwtUtil.validateToken(refreshToken)) {
+                throw BaseException.type(AuthErrorCode.INVALID_REFRESH_TOKEN);
+            }
+            
+            if (!jwtUtil.isRefreshToken(refreshToken)) {
+                throw BaseException.type(AuthErrorCode.INVALID_REFRESH_TOKEN);
+            }
+            
+            if (isBlacklisted(refreshToken)) {
+                throw BaseException.type(AuthErrorCode.INVALID_REFRESH_TOKEN);
+            }
+            
+            Long userId = jwtUtil.getUserIdFromToken(refreshToken);
+            String storedRefreshToken = getRefreshToken(userId.toString());
+            
+            if (storedRefreshToken == null) {
+                throw BaseException.type(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
+            }
+            
+            if (!refreshToken.equals(storedRefreshToken)) {
+                throw BaseException.type(AuthErrorCode.REFRESH_TOKEN_MISMATCH);
+            }
+            
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> BaseException.type(AuthErrorCode.USER_NOT_AUTHENTICATED));
+            
+            // 기존 리프레시 토큰 삭제 (Refresh Token Rotation)
+            deleteRefreshToken(userId.toString());
+            
+            // 새 토큰 발급 및 저장
+            TokenDto token = createAndStoreTokens(user);
+            
+            log.info("토큰 재발급 완료: userId={}", userId);
+            
+            return ReissueTokenResponse.of(token.accessToken(), token.refreshToken(), token.accessTokenExp());
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("토큰 재발급 중 오류 발생: {}", e.getMessage());
+            throw BaseException.type(AuthErrorCode.INVALID_REFRESH_TOKEN);
+        }
     }
     
     // 액세스 토큰을 블랙리스트에 추가
