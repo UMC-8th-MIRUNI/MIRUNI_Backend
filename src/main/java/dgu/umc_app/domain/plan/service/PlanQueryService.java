@@ -74,9 +74,12 @@ public class PlanQueryService{
         List<Plan> plans = planRepository
                 .findByUserIdAndScheduledStartBetween(userId, startOfDay, endOfDay)
                 .stream()
-                .filter(plan -> plan.getPlanCategory() == PlanCategory.BASIC)
+                .filter(plan -> plan.getPlanCategory() == PlanCategory.BASIC && !plan.isDone())
                 .toList();
-        List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledStartBetween(userId, startOfDay, endOfDay);
+        List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledStartBetween(userId, startOfDay, endOfDay)
+                .stream()
+                .filter(aiPlan -> !aiPlan.isDone())
+                .toList();
 
         List<CalendarDayResponse> result = new ArrayList<>();
 
@@ -111,8 +114,17 @@ public class PlanQueryService{
     public List<UnfinishedPlanResponse> getUnfinishedPlans(User user) {
         Long userId = user.getId();
 
-        List<Plan> unfinishedPlans = planRepository.findByUserIdAndIsDoneFalseAndIsDelayedFalse(userId);
-        List<AiPlan> unfinishedAiPlans = aiPlanRepository.findByPlan_UserIdAndIsDoneFalseAndIsDelayedFalse(userId);
+        LocalDateTime yesterday = LocalDate.now().minusDays(1).atTime(23, 59, 59);
+
+        List<Plan> unfinishedPlans = planRepository.findByUserIdAndIsDoneFalseAndIsDelayedFalse(userId)
+                .stream()
+                .filter(plan -> plan.getScheduledEnd().isBefore(yesterday))
+                .toList();
+
+        List<AiPlan> unfinishedAiPlans = aiPlanRepository.findByPlan_UserIdAndIsDoneFalseAndIsDelayedFalse(userId)
+                .stream()
+                .filter(aiPlan -> aiPlan.getScheduledEnd().isBefore(yesterday))
+                .toList();
 
         List<UnfinishedPlanResponse> result = new ArrayList<>();
 

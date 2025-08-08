@@ -30,10 +30,6 @@ public class Plan extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String title; // 일정 제목
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PlanCategory planCategory;
-
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description; // 일정 내용
 
@@ -43,9 +39,8 @@ public class Plan extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime scheduledStart; // 수행시작 예정 날짜&시간(ex: 2025-05-01T21:00:00)
 
-    // 일반 일정은 마감기한이 있으므로 deadline으로 대체(추후에 기획팀과 논의 후 처리)
-//    @Column(nullable = false)
-//    private LocalDateTime scheduledEnd; // 수행끝 예정 날짜&시간(ex: 2025-05-01T22:00:00)
+    @Column(nullable = false)
+    private LocalDateTime scheduledEnd; // 수행끝 예정 날짜&시간(ex: 2025-05-01T22:00:00)
 
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
