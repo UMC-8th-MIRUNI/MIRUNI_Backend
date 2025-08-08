@@ -21,7 +21,7 @@ public interface UserApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "개인정보 조회 성공",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = UserInfoResponse.class))),
+                            schema = @Schema(implementation = ApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = CustomErrorResponse.class)))
@@ -35,7 +35,7 @@ public interface UserApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "프로필사진 변경 성공",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = UserInfoResponse.class))),
+                            schema = @Schema(implementation = ApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = CustomErrorResponse.class)))
