@@ -117,4 +117,12 @@ public class User extends BaseEntity {
         this.lastPasswordChanged = LocalDateTime.now();
         this.passwordExpired = false;
     }
+
+    public boolean isSocialUser() {
+        return this.oauthProvider != null;
+    }
+
+    public boolean hasPassword() {
+        return this.password != null && !this.password.isEmpty();
+    }
 }

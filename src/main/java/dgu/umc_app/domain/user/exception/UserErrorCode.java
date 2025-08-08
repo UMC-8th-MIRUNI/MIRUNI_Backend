@@ -15,7 +15,8 @@ public enum UserErrorCode implements ErrorCode {
     USER_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "USER400_4", "이미 탈퇴한 사용자입니다."),
     INVALID_PASSWORD_FORMAT(HttpStatus.BAD_REQUEST, "USER400_5", "비밀번호 형식이 올바르지 않습니다."),
     SAME_PASSWORD(HttpStatus.BAD_REQUEST, "USER400_6", "새 비밀번호는 현재 비밀번호와 달라야 합니다."),
-    INVALID_SOCIAL_TOKEN(HttpStatus.BAD_REQUEST, "USER400_7", "유효하지 않은 소셜 로그인 토큰입니다.");
+    INVALID_SOCIAL_TOKEN(HttpStatus.BAD_REQUEST, "USER400_7", "유효하지 않은 소셜 로그인 토큰입니다."),
+    SOCIAL_USER_PASSWORD_CHANGE(HttpStatus.BAD_REQUEST, "USER400_8", "소셜 로그인 사용자는 비밀번호 변경이 불가능합니다.");
 
     private final HttpStatus status;
     private final String errorCode;

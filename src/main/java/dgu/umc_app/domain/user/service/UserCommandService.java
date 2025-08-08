@@ -184,8 +184,7 @@ public class UserCommandService {
         updateUserInfo.accept(user);
         user.activate();
 
-        User savedUser = userRepository.save(user);
-        return issueTokenResponse(savedUser);
+        return issueTokenResponse(user);
     }
 
     private User findOrCreateUser(AuthUserInfoDto userInfo, OauthProvider provider) {
@@ -214,8 +213,7 @@ public class UserCommandService {
         }
 
         user.delete();
-        userRepository.save(user);
-
+        
         tokenService.logout();
 
         log.info("회원 탈퇴 완료: userId={}", userId);
@@ -225,6 +223,14 @@ public class UserCommandService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
 
+        if (user.isSocialUser()) {
+            throw BaseException.type(UserErrorCode.SOCIAL_USER_PASSWORD_CHANGE);
+        }
+
+        if (!user.hasPassword()) {
+            throw BaseException.type(UserErrorCode.USER_WRONG_PASSWORD);
+        }
+
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw BaseException.type(UserErrorCode.USER_WRONG_PASSWORD);
         }
@@ -233,9 +239,8 @@ public class UserCommandService {
             throw BaseException.type(UserErrorCode.SAME_PASSWORD);
         }
 
-        // 비밀번호 암호화 후 저장
+        // 비밀번호 암호화
         user.updatePassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
 
         tokenService.logout();
 
