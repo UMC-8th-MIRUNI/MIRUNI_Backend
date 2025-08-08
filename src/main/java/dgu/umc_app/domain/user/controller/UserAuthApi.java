@@ -115,4 +115,14 @@ public interface UserAuthApi {
         @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
     })
     UserResponse kakaoSignUp(@Valid @RequestBody KakaoSignUpRequest request, @LoginUser Long userId);
+
+    @Operation(
+        summary = "로그아웃",
+        description = "사용자 로그아웃을 처리합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+        @ApiResponse(responseCode = "401", description = "로그아웃 실패")
+    })
+    void logout();
 } 

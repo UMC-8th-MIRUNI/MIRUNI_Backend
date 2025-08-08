@@ -12,7 +12,7 @@ spring:
         format_sql: true
         user_sql_comments: true
         default_batch_fetch_size: 500
-
+        
 # JWT 설정 -> 배포시 환경변수 설정으로 변경
 jwt:
   secret-key: ${JWT_SECRET_KEY:default-secret-key-for-development-only}

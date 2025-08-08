@@ -13,6 +13,7 @@ import dgu.umc_app.domain.review.entity.Review;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
 import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.review.repository.ReviewRepository;
+import dgu.umc_app.domain.review.exception.ReviewErrorCode;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,7 @@ public class ReviewCommandService {
         AiPlan aiPlan = aiPlanRepository.findByIdAndUserId(request.aiPlanId(), userId)
                 .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AIPLAN_NOT_FOUND));
 
-        Plan plan = planRepository.findByIdAndUserId(request.planId(), userId)
+        Plan plan = planRepository.findByIdWithUserId(request.planId(), userId)
                 .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
 
         Review review = Review.builder()
@@ -61,6 +62,15 @@ public class ReviewCommandService {
                 .orElseThrow(() -> BaseException.type(ReviewErrorCode.REVIEW_NOT_FOUND));
         review.update(request.mood(), (byte) request.achievement(), request.memo());
         return ReviewDetailResponse.from(review);
+    }
+    /**
+     * 회고 삭제
+     */
+    public Long deleteReview(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new BaseException(ReviewErrorCode.REVIEW_NOT_FOUND));
+        reviewRepository.delete(review);
+        return reviewId;
     }
 
 }

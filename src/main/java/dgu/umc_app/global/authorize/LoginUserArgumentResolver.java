@@ -1,6 +1,5 @@
 package dgu.umc_app.global.authorize;
 
-import dgu.umc_app.domain.user.repository.UserRepository;
 import dgu.umc_app.global.exception.BaseException;
 import dgu.umc_app.global.exception.CommonErrorCode;
 import lombok.RequiredArgsConstructor;

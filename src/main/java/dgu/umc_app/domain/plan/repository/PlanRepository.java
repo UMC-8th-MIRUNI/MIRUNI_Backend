@@ -24,5 +24,19 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     SELECT p FROM Plan p
     WHERE p.id = :planId AND p.user.id = :userId
 """)
-    Optional<Plan> findByIdAndUserId(@Param("planId") Long planId, @Param("userId") Long userId);
+    Optional<Plan> findByIdWithUserId(@Param("planId") Long planId, @Param("userId") Long userId);
+
+    //보관함 페이지 -> AiPlan 연결 없는 일반 Plan
+    @Query("""
+    select p from Plan p
+    where p.user.id = :userId
+    and year(p.scheduledStart) = :year
+    and month(p.scheduledStart) = :month
+    and p.id not in (
+        select distinct ap.plan.id from AiPlan ap
+    )
+""")
+    List<Plan> findIndependentPlans(Long userId, int year, int month);
+
+
 }

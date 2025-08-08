@@ -23,4 +23,13 @@ public interface AiPlanRepository extends JpaRepository<AiPlan, Long> {
 
     List<AiPlan> findByPlanId(Long planId); // 일정별 세부 조회
 
+    //보관함 페이지 -> AiPlan 조회
+    @Query("""
+    select ap from AiPlan ap
+    join ap.plan p
+    where p.user.id = :userId
+    and year(ap.scheduledStart) = :year
+    and month(ap.scheduledStart) = :month
+""")
+    List<AiPlan> findByUserIdAndMonth(Long userId, int year, int month);
 }

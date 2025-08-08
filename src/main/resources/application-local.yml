@@ -7,8 +7,14 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
 
-perplexity:
-  api-key: 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
-  api-url: https://api.perplexity.ai/chat/completions
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 10
+        min-idle: 2
