@@ -63,6 +63,19 @@ jobs:
             # 기존 컨테이너 종료 및 삭제
             docker rm -f spring-miruni-backend || true
 
+            # Docker 네트워크 생성
+            docker network create miruni-network || true
+
+            # Redis 컨테이너 실행
+            docker ps | grep miruni-redis || \
+              docker run -d \
+                --name miruni-redis \
+                --network miruni-network \
+                -p 6379:6379 \
+                -v redis_data:/data \
+                --restart unless-stopped \
+                redis:7.2-alpine
+        
             # 중지된 컨테이너 및 안쓰는 이미지 삭제
             docker container prune -f || true
             docker image prune -a -f || true
@@ -79,6 +92,7 @@ jobs:
               # application.yml을 컨테이너 안으로 마운트
             docker run -d \
               --name spring-miruni-backend \
+              --network miruni-network \
               -p 8080:8080 \
               -v ~/application.yml:/app/application.yml \
               ${{ secrets.DOCKER_USERNAME }}/spring-miruni-backend:latest

@@ -33,11 +33,7 @@ public class PlanQueryService{
         LocalDateTime endDateTime = end.atTime(23, 59, 59);
 
         Long userId = user.getId();
-        List<Plan> plans = planRepository
-                .findByUserIdAndScheduledStartBetween(userId, startDateTime, endDateTime)
-                .stream()
-                .filter(plan -> plan.getPlanCategory() == PlanCategory.BASIC)
-                .toList();
+        List<Plan> plans = planRepository.findIndependentPlans(userId, year, month);
         List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledStartBetween(userId, startDateTime, endDateTime);
 
         Map<LocalDate, List<Boolean>> doneMap = new HashMap<>();
@@ -67,15 +63,22 @@ public class PlanQueryService{
 
     public CalendarDayWrapperResponse getSchedulesByDate(LocalDate date, User user) {
         Long userId = user.getId();
+        int year = date.getYear();
+        int month = date.getMonthValue();
 
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
-        List<Plan> plans = planRepository
-                .findByUserIdAndScheduledStartBetween(userId, startOfDay, endOfDay)
-                .stream()
-                .filter(plan -> plan.getPlanCategory() == PlanCategory.BASIC && !plan.isDone())
+        List<Plan> allIndependentPlans = planRepository.findIndependentPlans(userId, year, month);
+        List<Plan> plans = allIndependentPlans.stream()
+                .filter(plan -> {
+                    LocalDateTime scheduledStart = plan.getScheduledStart();
+                    return scheduledStart!=null && !plan.isDone()
+                            && !scheduledStart.isBefore(startOfDay)
+                            && !scheduledStart.isAfter(endOfDay);
+                })
                 .toList();
+
         List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledStartBetween(userId, startOfDay, endOfDay)
                 .stream()
                 .filter(aiPlan -> !aiPlan.isDone())
@@ -83,19 +86,12 @@ public class PlanQueryService{
 
         List<CalendarDayResponse> result = new ArrayList<>();
 
-        for (Plan plan : plans) {
-            result.add(CalendarDayResponse.from(plan));
-        }
-
-        for (AiPlan aiPlan : aiPlans) {
-            result.add(CalendarDayResponse.from(aiPlan));
-        }
+        plans.forEach(plan -> result.add(CalendarDayResponse.from(plan)));
+        aiPlans.forEach(aiPlan -> result.add(CalendarDayResponse.from(aiPlan)));
 
         result.sort(Comparator.comparing(CalendarDayResponse::startTime, Comparator.nullsLast(Comparator.naturalOrder())));
 
-        int totalCount = plans.size() + aiPlans.size();
-
-        return new CalendarDayWrapperResponse(totalCount, result);
+        return new CalendarDayWrapperResponse(result.size(), result);
     }
 
     public List<DelayedPlanResponse> getDelayedPlans(User user) {

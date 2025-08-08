@@ -6,6 +6,7 @@ import dgu.umc_app.domain.review.dto.response.ReviewCountByDateResponse;
 import dgu.umc_app.domain.review.dto.response.ReviewCreateResponse;
 import dgu.umc_app.domain.review.dto.response.ReviewDetailResponse;
 import dgu.umc_app.domain.review.dto.response.ReviewListResponse;
+import dgu.umc_app.domain.review.service.ReviewCommandService;
 import dgu.umc_app.global.authorize.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -51,4 +52,8 @@ public interface ReviewApi {
     public ReviewDetailResponse updateReview(@AuthenticationPrincipal CustomUserDetails userDetails,
                                              @PathVariable Long reviewId,
                                              @RequestBody @Valid ReviewUpdateRequest request);
+
+
+    @Operation(summary = "회고 삭제", description = "특정 회고를 삭제합니다.")
+    public Long deleteReview(@PathVariable Long reviewId);
 }

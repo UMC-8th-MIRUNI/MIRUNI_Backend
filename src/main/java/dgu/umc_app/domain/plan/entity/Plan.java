@@ -23,10 +23,6 @@ public class Plan extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user; // 사용자 아이디 (FK)
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    PlanCategory planCategory;  // 일정 유형(BASIC or AI)
-
     @Column(nullable = false, length = 50)
     private String title; // 일정 제목
 
@@ -40,7 +36,7 @@ public class Plan extends BaseEntity {
     private LocalDateTime scheduledStart; // 수행시작 예정 날짜&시간(ex: 2025-05-01T21:00:00)
 
     @Column(nullable = false)
-    private LocalDateTime scheduledEnd; // 수행끝 예정 날짜&시간(ex: 2025-05-01T22:00:00)
+    private LocalDateTime scheduledEnd; // 수행종료 예정 날짜&시간(ex: 2025-05-01T22:00:00)
 
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
@@ -51,8 +47,4 @@ public class Plan extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column
     private Priority priority;
-
-    public void updateCategory(){
-        this.planCategory = PlanCategory.AI;
-    }
 }
