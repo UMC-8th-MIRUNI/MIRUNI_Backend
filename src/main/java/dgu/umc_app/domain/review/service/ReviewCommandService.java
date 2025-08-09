@@ -37,7 +37,7 @@ public class ReviewCommandService {
         AiPlan aiPlan = aiPlanRepository.findByIdAndUserId(request.aiPlanId(), userId)
                 .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AIPLAN_NOT_FOUND));
 
-        Plan plan = planRepository.findByIdWithUserId(request.planId(), userId)
+        Plan plan = planRepository.findByIdAndUserId(request.planId(), userId)
                 .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
 
         Review review = Review.builder()

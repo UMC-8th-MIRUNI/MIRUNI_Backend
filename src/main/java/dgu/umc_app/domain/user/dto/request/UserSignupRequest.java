@@ -31,9 +31,8 @@ public record UserSignupRequest(
         
         @NotBlank(message = "닉네임은 필수입니다.")
         @Size(max = 20, message = "닉네임은 20자 이하여야 합니다.")
-        String nickname,
+        String nickname
         
-        String userPreference
 ) {
         public User toEntity(String encodedPassword) {
                 return User.builder()
@@ -47,7 +46,7 @@ public record UserSignupRequest(
                         .lastPasswordChanged(LocalDateTime.now())
                         .agreedPrivacyPolicy(true)
                         .peanutCount(0)
-                        .userPreference(userPreference)
+                        .userPreference("{}")
                         .oauthProvider(null)
                         .status(Status.ACTIVE)
                         .build();

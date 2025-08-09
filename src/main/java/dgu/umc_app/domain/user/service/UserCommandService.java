@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import dgu.umc_app.domain.user.repository.UserRepository;
 import dgu.umc_app.global.authorize.TokenService;
 import dgu.umc_app.global.exception.BaseException;
+import dgu.umc_app.global.exception.CommonErrorCode;
 import dgu.umc_app.domain.user.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,10 +18,16 @@ import lombok.RequiredArgsConstructor;
 import dgu.umc_app.domain.user.dto.AuthUserInfoDto;
 import dgu.umc_app.domain.user.dto.request.GoogleLoginRequest;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
+import dgu.umc_app.domain.user.dto.response.SurveyResponse;
 import dgu.umc_app.domain.user.entity.OauthProvider;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
+
+import java.time.LocalDateTime;
+
 import org.springframework.http.HttpStatus;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
@@ -28,6 +35,7 @@ import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.validator.UserValidator;
 import lombok.extern.slf4j.Slf4j;
 import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
+import dgu.umc_app.domain.user.dto.request.SurveyRequest;
 
 @Service
 @Transactional
@@ -39,6 +47,7 @@ public class UserCommandService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final UserValidator userValidator;
+    private final ObjectMapper objectMapper;
 
     public UserResponse signup(UserSignupRequest userSignupRequest) {
 
@@ -46,6 +55,7 @@ public class UserCommandService {
 
         String encodedPassword = passwordEncoder.encode(userSignupRequest.password());
         User user = userSignupRequest.toEntity(encodedPassword);
+        
         userRepository.save(user);
 
         return issueTokenResponse(user);
@@ -184,7 +194,7 @@ public class UserCommandService {
         userValidator.checkPendingUser(user.getStatus());
 
         updateUserInfo.accept(user);
-        user.activate();
+        // user.activate(); -> 설문 후 active로 
 
         User savedUser = userRepository.save(user);
         return issueTokenResponse(savedUser);
@@ -214,5 +224,37 @@ public class UserCommandService {
         user.updateProfileImage(profileImage);
 
         return UserInfoResponse.from(user);
+    }
+
+    public SurveyResponse survey(SurveyRequest request, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.isSurveyCompleted()) {
+            throw BaseException.type(UserErrorCode.SURVEY_ALREADY_COMPLETED);
+        }
+
+        String userPreference = convertToJson(request);
+
+        user.completeSurvey(userPreference);
+
+        log.info("설문조사 완료: userId={}", userId);
+
+        return SurveyResponse.of(
+            "설문조사가 완료되었습니다!",
+            LocalDateTime.now(),
+            "COMPLETED"
+        );    
+    }
+
+    private String convertToJson(SurveyRequest request) {
+        try {
+            String json = objectMapper.writeValueAsString(request);
+            log.debug("설문 응답 JSON 변환 완료: {}", json);
+            return json;
+        } catch (JsonProcessingException e) {
+            log.error("설문 응답 JSON 변환 실패: {}", e.getMessage());
+            throw BaseException.type(CommonErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 }

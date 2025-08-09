@@ -48,10 +48,12 @@ public class User extends BaseEntity {
     private boolean agreedPrivacyPolicy;
 
     @Column(nullable = false)
+    @Builder.Default
     private int peanutCount = 0;
 
-    @Column(nullable = false, length = 50)
-    private String userPreference;
+    @Column(nullable = false, columnDefinition = "JSON")
+    @Builder.Default
+    private String userPreference = "{}";
 
     @Enumerated(EnumType.STRING)
     private OauthProvider oauthProvider;
@@ -64,7 +66,13 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status = Status.ACTIVE;
+    @Builder.Default
+    private Status status = Status.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private SurveyStatus surveyStatus = SurveyStatus.NOT_COMPLETED;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
@@ -117,5 +125,15 @@ public class User extends BaseEntity {
 
     public void updateProfileImage(ProfileImage profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public void completeSurvey(String userPreference) {
+        this.userPreference = userPreference;
+        this.surveyStatus = SurveyStatus.COMPLETED;
+        this.status = Status.ACTIVE;
+    }
+
+    public boolean isSurveyCompleted() {
+        return this.surveyStatus == SurveyStatus.COMPLETED;
     }
 }

@@ -28,7 +28,7 @@ public record AuthUserInfoDto(
                 .lastPasswordChanged(LocalDateTime.now())
                 .agreedPrivacyPolicy(true)
                 .peanutCount(0)
-                .userPreference("")
+                .userPreference("{}")
                 .oauthProvider(provider)
                 .status(Status.PENDING) 
                 .build();
