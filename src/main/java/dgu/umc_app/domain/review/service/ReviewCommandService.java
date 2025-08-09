@@ -34,7 +34,7 @@ public class ReviewCommandService {
      */
 
     public ReviewCreateResponse saveReview(Long userId, ReviewCreateRequest request) {
-        Plan plan = planRepository.findByIdWithUserId(request.planId(), userId)
+        Plan plan = planRepository.findByIdAndUserId(request.planId(), userId)
                 .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
 
         AiPlan aiPlan = null;

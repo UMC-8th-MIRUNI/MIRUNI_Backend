@@ -1,13 +1,12 @@
 package dgu.umc_app.domain.report.controller;
 
+import dgu.umc_app.domain.report.dto.response.ReportResponse;
 import dgu.umc_app.domain.report.dto.response.StoragePageResponse;
 import dgu.umc_app.domain.report.service.ReportQueryService;
 import dgu.umc_app.global.authorize.CustomUserDetails;
+import dgu.umc_app.global.authorize.LoginUser;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/report")
@@ -22,5 +21,14 @@ public class ReportController implements ReportApi{
         Long userId = userDetails.getId();
         return reportQueryService.getStoragePage(userId, year, month);
     }
+
+    //리포트
+    @GetMapping("/{year}/{month}")
+    public ReportResponse getReport(@LoginUser Long userId,
+                                    @PathVariable int year,
+                                    @PathVariable int month) {
+        return reportQueryService.getMonthlyReport(userId, year, month);
+    }
+
 
 }
