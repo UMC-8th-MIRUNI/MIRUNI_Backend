@@ -55,7 +55,6 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/actuator/**"
                         ).permitAll()
-                        .requestMatchers("/api/auth/logout", "/api/auth/withdraw", "/api/auth/password/change").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );
