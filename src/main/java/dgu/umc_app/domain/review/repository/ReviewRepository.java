@@ -48,10 +48,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
                                                    @Param("targetDate") java.sql.Date targetDate);
 
      //단일 회고 상세 조회
-     @Query("""
-    SELECT r FROM Review r
-    WHERE r.id = :reviewId AND r.plan.user.id = :userId
-""")
-     Optional<Review> findByIdAndUserId(@Param("reviewId") Long reviewId, @Param("userId") Long userId);
+     Optional<Review> findByIdAndPlanUserId(Long id, Long userId);
 
 }

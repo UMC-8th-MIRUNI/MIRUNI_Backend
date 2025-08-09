@@ -66,7 +66,7 @@ public class ReviewCommandService {
      * 회고 수정
      */
     public ReviewDetailResponse updateReview(Long userId, Long reviewId, ReviewUpdateRequest request) {
-        Review review = reviewRepository.findByIdAndUserId(reviewId, userId)
+        Review review = reviewRepository.findByIdAndPlanUserId(reviewId, userId)
                 .orElseThrow(() -> BaseException.type(ReviewErrorCode.REVIEW_NOT_FOUND));
         review.update(request.mood(), (byte) request.achievement(), request.memo());
         return ReviewDetailResponse.from(review);
@@ -75,7 +75,7 @@ public class ReviewCommandService {
      * 회고 삭제
      */
     public Long deleteReview(Long userId, Long reviewId) {
-        Review review = reviewRepository.findByIdAndUserId(reviewId, userId)
+        Review review = reviewRepository.findByIdAndPlanUserId(reviewId, userId)
                 .orElseThrow(() -> new BaseException(ReviewErrorCode.REVIEW_NOT_FOUND));
         reviewRepository.delete(review);
         return reviewId;

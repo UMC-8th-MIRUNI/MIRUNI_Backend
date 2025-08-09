@@ -9,6 +9,7 @@ import dgu.umc_app.domain.review.dto.response.ReviewListResponse;
 import dgu.umc_app.domain.review.service.ReviewCommandService;
 import dgu.umc_app.domain.review.service.ReviewQueryService;
 import dgu.umc_app.global.authorize.CustomUserDetails;
+import dgu.umc_app.global.authorize.LoginUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -33,55 +34,52 @@ public class ReviewController implements ReviewApi{
 
      //회고 작성 후 저장
      @PostMapping
-     public ReviewCreateResponse createReview(@AuthenticationPrincipal CustomUserDetails userDetails,
+     public ReviewCreateResponse createReview(@LoginUser Long userId,
                                               @RequestBody @Valid ReviewCreateRequest request) {
-         Long userId = userDetails.getId();
          return reviewCommandService.saveReview(userId, request);
      }
 
     //회고록 날짜별 갯수 조회
     @GetMapping("/countByDate")
-    public List<ReviewCountByDateResponse> getReviewCountByDate(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return reviewQueryService.getReviewCountByDate(userDetails.getUser().getId());
+    public List<ReviewCountByDateResponse> getReviewCountByDate(@LoginUser Long userId) {
+        return reviewQueryService.getReviewCountByDate(userId);
     }
 
     //개별 회고 상세 조회
     @GetMapping("/{reviewId}")
-    public ReviewDetailResponse getReview(@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ReviewDetailResponse getReview(@LoginUser Long userId,
                                           @PathVariable Long reviewId) {
-        return reviewQueryService.getReview(userDetails.getId(), reviewId);
+        return reviewQueryService.getReview(userId, reviewId);
     }
 
 
     // 특정 날짜의 회고 목록 조회
     @GetMapping("/date")
-    public List<ReviewListResponse> getReviewListByDate(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+    public List<ReviewListResponse> getReviewListByDate(@LoginUser Long userId,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
-        return reviewQueryService.getReviewListByUserIdAndDate(userDetails.getId(), date);
+        return reviewQueryService.getReviewListByUserIdAndDate(userId, date);
     }
 
     //날짜 검색으로 인한 회고 블럭 조회
     @GetMapping("/search")
-    public ReviewCountByDateResponse getReviewSearch(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+    public ReviewCountByDateResponse getReviewSearch( @LoginUser Long userId,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
-        return reviewQueryService.getReviewSearch(userDetails.getUser().getId(), date);
+        return reviewQueryService.getReviewSearch(userId, date);
     }
 
     //회고 수정
     @PatchMapping("/update/{reviewId}")
-    public ReviewDetailResponse updateReview(@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ReviewDetailResponse updateReview(@LoginUser Long userId,
                                              @PathVariable Long reviewId,
                                              @RequestBody @Valid ReviewUpdateRequest request) {
-        return reviewCommandService.updateReview(userDetails.getId(), reviewId, request);
+        return reviewCommandService.updateReview(userId, reviewId, request);
     }
 
     //회고 삭제
     @DeleteMapping("/{reviewId}")
-    public Long deleteReview(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long reviewId) {
-        return reviewCommandService.deleteReview(userDetails.getId(),reviewId);
+    public Long deleteReview(@LoginUser Long userId, @PathVariable Long reviewId) {
+        return reviewCommandService.deleteReview(userId,reviewId);
     }
 }
