@@ -1,8 +1,10 @@
 package dgu.umc_app.domain.user.service;
 
+import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
+import dgu.umc_app.domain.user.entity.ProfileImage;
 import org.springframework.stereotype.Service;
 import dgu.umc_app.domain.user.repository.UserRepository;
-import dgu.umc_app.global.common.JwtUtil;
+import dgu.umc_app.global.authorize.TokenService;
 import dgu.umc_app.global.exception.BaseException;
 import dgu.umc_app.domain.user.entity.User;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +28,6 @@ import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.validator.UserValidator;
 import lombok.extern.slf4j.Slf4j;
 import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
-import dgu.umc_app.global.authorize.CustomUserDetails;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 
 @Service
 @Transactional
@@ -38,7 +37,7 @@ public class UserCommandService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+    private final TokenService tokenService;
     private final UserValidator userValidator;
 
     public UserResponse signup(UserSignupRequest userSignupRequest) {
@@ -73,15 +72,7 @@ public class UserCommandService {
     }
 
     private UserResponse issueTokenResponse(User user) {
-
-        Authentication authentication = createAuthentication(user);
-        
-        String accessToken = jwtUtil.generateAccessToken(authentication);
-        String refreshToken = jwtUtil.generateRefreshToken(authentication);
-        long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
-        long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
-
-        return UserResponse.of(accessToken, refreshToken, accessTokenExp, refreshTokenExp);
+        return tokenService.issueTokenResponse(user);
     }
 
     private AuthUserInfoDto verifyGoogleIdToken(String idToken) {
@@ -195,8 +186,7 @@ public class UserCommandService {
         updateUserInfo.accept(user);
         user.activate();
 
-        User savedUser = userRepository.save(user);
-        return issueTokenResponse(savedUser);
+        return issueTokenResponse(user);
     }
 
     private User findOrCreateUser(AuthUserInfoDto userInfo, OauthProvider provider) {
@@ -205,25 +195,66 @@ public class UserCommandService {
     }
 
     private String generateTempToken(User user) {
-        Authentication authentication = createAuthentication(user);
-        return jwtUtil.generateTempToken(authentication);
+        return tokenService.generateTempTokenForUser(user);
     }
 
     private AuthLoginResponse generateLoginTokens(User user, boolean isNewUser) {
-        
-        Authentication authentication = createAuthentication(user);
-        
-        String accessToken = jwtUtil.generateAccessToken(authentication);
-        String refreshToken = jwtUtil.generateRefreshToken(authentication);
-        long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
-        long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
-        
-        return AuthLoginResponse.login(accessToken, refreshToken, accessTokenExp, refreshTokenExp, isNewUser);
+        return tokenService.generateLoginTokens(user, isNewUser);
     }
 
-    private Authentication createAuthentication(User user) {
-        CustomUserDetails userDetails = new CustomUserDetails(user);
-        return new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
+    public void logout() {
+        tokenService.logout();
+    }
+
+    public void withdrawUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.isDeleted()) {
+            throw BaseException.type(UserErrorCode.USER_ALREADY_DELETED);
+        }
+
+        user.delete();
+        
+        tokenService.logout();
+
+        log.info("회원 탈퇴 완료: userId={}", userId);
+    }
+
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.isSocialUser()) {
+            throw BaseException.type(UserErrorCode.SOCIAL_USER_PASSWORD_CHANGE);
+        }
+
+        if (!user.hasPassword()) {
+            throw BaseException.type(UserErrorCode.USER_WRONG_PASSWORD);
+        }
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw BaseException.type(UserErrorCode.USER_WRONG_PASSWORD);
+        }
+
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw BaseException.type(UserErrorCode.SAME_PASSWORD);
+        }
+
+        // 비밀번호 암호화
+        user.updatePassword(passwordEncoder.encode(newPassword));
+
+        tokenService.logout();
+
+        log.info("비밀번호 변경 완료: userId={}", userId);
+    }
+    
+    public UserInfoResponse updateProfileImage(Long userId, ProfileImage profileImage) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        user.updateProfileImage(profileImage);
+
+        return UserInfoResponse.from(user);
     }
 }

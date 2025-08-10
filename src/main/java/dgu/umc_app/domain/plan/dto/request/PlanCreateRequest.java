@@ -1,13 +1,14 @@
-package dgu.umc_app.domain.plan.dto;
+package dgu.umc_app.domain.plan.dto.request;
 
 import dgu.umc_app.domain.plan.entity.Plan;
+import dgu.umc_app.domain.plan.entity.PlanCategory;
+import dgu.umc_app.domain.plan.entity.Priority;
 import dgu.umc_app.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record PlanCreateRequest(
@@ -21,9 +22,12 @@ public record PlanCreateRequest(
         @Schema(description = "마감 기한")
         LocalDateTime deadline,
 
-        @NotNull(message = "일정 수행 날짜는 필수입니다.")
-        @Schema(description = "일정 수행 날짜")
-        LocalDateTime executeDate,
+        @NotNull(message = "수행 시작 날짜는 필수입니다.")
+        @Schema(description = "수행 시작 날짜")
+        LocalDateTime scheduledStart,
+
+        @Schema(description = "우선순위")
+        Priority priority,
 
         @NotBlank(message = "일정 내용은 필수입니다.")
         @Schema(description = "일정 간단설명")
@@ -35,7 +39,8 @@ public record PlanCreateRequest(
                 .title(title)
                 .description(description)
                 .deadline(deadline)
-                .executeDate(executeDate)
+                .scheduledStart(scheduledStart)
+                .priority(priority)
                 .isDone(false)
                 .user(user)
                 .build();

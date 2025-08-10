@@ -6,7 +6,10 @@ import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
 import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
+import dgu.umc_app.domain.user.dto.request.ReissueTokenRequest;
+import dgu.umc_app.domain.user.dto.request.ChangePasswordRequest;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
+import dgu.umc_app.domain.user.dto.response.ReissueTokenResponse;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.LoginUser;
@@ -115,4 +118,54 @@ public interface UserAuthApi {
         @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
     })
     UserResponse kakaoSignUp(@Valid @RequestBody KakaoSignUpRequest request, @LoginUser Long userId);
+
+    @Operation(
+        summary = "로그아웃",
+        description = "사용자 로그아웃을 처리합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+        @ApiResponse(responseCode = "401", description = "로그아웃 실패")
+    })
+    void logout();
+
+    @Operation(
+        summary = "토큰 재발급",
+        description = "리프레시 토큰을 사용하여 새로운 액세스 토큰과 리프레시 토큰을 발급합니다. \n" +
+                "Refresh Token Rotation을 적용하여 보안을 강화합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "토큰 재발급 성공",
+                content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = ReissueTokenResponse.class))),
+        @ApiResponse(responseCode = "401", description = "유효하지 않은 리프레시 토큰"),
+        @ApiResponse(responseCode = "400", description = "입력값 검증 실패")
+    })
+    ReissueTokenResponse reissueToken(@Valid @RequestBody ReissueTokenRequest request);
+
+    @Operation(
+        summary = "회원 탈퇴",
+        description = "현재 로그인한 사용자의 회원 탈퇴를 처리합니다. \n" +
+                "소프트 삭제 방식으로 처리되며, 모든 토큰이 무효화됩니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "회원 탈퇴 성공"),
+        @ApiResponse(responseCode = "400", description = "이미 탈퇴한 사용자"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    void withdrawUser(@LoginUser Long userId);
+
+    @Operation(
+        summary = "비밀번호 변경",
+        description = "현재 비밀번호를 확인하고 새 비밀번호로 변경합니다. \n" +
+                "비밀번호 변경 후 모든 토큰이 무효화되어 재로그인이 필요합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
+        @ApiResponse(responseCode = "400", description = "비밀번호 형식 오류 또는 현재 비밀번호와 동일"),
+        @ApiResponse(responseCode = "401", description = "현재 비밀번호 불일치"),
+        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    void changePassword(@LoginUser Long userId, @Valid @RequestBody ChangePasswordRequest request);
 } 

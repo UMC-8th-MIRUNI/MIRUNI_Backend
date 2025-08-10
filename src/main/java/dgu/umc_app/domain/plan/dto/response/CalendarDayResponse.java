@@ -1,4 +1,4 @@
-package dgu.umc_app.domain.plan.dto;
+package dgu.umc_app.domain.plan.dto.response;
 
 import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.entity.Priority;
@@ -15,11 +15,8 @@ public record CalendarDayResponse (
         @Schema(description = "AI 쪼개기 일정일 경우 상위 일정 제목")
         String parentTitle,
 
-        @Schema(description = "상위일정 제목")
+        @Schema(description = "일반 일정일 경우 상위일정 제목")
         String title,
-
-        @Schema(description = "일정 유형(기본 or AI 쪼개기)")
-        String type,        // NORMAL or AI_SPLIT
 
         @Schema(description = "각 일정의 시작 시간")
         LocalTime startTime,
@@ -28,7 +25,10 @@ public record CalendarDayResponse (
         LocalTime endTime,
 
         @Schema(description = "각 일정의 우선순위")
-        Priority priority
+        Priority priority,
+
+        @Schema(description = "일정 유형(개수 세기 위함)")
+        String category
 ){
 
     public static CalendarDayResponse from(Plan plan) {
@@ -36,10 +36,10 @@ public record CalendarDayResponse (
                 plan.getId(),
                 null,
                 plan.getTitle(),
-                "NORMAL",
-                plan.getExecuteDate().toLocalTime(),
+                plan.getScheduledStart().toLocalTime(),
                 plan.getDeadline().toLocalTime(),
-                plan.getPriority()
+                plan.getPriority(),
+                "BASIC"
         );
     }
 
@@ -48,10 +48,10 @@ public record CalendarDayResponse (
                 aiPlan.getId(),
                 aiPlan.getPlan().getTitle(),
                 aiPlan.getDescription(),
-                "AI_SPLIT",
-                aiPlan.getStartTime(),
-                aiPlan.getEndTime(),
-                aiPlan.getPriority()
+                aiPlan.getScheduledStart().toLocalTime(),
+                aiPlan.getScheduledEnd().toLocalTime(),
+                aiPlan.getPriority(),
+                "AI"
         );
     }
 }

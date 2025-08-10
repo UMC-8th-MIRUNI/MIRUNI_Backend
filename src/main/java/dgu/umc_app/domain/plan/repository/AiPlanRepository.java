@@ -6,12 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 public interface AiPlanRepository extends JpaRepository<AiPlan, Long> {
-    List<AiPlan> findByPlan_UserIdAndScheduledDateBetween(Long userId, LocalDate start, LocalDate end); //월별 조회
-    List<AiPlan> findByPlan_UserIdAndScheduledDate(Long userId, LocalDate scheduledDate); //일자별 조회
+    List<AiPlan> findByPlan_UserIdAndScheduledStartBetween(Long userId, LocalDateTime start, LocalDateTime end); //월별,일자별 조회
     List<AiPlan> findByPlan_UserIdAndIsDelayedTrue(Long userId);
     List<AiPlan> findByIsDoneFalse();
 
@@ -20,5 +20,16 @@ public interface AiPlanRepository extends JpaRepository<AiPlan, Long> {
     WHERE ap.id = :aiPlanId AND ap.plan.user.id = :userId
 """)
     Optional<AiPlan> findByIdAndUserId(@Param("aiPlanId") Long aiPlanId, @Param("userId") Long userId);
+
+    //보관함 페이지 -> AiPlan 조회
+    @Query("""
+    select ap from AiPlan ap
+    join ap.plan p
+    where p.user.id = :userId
+    and year(ap.scheduledStart) = :year
+    and month(ap.scheduledStart) = :month
+""")
+    List<AiPlan> findByUserIdAndMonth(Long userId, int year, int month);
+    List<AiPlan> findByPlan_UserIdAndIsDoneFalseAndIsDelayedFalse(Long userId); // 안 한 일정 조회
 
 }

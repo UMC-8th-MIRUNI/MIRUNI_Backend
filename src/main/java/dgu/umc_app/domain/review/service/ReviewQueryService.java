@@ -36,7 +36,7 @@ public class ReviewQueryService {
      * 단일 회고 상세 조회
      */
     public ReviewDetailResponse getReview(Long userId, Long reviewId) {
-        Review review = reviewRepository.findByIdAndUserId(reviewId, userId)
+        Review review = reviewRepository.findByIdAndPlanUserId(reviewId, userId)
                 .orElseThrow(() -> BaseException.type(ReviewErrorCode.REVIEW_NOT_FOUND));
         return ReviewDetailResponse.from(review);
     }

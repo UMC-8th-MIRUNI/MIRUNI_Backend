@@ -1,14 +1,11 @@
 package dgu.umc_app.domain.fcm.service;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.fcm.dto.request.RegisterFcmTokenRequestDto;
 import dgu.umc_app.domain.fcm.dto.request.UpdateFcmNotificationRequestDto;
 import dgu.umc_app.domain.fcm.dto.response.RegisterTokenResponseDto;
 import dgu.umc_app.domain.fcm.entity.FcmToken;
 import dgu.umc_app.domain.fcm.exception.FcmErrorCode;
 import dgu.umc_app.domain.fcm.repository.FcmTokenRepository;
-import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
@@ -37,5 +34,10 @@ public class FcmTokenCommandService {
         fcmToken.updateNotificationEnabled(request.enabled());
     }
 
+    @Transactional
+    public void deleteInvalidToken(String token){
+        fcmTokenRepository.findByToken(token)
+                .ifPresent(fcmTokenRepository::delete);
+    }
 
 }
