@@ -66,6 +66,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Status status = Status.ACTIVE;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ProfileImage profileImage = ProfileImage.GREEN;
 
     // == User 상태 변경 메서드들 == //
     public void activate() {
@@ -124,5 +127,9 @@ public class User extends BaseEntity {
 
     public boolean hasPassword() {
         return this.password != null && !this.password.isEmpty();
+    }
+  
+    public void updateProfileImage(ProfileImage profileImage) {
+        this.profileImage = profileImage;
     }
 }

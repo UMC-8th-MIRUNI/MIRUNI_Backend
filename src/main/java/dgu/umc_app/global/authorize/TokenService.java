@@ -32,30 +32,22 @@ public class TokenService {
 
     // 공통 토큰 발급/저장 메서드
     private TokenDto createAndStoreTokens(User user) {
-      
         Authentication authentication = createAuthentication(user);
-        String accessToken = jwtUtil.generateAccessToken(authentication);
-        String refreshToken = jwtUtil.generateRefreshToken(authentication);
-        long accessTokenExp = jwtUtil.getAccessTokenExpirationInSeconds();
-        long refreshTokenExp = jwtUtil.getRefreshTokenExpirationInSeconds();
-        saveRefreshToken(user.getId().toString(), refreshToken, refreshTokenExp);
+        TokenDto tokenDto = jwtUtil.createTokenDto(authentication);
         
-        return TokenDto.builder()
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .accessTokenExp(accessTokenExp)
-            .refreshTokenExp(refreshTokenExp)
-            .build();
+        saveRefreshToken(user.getId().toString(), tokenDto.refreshToken(), tokenDto.refreshTokenExp());
+        
+        return tokenDto;
     }
 
     public UserResponse issueTokenResponse(User user) {
         TokenDto token = createAndStoreTokens(user);
-        return UserResponse.of(token.getAccessToken(), token.getRefreshToken(), token.getAccessTokenExp(), token.getRefreshTokenExp());
+        return UserResponse.of(token.accessToken(), token.refreshToken(), token.accessTokenExp(), token.refreshTokenExp());
     }
 
     public AuthLoginResponse generateLoginTokens(User user, boolean isNewUser) {
         TokenDto token = createAndStoreTokens(user);
-        return AuthLoginResponse.login(token.getAccessToken(), token.getRefreshToken(), token.getAccessTokenExp(), token.getRefreshTokenExp(), isNewUser);
+        return AuthLoginResponse.login(token.accessToken(), token.refreshToken(), token.accessTokenExp(), token.refreshTokenExp(), isNewUser);
     }
 
     public String generateTempTokenForUser(User user) {

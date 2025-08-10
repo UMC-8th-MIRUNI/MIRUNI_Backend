@@ -1,9 +1,8 @@
 package dgu.umc_app.domain.fcm.service;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.MulticastMessage;
-import com.google.firebase.messaging.Notification;
+import com.google.firebase.FirebaseException;
+import com.google.firebase.messaging.*;
+import dgu.umc_app.domain.fcm.entity.FcmErrorResponse;
 import dgu.umc_app.domain.fcm.entity.NotificationType;
 import dgu.umc_app.domain.fcm.entity.ReminderType;
 import dgu.umc_app.domain.fcm.exception.FcmErrorCode;
@@ -12,6 +11,7 @@ import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.global.exception.BaseException;
+import jakarta.transaction.Transactional;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +41,7 @@ public class NotificationScheduleService {
     private final FirebaseMessaging firebaseMessaging;
     private final PlanRepository planRepository;
     private final AiPlanRepository aiPlanRepository;
+    private final FcmTokenCommandService fcmTokenCommandService;
 
 
     //Plan 알림 등록
@@ -57,7 +58,7 @@ public class NotificationScheduleService {
                 .type(NotificationType.PLAN)
                 .targetId(plan.getId())
                 .reminderType(ReminderType.ONE_HOUR_BEFORE)
-                .notificationTime(plan.getExecuteDate().minusHours(1))
+                .notificationTime(plan.getScheduledStart().minusHours(1))
                 .build());
 
         scheduleNotificationAtTime(NotificationTask.builder()
@@ -67,11 +68,11 @@ public class NotificationScheduleService {
                 .type(NotificationType.PLAN)
                 .targetId(plan.getId())
                 .reminderType(ReminderType.TEN_MINUTES_BEFORE)
-                .notificationTime(plan.getExecuteDate().minusMinutes(10))
+                .notificationTime(plan.getScheduledStart().minusMinutes(10))
                 .build());
 
 
-        log.info("Plan 알림 스케줄 등록 완료: planId = {}, startTime = {}", plan.getId(), plan.getExecuteDate());
+        log.info("Plan 알림 스케줄 등록 완료: planId = {}, startTime = {}", plan.getId(), plan.getScheduledStart());
     }
 
     //AIPlan 알림 등록
@@ -150,6 +151,7 @@ public class NotificationScheduleService {
         log.info("알림 스케줄 취소 완료: type = {}, targetId = {}", NotificationType.AI_PLAN, aiplan.getId());
     }
 
+    @Transactional
     //앱시작시 미완료 task들 재스케줄링
     @EventListener(ApplicationReadyEvent.class)
     public void rescheduleExistingPlans(){
@@ -190,7 +192,7 @@ public class NotificationScheduleService {
         if(task.notificationTime().isBefore(LocalDateTime.now())){
             log.debug("지난 시간이므로 스케줄하지 않음: type={}, targetId={}, time={}",
                     task.type(), task.targetId(), task.notificationTime());
-            throw BaseException.type(FcmErrorCode.PASSED_AWAY_TIME);
+            return;
         }
 
         String scheduleKey = createScheduleKey(task);
@@ -245,7 +247,10 @@ public class NotificationScheduleService {
                     .addAllTokens(activeTokens)
                     .build();
 
-            firebaseMessaging.sendEachForMulticast(message);
+            BatchResponse response = firebaseMessaging.sendEachForMulticast(message);
+
+            handleBatchResponse(activeTokens, response);
+
         } catch (FirebaseMessagingException e){
             throw BaseException.type(FcmErrorCode.FCM_SEND_FAILED);
         }
@@ -261,6 +266,34 @@ public class NotificationScheduleService {
         }
     }
 
+    // == FCM 토큰 오류 처리 메서드 == //
+    private void handleBatchResponse(List<String> tokens, BatchResponse response){
+        int failureCount = response.getFailureCount();
+
+        if(failureCount > 0){
+            List<SendResponse> responses = response.getResponses();
+
+            for(int i = 0; i < responses.size(); i++){
+                SendResponse sendResponse = responses.get(i);
+                String token = tokens.get(i);
+
+                if(!sendResponse.isSuccessful()){
+                    FirebaseException exception = sendResponse.getException();
+                    String errorCode = exception.getErrorCode().name();
+
+                    if(shouldDeleteToken(errorCode)){
+                        fcmTokenCommandService.deleteInvalidToken(token);
+                    }
+                }
+            }
+
+        }
+    }
+
+    // == 삭제될 토큰인지 판단 == //
+    private boolean shouldDeleteToken(String errorCode){
+        return FcmErrorResponse.fromErrorCode(errorCode).isShouldDeleteToken();
+    }
 
     // == 관련 record == //
     @Builder

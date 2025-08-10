@@ -17,7 +17,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         CAST(r.createdAt AS date), COUNT(r)
     )
     FROM Review r
-    WHERE r.aiPlan.plan.user.id = :userId
+    WHERE r.plan.user.id = :userId
     GROUP BY CAST(r.createdAt AS date)
     ORDER BY CAST(r.createdAt AS date) DESC
 """)
@@ -27,7 +27,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("""
     SELECT r
     FROM Review r
-    WHERE r.aiPlan.plan.user.id = :userId
+    WHERE r.plan.user.id = :userId
     AND DATE(r.createdAt) = :targetDate
     ORDER BY r.createdAt DESC
 """)
@@ -40,7 +40,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         CAST(r.createdAt AS date), COUNT(r)
     )
     FROM Review r
-    WHERE r.aiPlan.plan.user.id = :userId
+    WHERE r.plan.user.id = :userId
     AND CAST(r.createdAt AS date) = :targetDate
     GROUP BY CAST(r.createdAt AS date)
     """)
@@ -48,10 +48,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
                                                    @Param("targetDate") java.sql.Date targetDate);
 
      //단일 회고 상세 조회
-     @Query("""
-    SELECT r FROM Review r
-    WHERE r.id = :reviewId AND r.aiPlan.plan.user.id = :userId
-""")
-     Optional<Review> findByIdAndUserId(@Param("reviewId") Long reviewId, @Param("userId") Long userId);
+     Optional<Review> findByIdAndPlanUserId(Long id, Long userId);
 
 }

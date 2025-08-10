@@ -1,6 +1,6 @@
 package dgu.umc_app.domain.user.service;
 
-import dgu.umc_app.domain.user.dto.UserResponseDto;
+import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.domain.user.exception.UserErrorCode;
 import dgu.umc_app.domain.user.repository.UserRepository;
@@ -16,11 +16,11 @@ public class UserQueryService {
 
     private final UserRepository userRepository;
 
-    public UserResponseDto getUserInfo(Long userId) {
+    public UserInfoResponse getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
 
-        return UserResponseDto.from(user);
+        return UserInfoResponse.from(user);
     }
 
     public void duplicateCheck(String email) {

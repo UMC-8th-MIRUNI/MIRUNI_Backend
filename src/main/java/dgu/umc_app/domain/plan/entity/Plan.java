@@ -33,7 +33,10 @@ public class Plan extends BaseEntity {
     private LocalDateTime deadline; // 마감 기한
 
     @Column(nullable = false)
-    private LocalDateTime executeDate; // 실제 수행 시작날짜
+    private LocalDateTime scheduledStart; // 수행시작 예정 날짜&시간(ex: 2025-05-01T21:00:00)
+
+    @Column(nullable = false)
+    private LocalDateTime scheduledEnd; // 수행종료 예정 날짜&시간(ex: 2025-05-01T22:00:00)
 
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
@@ -42,5 +45,6 @@ public class Plan extends BaseEntity {
     private boolean isDelayed = false;  // 미루기 여부
 
     @Enumerated(EnumType.STRING)
+    @Column
     private Priority priority;
 }
