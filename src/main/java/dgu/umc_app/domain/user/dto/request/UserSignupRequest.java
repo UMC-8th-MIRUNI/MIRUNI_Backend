@@ -46,7 +46,7 @@ public record UserSignupRequest(
                         .lastPasswordChanged(LocalDateTime.now())
                         .agreedPrivacyPolicy(true)
                         .peanutCount(0)
-                        .userPreference("{}")
+                        .userPreference("")
                         .oauthProvider(null)
                         .status(Status.ACTIVE)
                         .build();
