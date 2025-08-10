@@ -146,7 +146,7 @@ public interface UserAuthApi {
     @Operation(
         summary = "설문조사 완료",
         description = "사용자 설문조사 응답을 저장합니다. \n" +
-                "미루는 상황, 정도, 이유에 대한 응답을 JSON 형태로 저장하고 사용자 상태를 ACTIVE로 변경합니다."
+                "미루는 상황, 정도, 이유에 대한 응답을 간단한 문자열 형태로 저장하고 사용자 상태를 ACTIVE로 변경합니다."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "설문 완료 성공",

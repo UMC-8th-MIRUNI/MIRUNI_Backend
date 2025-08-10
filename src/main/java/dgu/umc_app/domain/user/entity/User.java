@@ -51,9 +51,9 @@ public class User extends BaseEntity {
     @Builder.Default
     private int peanutCount = 0;
 
-    @Column(nullable = false, columnDefinition = "JSON")
+    @Column(nullable = false)
     @Builder.Default
-    private String userPreference = "{}";
+    private String userPreference = "";
 
     @Enumerated(EnumType.STRING)
     private OauthProvider oauthProvider;

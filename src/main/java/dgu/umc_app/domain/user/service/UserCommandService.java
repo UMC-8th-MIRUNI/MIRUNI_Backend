@@ -27,7 +27,6 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
@@ -47,7 +46,6 @@ public class UserCommandService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final UserValidator userValidator;
-    private final ObjectMapper objectMapper;
 
     public UserResponse signup(UserSignupRequest userSignupRequest) {
 
@@ -234,11 +232,16 @@ public class UserCommandService {
             throw BaseException.type(UserErrorCode.SURVEY_ALREADY_COMPLETED);
         }
 
-        String userPreference = convertToJson(request);
+        // 문자열 형식으로 설문 응답 저장: "1,3,4|7|2,5"
+        String delaySituation = String.join(",", request.delaySituation().stream().map(String::valueOf).toList());
+        String delayReason = String.join(",", request.delayReason().stream().map(String::valueOf).toList());
+        
+        String userPreference = String.format("%s|%d|%s", delaySituation, request.delayDegree(), delayReason);
 
         user.completeSurvey(userPreference);
 
-        log.info("설문조사 완료: userId={}", userId);
+        log.info("설문조사 완료: userId={}, Q1: {}, Q2: {}, Q3: {}", 
+                userId, request.delaySituation(), request.delayDegree(), request.delayReason());
 
         return SurveyResponse.of(
             "설문조사가 완료되었습니다!",
@@ -247,14 +250,5 @@ public class UserCommandService {
         );    
     }
 
-    private String convertToJson(SurveyRequest request) {
-        try {
-            String json = objectMapper.writeValueAsString(request);
-            log.debug("설문 응답 JSON 변환 완료: {}", json);
-            return json;
-        } catch (JsonProcessingException e) {
-            log.error("설문 응답 JSON 변환 실패: {}", e.getMessage());
-            throw BaseException.type(CommonErrorCode.INTERNAL_SERVER_ERROR);
-        }
-    }
+
 }
