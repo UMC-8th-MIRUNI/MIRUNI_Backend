@@ -1,7 +1,7 @@
 package dgu.umc_app.domain.plan.service;
 
 import dgu.umc_app.domain.plan.dto.response.*;
-import dgu.umc_app.domain.plan.entity.PlanCategory;
+import dgu.umc_app.domain.plan.entity.Status;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.entity.AiPlan;
@@ -36,26 +36,31 @@ public class PlanQueryService{
         List<Plan> plans = planRepository.findIndependentPlans(userId, year, month);
         List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledStartBetween(userId, startDateTime, endDateTime);
 
-        Map<LocalDate, List<Boolean>> doneMap = new HashMap<>();
+        Map<LocalDate, List<Status>> statusMap = new HashMap<>();
 
         for (Plan plan : plans) {
             LocalDateTime scheduledStart = plan.getScheduledStart();
-            doneMap.computeIfAbsent(scheduledStart.toLocalDate(), k -> new ArrayList<>())
-                    .add(plan.isDone());
+            Status status = plan.getStatus();
+            if (status != null) {
+                statusMap.computeIfAbsent(scheduledStart.toLocalDate(), k -> new ArrayList<>() ).add(status);
+            }
         }
 
         for (AiPlan aiPlan : aiPlans) {
             LocalDateTime scheduledStart = aiPlan.getScheduledStart();
-            doneMap.computeIfAbsent(scheduledStart.toLocalDate(), k -> new ArrayList<>())
-                    .add(aiPlan.isDone());
+            Status status = aiPlan.getStatus();
+            if (status != null) {
+                statusMap.computeIfAbsent(scheduledStart.toLocalDate(), k -> new ArrayList<>()).add(status);
+            }
         }
 
-        return doneMap.entrySet().stream()
-                .map(entry -> new CalendarMonthResponse(
-                        entry.getKey(),
-                        (int) entry.getValue().stream().filter(done -> !done).count(),  // 안 한 일정 갯수로 변경
-                        entry.getValue().stream().allMatch(Boolean::booleanValue)
-                ))
+        return statusMap.entrySet().stream()
+                .map(e -> {
+                        long pendingcount = e.getValue().stream()
+                                .filter(s -> s == Status.NOT_STARTED || s == Status.PAUSED)
+                                .count();
+                        return new CalendarMonthResponse(e.getKey(), (int) pendingcount);
+                })
                 .sorted(Comparator.comparing(CalendarMonthResponse::getDate))
                 .collect(Collectors.toList());
 
@@ -73,7 +78,8 @@ public class PlanQueryService{
         List<Plan> plans = allIndependentPlans.stream()
                 .filter(plan -> {
                     LocalDateTime scheduledStart = plan.getScheduledStart();
-                    return scheduledStart!=null && !plan.isDone()
+                    return scheduledStart!=null
+                            && (plan.getStatus() == Status.NOT_STARTED || plan.getStatus() == Status.PAUSED)
                             && !scheduledStart.isBefore(startOfDay)
                             && !scheduledStart.isAfter(endOfDay);
                 })
@@ -81,11 +87,10 @@ public class PlanQueryService{
 
         List<AiPlan> aiPlans = aiPlanRepository.findByPlan_UserIdAndScheduledStartBetween(userId, startOfDay, endOfDay)
                 .stream()
-                .filter(aiPlan -> !aiPlan.isDone())
+                .filter(aiPlan -> aiPlan.getStatus() == Status.NOT_STARTED || aiPlan.getStatus() == Status.PAUSED)
                 .toList();
 
         List<CalendarDayResponse> result = new ArrayList<>();
-
         plans.forEach(plan -> result.add(CalendarDayResponse.from(plan)));
         aiPlans.forEach(aiPlan -> result.add(CalendarDayResponse.from(aiPlan)));
 
@@ -97,8 +102,8 @@ public class PlanQueryService{
     public List<DelayedPlanResponse> getDelayedPlans(User user) {
         Long userId = user.getId();
 
-        List<Plan> delayedPlans = planRepository.findByUserIdAndIsDelayedTrue(userId);
-        List<AiPlan> delayedAiPlans = aiPlanRepository.findByPlan_UserIdAndIsDelayedTrue(userId);
+        List<Plan> delayedPlans = planRepository.findByUserIdAndStatus(userId, Status.PAUSED);
+        List<AiPlan> delayedAiPlans = aiPlanRepository.findByPlan_UserIdAndStatus(userId, Status.PAUSED);
 
         List<DelayedPlanResponse> result = new ArrayList<>();
         delayedPlans.forEach(plan -> result.add(DelayedPlanResponse.from(plan)));
@@ -107,25 +112,25 @@ public class PlanQueryService{
         return result;
     }
 
-    public List<UnfinishedPlanResponse> getUnfinishedPlans(User user) {
+    public List<UnstartedPlanResponse> getUnstartedPlans(User user) {
         Long userId = user.getId();
 
         LocalDateTime yesterday = LocalDate.now().minusDays(1).atTime(23, 59, 59);
 
-        List<Plan> unfinishedPlans = planRepository.findByUserIdAndIsDoneFalseAndIsDelayedFalse(userId)
+        List<Plan> unstartedPlans = planRepository.findByUserIdAndStatus(userId, Status.NOT_STARTED)
                 .stream()
                 .filter(plan -> plan.getScheduledEnd().isBefore(yesterday))
                 .toList();
 
-        List<AiPlan> unfinishedAiPlans = aiPlanRepository.findByPlan_UserIdAndIsDoneFalseAndIsDelayedFalse(userId)
+        List<AiPlan> unstartedAiPlans = aiPlanRepository.findByPlan_UserIdAndStatus(userId, Status.NOT_STARTED)
                 .stream()
                 .filter(aiPlan -> aiPlan.getScheduledEnd().isBefore(yesterday))
                 .toList();
 
-        List<UnfinishedPlanResponse> result = new ArrayList<>();
+        List<UnstartedPlanResponse> result = new ArrayList<>();
 
-        unfinishedPlans.forEach(plan -> result.add(UnfinishedPlanResponse.from(plan)));
-        unfinishedAiPlans.forEach(aiPlan -> result.add(UnfinishedPlanResponse.from(aiPlan)));
+        unstartedPlans.forEach(plan -> result.add(UnstartedPlanResponse.from(plan)));
+        unstartedAiPlans.forEach(aiPlan -> result.add(UnstartedPlanResponse.from(aiPlan)));
 
         return result;
     }

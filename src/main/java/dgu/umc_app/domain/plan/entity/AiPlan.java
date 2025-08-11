@@ -54,7 +54,17 @@ public class AiPlan extends BaseEntity {
     @Column(nullable = false)
     private boolean isDelayed = false;  // 미루기 여부
 
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Status status;  // 미완료, 진행중, 중지, 완료
+
     public LocalDateTime getTaskTime() {
         return LocalDateTime.of(scheduledStart.toLocalDate(), scheduledStart.toLocalTime());
     }
+
+    public void updateExpectedDuration(Long expectedDuration) {this.expectedDuration = expectedDuration;}
+    public void updateScheduleStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
+    public void updateIsDelayed(boolean isDelayed) {this.isDelayed = isDelayed;}
+    public void updateScheduleEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
+    public void updateStatus(Status status) {this.status = status;}
 }

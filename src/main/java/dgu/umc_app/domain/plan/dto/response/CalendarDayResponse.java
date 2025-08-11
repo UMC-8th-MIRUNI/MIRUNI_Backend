@@ -1,8 +1,6 @@
 package dgu.umc_app.domain.plan.dto.response;
 
-import dgu.umc_app.domain.plan.entity.AiPlan;
-import dgu.umc_app.domain.plan.entity.Priority;
-import dgu.umc_app.domain.plan.entity.Plan;
+import dgu.umc_app.domain.plan.entity.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalTime;
@@ -27,8 +25,8 @@ public record CalendarDayResponse (
         @Schema(description = "각 일정의 우선순위")
         Priority priority,
 
-        @Schema(description = "일정 유형(개수 세기 위함)")
-        String category
+        @Schema(description = "일정 유형(미루기 일정 판단)")
+        Category category
 ){
 
     public static CalendarDayResponse from(Plan plan) {
@@ -39,7 +37,7 @@ public record CalendarDayResponse (
                 plan.getScheduledStart().toLocalTime(),
                 plan.getDeadline().toLocalTime(),
                 plan.getPriority(),
-                "BASIC"
+                Category.BASIC
         );
     }
 
@@ -51,7 +49,7 @@ public record CalendarDayResponse (
                 aiPlan.getScheduledStart().toLocalTime(),
                 aiPlan.getScheduledEnd().toLocalTime(),
                 aiPlan.getPriority(),
-                "AI"
+                Category.AI
         );
     }
 }

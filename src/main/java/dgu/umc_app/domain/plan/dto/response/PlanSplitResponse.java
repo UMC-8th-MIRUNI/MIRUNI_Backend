@@ -3,6 +3,7 @@ package dgu.umc_app.domain.plan.dto.response;
 import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.entity.PlanType;
+import dgu.umc_app.domain.plan.entity.Status;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
@@ -68,6 +69,7 @@ public record   PlanSplitResponse(
                                     .description(response.description())
                                     .expectedDuration(response.expectedDuration())
                                     .priority(parentPlan.getPriority())
+                                    .status(Status.NOT_STARTED)
                                     .build();
                         }).toList();
     }

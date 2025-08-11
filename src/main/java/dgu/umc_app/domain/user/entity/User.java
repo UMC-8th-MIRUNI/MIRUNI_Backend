@@ -9,6 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.util.Arrays;
+import java.util.List;
 
 @Entity
 @Getter
@@ -49,6 +52,28 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private int peanutCount = 0;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "user_delay_times",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "delay_time")
+    private List<Long> delayTimes = Arrays.asList(0L, 0L); // index 0 : 이번 달, index 1 : 저번 달
+
+    @Column
+    private YearMonth delayBaseMonth; // 미룰 때 index 0이 가리키는 달
+
+    @ElementCollection
+    @CollectionTable(
+            name = "user_execute_times",  // 별도 테이블 이름
+            joinColumns = @JoinColumn(name = "user_id") // User 엔티티와 FK 연결
+    )
+    @Column(name = "execute_time") // 컬럼명
+    private List<Long> executeTimes = Arrays.asList(0L, 0L);
+
+    @Column
+    private YearMonth executeBaseMonth; // 실행할 때 index 0이 가리키는 달
 
     @Column(nullable = false, length = 50)
     private String userPreference;
@@ -118,4 +143,79 @@ public class User extends BaseEntity {
     public void updateProfileImage(ProfileImage profileImage) {
         this.profileImage = profileImage;
     }
+
+    public void addDelayTime(long delayMinutes, LocalDateTime stoppedAt) {
+        if (delayMinutes <= 0) return;
+
+        YearMonth nowMonth = YearMonth.from(stoppedAt);
+        if (delayBaseMonth == null) {
+            delayBaseMonth = nowMonth;
+            delayTimes.set(0, delayTimes.get(0) + delayMinutes);
+            return;
+        }
+
+        if (nowMonth.equals(delayBaseMonth)) {
+            // 이번 달
+            delayTimes.set(0, delayTimes.get(0) + delayMinutes);
+            return;
+        }
+
+        if (nowMonth.equals(delayBaseMonth.minusMonths(1))) {
+            // 저번 달
+            delayTimes.set(1, delayTimes.get(1) + delayMinutes);
+            return;
+        }
+
+        if (nowMonth.isAfter(delayBaseMonth)) {
+            // 미래 달로 넘어감 → (한 달 후) 혹은 (여러 달 후)
+            long currentMonthValue = delayMinutes;
+            long lastMonthValue = 0L;
+
+            if (nowMonth.equals(delayBaseMonth.plusMonths(1))) {
+                // 한 달만 이동 → 기존 달 값을 저번 달로 이월
+                lastMonthValue = delayTimes.get(0);
+            }
+            delayTimes.set(0, currentMonthValue);
+            delayTimes.set(1, lastMonthValue);
+            delayBaseMonth = nowMonth;
+        }
+    }
+    public void addExecuteTime(long executeMinutes, LocalDateTime stoppedAt) {
+            if (executeMinutes <= 0) return;
+
+            YearMonth nowMonth = YearMonth.from(stoppedAt);
+            if (executeBaseMonth == null) {
+                executeBaseMonth = nowMonth;
+                executeTimes.set(0, executeTimes.get(0) + executeMinutes);
+                return;
+            }
+
+            if (nowMonth.equals(executeBaseMonth)) {
+                // 이번 달
+                executeTimes.set(0, executeTimes.get(0) + executeMinutes);
+                return;
+            }
+
+            if (nowMonth.equals(executeBaseMonth.minusMonths(1))) {
+                // 저번 달
+                executeTimes.set(1, executeTimes.get(1) + executeMinutes);
+                return;
+            }
+
+            if (nowMonth.isAfter(executeBaseMonth)) {
+                // 미래 달로 넘어감 → (한 달 후) 혹은 (여러 달 후)
+                long currentMonthValue = executeMinutes;
+                long lastMonthValue = 0L;
+
+                if (nowMonth.equals(executeBaseMonth.plusMonths(1))) {
+                    // 한 달만 이동 → 기존 이번 달 값을 저번 달로 이월
+                    lastMonthValue = executeTimes.get(0);
+                }
+                executeTimes.set(0, currentMonthValue); 
+                executeTimes.set(1, lastMonthValue);
+                executeBaseMonth = nowMonth;
+            }
+        }
+
+
 }

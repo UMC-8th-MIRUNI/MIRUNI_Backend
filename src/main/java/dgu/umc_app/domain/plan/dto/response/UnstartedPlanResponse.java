@@ -7,16 +7,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
-public record DelayedPlanResponse (
+public record UnstartedPlanResponse(
         Long id,
         String title,
         LocalDateTime scheduledStart,
 
         @Schema(description = "일정 유형(미루기 일정 판단)")
         Category category
-){
-    public static DelayedPlanResponse from(Plan plan) {
-        return new DelayedPlanResponse(
+) {
+    public static UnstartedPlanResponse from(Plan plan) {
+        return new UnstartedPlanResponse(
                 plan.getId(),
                 plan.getTitle(),
                 plan.getScheduledStart(),
@@ -24,12 +24,13 @@ public record DelayedPlanResponse (
         );
     }
 
-    public static DelayedPlanResponse from(AiPlan aiPlan) {
-        return new DelayedPlanResponse(
+    public static UnstartedPlanResponse from(AiPlan aiPlan) {
+        return new UnstartedPlanResponse(
                 aiPlan.getId(),
                 aiPlan.getDescription(),
                 aiPlan.getScheduledStart(),
                 Category.AI
         );
     }
+
 }

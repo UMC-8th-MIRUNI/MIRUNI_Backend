@@ -41,10 +41,16 @@ public class Plan extends BaseEntity {
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
-    @Column(nullable = false)
-    private boolean isDelayed = false;  // 미루기 여부
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Status status;  // 미완료, 진행중, 중지, 완료
 
     @Enumerated(EnumType.STRING)
     @Column
     private Priority priority;
+
+    // --Plan 상태 변경 메서드--
+    public void updateScheduleStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
+    public void updateScheduleEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
+    public void updateStatus(Status status) {this.status = status;}
 }
