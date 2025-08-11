@@ -115,6 +115,20 @@ public class User extends BaseEntity {
         this.nickname = nickname;
     }
 
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+        this.lastPasswordChanged = LocalDateTime.now();
+        this.passwordExpired = false;
+    }
+
+    public boolean isSocialUser() {
+        return this.oauthProvider != null;
+    }
+
+    public boolean hasPassword() {
+        return this.password != null && !this.password.isEmpty();
+    }
+  
     public void updateProfileImage(ProfileImage profileImage) {
         this.profileImage = profileImage;
     }

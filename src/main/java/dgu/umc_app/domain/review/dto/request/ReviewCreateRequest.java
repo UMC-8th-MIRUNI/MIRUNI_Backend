@@ -1,11 +1,12 @@
 package dgu.umc_app.domain.review.dto.request;
 
 import dgu.umc_app.domain.review.entity.Mood;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
 public record ReviewCreateRequest(
 
-        @NotNull(message = "aiPlanId는 필수입니다.")
+        @Schema(description = "AI 계획 ID (일반 Plan 회고인 경우 null)")
         Long aiPlanId,
 
         @NotNull(message = "planId는 필수입니다.")
