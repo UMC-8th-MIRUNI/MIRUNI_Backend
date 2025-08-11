@@ -4,9 +4,10 @@ public record ReissueTokenResponse(
     String accessToken,
     String refreshToken,
     String tokenType,
-    long expiresIn
+    long accessTokenExp,
+    long refreshTokenExp
 ) {
-    public static ReissueTokenResponse of(String accessToken, String refreshToken, long expiresIn) {
-        return new ReissueTokenResponse(accessToken, refreshToken, "Bearer", expiresIn);
+    public static ReissueTokenResponse of(String accessToken, String refreshToken, long accessTokenExp, long refreshTokenExp) {
+        return new ReissueTokenResponse(accessToken, refreshToken, "Bearer", accessTokenExp, refreshTokenExp);
     }
 }
