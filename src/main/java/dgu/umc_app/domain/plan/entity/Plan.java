@@ -49,8 +49,12 @@ public class Plan extends BaseEntity {
     @Column
     private Priority priority;
 
+    @Column
+    private LocalDateTime stoppedAt;
+
     // --Plan 상태 변경 메서드--
     public void updateScheduleStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
     public void updateScheduleEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
     public void updateStatus(Status status) {this.status = status;}
+    public void updateStoppedAt(LocalDateTime stoppedAt) {this.stoppedAt = stoppedAt;}
 }

@@ -58,6 +58,9 @@ public class AiPlan extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Status status;  // 미완료, 진행중, 중지, 완료
 
+    @Column
+    private LocalDateTime stoppedAt;
+
     public LocalDateTime getTaskTime() {
         return LocalDateTime.of(scheduledStart.toLocalDate(), scheduledStart.toLocalTime());
     }
@@ -67,4 +70,5 @@ public class AiPlan extends BaseEntity {
     public void updateIsDelayed(boolean isDelayed) {this.isDelayed = isDelayed;}
     public void updateScheduleEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
     public void updateStatus(Status status) {this.status = status;}
+    public void updateStoppedAt(LocalDateTime stoppedAt) {this.stoppedAt = stoppedAt;}
 }

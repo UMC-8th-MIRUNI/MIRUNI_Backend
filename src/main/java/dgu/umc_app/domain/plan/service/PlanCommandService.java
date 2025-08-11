@@ -119,6 +119,7 @@ public class PlanCommandService {
         plan.updateScheduleStart(newStart);
         plan.updateScheduleEnd(newStart.plusMinutes(request.expectedMinutes()));
         plan.updateStatus(Status.PAUSED);
+        plan.updateStoppedAt(stoppedAt);
 
         user.addDelayTime(delayDelta, stoppedAt);
         user.addExecuteTime(execDelta, stoppedAt);
@@ -175,6 +176,7 @@ public class PlanCommandService {
         aiPlan.updateScheduleStart(newStart);
         aiPlan.updateScheduleEnd(newStart.plusMinutes(request.expectedMinutes()));
         aiPlan.updateStatus(Status.PAUSED);
+        aiPlan.updateStoppedAt(stoppedAt);
 
         user.addDelayTime(delayDelta, stoppedAt);
         user.addExecuteTime(execDelta, stoppedAt);
