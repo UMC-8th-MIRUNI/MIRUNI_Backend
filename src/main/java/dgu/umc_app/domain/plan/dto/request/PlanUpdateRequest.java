@@ -87,7 +87,7 @@ public record PlanUpdateRequest(
         for (int i = 0; i < plans.size(); i++) {
             var d = plans.get(i);
 
-            // (선택) 삭제 지원: d.delete() == true면 제거
+            // 삭제: d.aiDelete() == true면 제거
             if (d.aiDelete() != null && d.aiDelete()) {
                 if (d.id() != null && existing.containsKey(d.id())) {
                     plan.removeAiPlan(existing.get(d.id()));
@@ -126,20 +126,20 @@ public record PlanUpdateRequest(
             LocalDateTime newEnd   = target.getScheduledEnd();
 
             if (d.date() != null && d.scheduledStartTime() != null)
-                target.setScheduledStart(LocalDateTime.of(d.date(), d.scheduledStartTime()));
+                target.updateScheduleStart(LocalDateTime.of(d.date(), d.scheduledStartTime()));
             if (d.date() != null && d.scheduledEndTime() != null)
-                target.setScheduledEnd(LocalDateTime.of(d.date(), d.scheduledEndTime()));
+                target.updateScheduleEnd(LocalDateTime.of(d.date(), d.scheduledEndTime()));
 
             if (!newEnd.equals(target.getScheduledEnd())) {
                 assertWithinDeadline(plan, newStart, newEnd);
             }
 
-            if (d.description() != null) target.setDescription(d.description());
-            if (d.expectedDuration() != null) target.setExpectedDuration(d.expectedDuration());
-            if (d.date() != null && d.scheduledStartTime() != null) target.setScheduledStart(newStart);
-            if (d.date() != null && d.scheduledEndTime() != null)   target.setScheduledEnd(newEnd);
-            if (priority != null) target.setPriority(propagatedPriority);
-            if (taskRange != null) target.setTaskRange(taskRange);
+            if (d.description() != null) target.updateDescription(d.description());
+            if (d.expectedDuration() != null) target.updateExpectedDuration(d.expectedDuration());
+            if (d.date() != null && d.scheduledStartTime() != null) target.updateScheduleStart(newStart);
+            if (d.date() != null && d.scheduledEndTime() != null)   target.updateScheduleEnd(newEnd);
+            if (priority != null) target.updatePriority(propagatedPriority);
+            if (taskRange != null) target.updateTaskRange(taskRange);
         }
     }
 }

@@ -103,7 +103,7 @@ public class PlanCommandService {
         // 6) stepOrder normalize (1..N)
         long order = 1L;
         for (AiPlan ap : plan.getAiPlans()) {
-            ap.setStepOrder(order++);
+            ap.updateStepOrder(order++);
         }
 
         // 7) 저장 및 응답 (일반 일정/AI 일정에 따라 분기)

@@ -9,7 +9,6 @@ import java.time.LocalTime;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -58,4 +57,13 @@ public class AiPlan extends BaseEntity {
     public LocalDateTime getTaskTime() {
         return LocalDateTime.of(scheduledStart.toLocalDate(), scheduledStart.toLocalTime());
     }
+
+    public void setPlan(Plan plan) {this.plan = plan;}
+    public void updateExpectedDuration(Long expectedDuration) {this.expectedDuration = expectedDuration;}
+    public void updateScheduleStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
+    public void updateScheduleEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
+    public void updateDescription(String description) {this.description = description;}
+    public void updateTaskRange(String taskRange) {this.taskRange = taskRange;}
+    public void updatePriority(Priority priority) {this.priority = priority;}
+    public void updateStepOrder(Long stepOrder) {this.stepOrder = stepOrder;}
 }
