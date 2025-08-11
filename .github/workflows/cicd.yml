@@ -99,7 +99,7 @@ jobs:
 
             # 헬스체크 대기 및 실행
             echo "Waiting for app to start..."
-            sleep 30
+            sleep 60
             echo "Performing health check..."
             curl --fail http://localhost:8080/actuator/health \
               && echo "Health check passed!" \
