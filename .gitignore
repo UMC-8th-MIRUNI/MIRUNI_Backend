@@ -38,3 +38,6 @@ out/
 
 ### fire base ###
 src/main/resources/firebase/
+
+### Mail Configuration ###
+src/main/resources/mail-config.yml

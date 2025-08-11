@@ -8,10 +8,13 @@ import dgu.umc_app.domain.user.service.UserQueryService;
 import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
 import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
+import dgu.umc_app.domain.user.dto.request.VerifyResetCodeRequest;
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.request.GoogleLoginRequest;
 import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
 import dgu.umc_app.domain.user.dto.request.ReissueTokenRequest;
+import dgu.umc_app.domain.user.dto.request.PasswordResetRequest;
+import dgu.umc_app.domain.user.dto.request.ResetPasswordRequest;
 import dgu.umc_app.domain.user.dto.request.ChangePasswordRequest;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
@@ -85,5 +88,20 @@ public class UserAuthController implements UserAuthApi {
     @PatchMapping("/auth/password/change")
     public void changePassword(@LoginUser Long userId, @Valid @RequestBody ChangePasswordRequest request) {
         userCommandService.changePassword(userId, request.currentPassword(), request.newPassword());
+    }
+
+    @PostMapping("/auth/password/reset/request")
+    public void requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+        userCommandService.requestPasswordReset(request);
+    }
+
+    @PostMapping("/auth/password/reset/verify")
+    public void verifyResetCode(@Valid @RequestBody VerifyResetCodeRequest request) {
+        userCommandService.verifyResetCode(request);
+    }
+
+    @PostMapping("/auth/password/reset/complete")
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        userCommandService.resetPassword(request);
     }
 }
