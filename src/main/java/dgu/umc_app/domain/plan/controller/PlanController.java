@@ -5,6 +5,7 @@ import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.service.PlanCommandService;
 import dgu.umc_app.domain.plan.service.PlanQueryService;
+import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -74,5 +75,13 @@ public class PlanController implements PlanApi{
     }
 
 
+
+    @GetMapping("/{planId}")
+    public PlanDetailResponse getPlanDetail(
+            @PathVariable Long planId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return planQueryService.getPlanDetail(planId, userDetails.getUser().getId());
+    }
 
 }

@@ -68,4 +68,13 @@ public interface PlanApi {
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
+    @Operation(
+            summary = "일정별 세부 조회 API",
+            description = "일정별 세부정보를 조회합니다."
+    )
+    PlanDetailResponse getPlanDetail(
+            @PathVariable Long planId,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    );
+
 }
