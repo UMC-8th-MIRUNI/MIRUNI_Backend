@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import dgu.umc_app.domain.user.repository.UserRepository;
 import dgu.umc_app.global.authorize.TokenService;
 import dgu.umc_app.global.exception.BaseException;
+import dgu.umc_app.global.exception.CommonErrorCode;
 import dgu.umc_app.domain.user.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,10 +19,15 @@ import lombok.RequiredArgsConstructor;
 import dgu.umc_app.domain.user.dto.AuthUserInfoDto;
 import dgu.umc_app.domain.user.dto.request.GoogleLoginRequest;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
+import dgu.umc_app.domain.user.dto.response.SurveyResponse;
 import dgu.umc_app.domain.user.entity.OauthProvider;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
+
+import java.time.LocalDateTime;
+
 import org.springframework.http.HttpStatus;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
@@ -35,6 +41,7 @@ import dgu.umc_app.domain.user.dto.request.ResetPasswordRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import java.time.Duration;
 import java.util.Random;
+import dgu.umc_app.domain.user.dto.request.SurveyRequest;
 
 @Service
 @Transactional
@@ -56,6 +63,7 @@ public class UserCommandService {
 
         String encodedPassword = passwordEncoder.encode(userSignupRequest.password());
         User user = userSignupRequest.toEntity(encodedPassword);
+        
         userRepository.save(user);
 
         return issueTokenResponse(user);
@@ -194,7 +202,7 @@ public class UserCommandService {
         userValidator.checkPendingUser(user.getStatus());
 
         updateUserInfo.accept(user);
-        user.activate();
+        // user.activate(); -> 설문 후 active로 
 
         return issueTokenResponse(user);
     }
@@ -348,4 +356,27 @@ public class UserCommandService {
 
         return UserInfoResponse.from(user);
     }
+
+    public SurveyResponse survey(SurveyRequest request, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.isSurveyCompleted()) {
+            throw BaseException.type(UserErrorCode.SURVEY_ALREADY_COMPLETED);
+        }
+
+        // User 엔티티에 직접 survey 정보 저장 (비트마스크 방식)
+        user.updateSurveyInfo(request.situations(), request.level(), request.reasons());
+        
+        log.info("설문조사 완료: userId={}, Q1: {}, Q2: {}, Q3: {}", 
+                userId, request.situations(), request.level(), request.reasons());
+
+        return SurveyResponse.of(
+            "설문조사가 완료되었습니다!",
+            LocalDateTime.now(),
+            "COMPLETED"
+        );    
+    }
+
+
 }

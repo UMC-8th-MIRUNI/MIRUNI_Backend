@@ -26,6 +26,11 @@ public record PlanCreateRequest(
         @Schema(description = "수행 시작 날짜")
         LocalDateTime scheduledStart,
 
+        @NotNull(message = "수행 종료 날짜는 필수입니다.")
+        @Schema(description = "수행 종료 날짜")
+        LocalDateTime scheduledEnd,
+
+        @NotNull(message = "우선순위는 필수입니다.")
         @Schema(description = "우선순위")
         Priority priority,
 
@@ -40,6 +45,7 @@ public record PlanCreateRequest(
                 .description(description)
                 .deadline(deadline)
                 .scheduledStart(scheduledStart)
+                .scheduledEnd(scheduledEnd)
                 .priority(priority)
                 .isDone(false)
                 .user(user)
