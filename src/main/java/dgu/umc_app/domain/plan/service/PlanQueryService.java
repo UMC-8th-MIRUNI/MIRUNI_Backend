@@ -8,6 +8,8 @@ import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.user.entity.User;
+import dgu.umc_app.domain.user.exception.UserErrorCode;
+import dgu.umc_app.domain.user.repository.UserRepository;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class PlanQueryService{
 
     private final PlanRepository planRepository;
     private final AiPlanRepository aiPlanRepository;
+    private final UserRepository userRepository;
 
     public List<CalendarMonthResponse> getSchedulesByMonth(int year, int month, User user) {
 
@@ -133,6 +136,36 @@ public class PlanQueryService{
         unfinishedAiPlans.forEach(aiPlan -> result.add(UnfinishedPlanResponse.from(aiPlan)));
 
         return result;
+    }
+
+    public HomeResponse getHomePage(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.atTime(23, 59, 59);
+
+        List<Plan> plans = planRepository.findByUserIdAndScheduledStartBetween(userId, start, end);
+
+        // TODO isDone 상태 세가지로 나눈거 반영
+        int totalCount = plans.size();
+        int completedCount = (int) plans.stream().filter(Plan::isDone).count();
+        int pausedCount = (int) plans.stream().filter(Plan::isDelayed).count();
+        int scheduledCount = totalCount - completedCount - pausedCount;
+
+        int achievementRate = (totalCount == 0) ? 0 : (int) Math.round((completedCount * 100.0) / totalCount);
+
+        List<HomeResponse.TaskInfo> tasks = plans.stream()
+                .sorted(
+                        Comparator
+                                .comparing(Plan::isDone)
+                                .thenComparing(Plan::getScheduledStart)
+                )
+                .map(HomeResponse.TaskInfo::from)
+                .toList();
+
+        return HomeResponse.of(user, totalCount, scheduledCount, pausedCount, completedCount, achievementRate, tasks);
     }
 
     public PlanDetailResponse getPlanDetail(Long planId, Long userId) {
