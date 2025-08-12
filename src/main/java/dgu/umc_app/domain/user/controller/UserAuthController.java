@@ -13,6 +13,7 @@ import dgu.umc_app.domain.user.dto.request.GoogleLoginRequest;
 import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
 import dgu.umc_app.domain.user.dto.request.ReissueTokenRequest;
 import dgu.umc_app.domain.user.dto.request.SurveyRequest;
+import dgu.umc_app.domain.user.dto.request.ChangePasswordRequest;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import dgu.umc_app.domain.user.dto.response.ReissueTokenResponse;
@@ -81,5 +82,14 @@ public class UserAuthController implements UserAuthApi {
     @PostMapping("/auth/survey")
     public SurveyResponse survey(@Valid @RequestBody SurveyRequest request, @LoginUser Long userId) {
         return userCommandService.survey(request, userId);
+    
+    @PostMapping("/auth/withdraw")
+    public void withdrawUser(@LoginUser Long userId) {
+        userCommandService.withdrawUser(userId);
+    }
+
+    @PatchMapping("/auth/password/change")
+    public void changePassword(@LoginUser Long userId, @Valid @RequestBody ChangePasswordRequest request) {
+        userCommandService.changePassword(userId, request.currentPassword(), request.newPassword());
     }
 }

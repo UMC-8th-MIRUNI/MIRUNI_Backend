@@ -46,7 +46,7 @@ public class PlanCommandService {
     public List<PlanSplitResponse> splitPlan(Long planId, PlanSplitRequest request, User user) {
 
         // 1. 임시로 등록된 plan 조회하기
-        Plan plan = planRepository.findByIdAndUserId(planId, user.getId())
+        Plan plan = planRepository.findByIdWithUserId(planId, user.getId())
                 .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
 
         // 2. AI 분할 요청

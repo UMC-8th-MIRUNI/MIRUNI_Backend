@@ -1,5 +1,6 @@
 package dgu.umc_app.domain.user.controller;
 
+import dgu.umc_app.domain.user.dto.response.PeanutCountResponse;
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
 import dgu.umc_app.domain.user.dto.response.UserSurveyResponse;
 import dgu.umc_app.domain.user.entity.ProfileImage;
@@ -42,6 +43,21 @@ public interface UserApi {
                             schema = @Schema(implementation = CustomErrorResponse.class)))
     })
     UserInfoResponse updateProfileImage(@LoginUser Long userId, ProfileImage profileImage);
+  
+  
+    @Operation(
+            summary = "땅콩 개수 조회 API",
+            description = "땅콩 개수 조회 API 입니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "땅콩 개수 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CustomErrorResponse.class)))
+    })
+    PeanutCountResponse getPeanutCount(@LoginUser Long userId);
 
     @Operation(
             summary = "설문조사 결과 조회 API",

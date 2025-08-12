@@ -18,6 +18,7 @@ import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import dgu.umc_app.domain.review.exception.ReviewErrorCode;
 
 
 @Service
@@ -34,17 +35,30 @@ public class ReviewCommandService {
      */
 
     public ReviewCreateResponse saveReview(Long userId, ReviewCreateRequest request) {
+      
         AiPlan aiPlan = aiPlanRepository.findByIdAndUserId(request.aiPlanId(), userId)
                 .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AIPLAN_NOT_FOUND));
 
         Plan plan = planRepository.findByIdAndUserId(request.planId(), userId)
                 .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
 
+        AiPlan aiPlan = null;
+        String description;
+
+        if (request.aiPlanId() != null) {
+            aiPlan = aiPlanRepository.findByIdAndUserId(request.aiPlanId(), userId)
+                    .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AIPLAN_NOT_FOUND));
+
+            description = aiPlan.getDescription();  // AI 일정 설명
+        } else {
+            description = plan.getDescription();  // 일반 일정 설명
+        }
+
         Review review = Review.builder()
                 .aiPlan(aiPlan)
                 .plan(plan)
                 .title(plan.getTitle())                   // Plan.title 복사
-                .description(aiPlan.getDescription())     // AiPlan.description 복사
+                .description(description)     // AiPlan or Plan description 복사
                 .mood(request.mood())
                 .achievement((byte) request.achievement())
                 .memo(request.memo())
@@ -57,7 +71,7 @@ public class ReviewCommandService {
      * 회고 수정
      */
     public ReviewDetailResponse updateReview(Long userId, Long reviewId, ReviewUpdateRequest request) {
-        Review review = reviewRepository.findByIdAndUserId(reviewId, userId)
+        Review review = reviewRepository.findByIdAndPlanUserId(reviewId, userId)
                 .orElseThrow(() -> BaseException.type(ReviewErrorCode.REVIEW_NOT_FOUND));
         review.update(request.mood(), (byte) request.achievement(), request.memo());
         return ReviewDetailResponse.from(review);
@@ -65,8 +79,8 @@ public class ReviewCommandService {
     /**
      * 회고 삭제
      */
-    public Long deleteReview(Long reviewId) {
-        Review review = reviewRepository.findById(reviewId)
+    public Long deleteReview(Long userId, Long reviewId) {
+        Review review = reviewRepository.findByIdAndPlanUserId(reviewId, userId)
                 .orElseThrow(() -> new BaseException(ReviewErrorCode.REVIEW_NOT_FOUND));
         reviewRepository.delete(review);
         return reviewId;

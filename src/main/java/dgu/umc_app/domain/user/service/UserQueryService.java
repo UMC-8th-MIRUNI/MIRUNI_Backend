@@ -1,5 +1,6 @@
 package dgu.umc_app.domain.user.service;
 
+import dgu.umc_app.domain.user.dto.response.PeanutCountResponse;
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
 import dgu.umc_app.domain.user.dto.response.UserSurveyResponse;
 import dgu.umc_app.domain.user.entity.User;
@@ -40,5 +41,12 @@ public class UserQueryService {
 
         // User 엔티티에서 직접 survey 정보 가져오기 (비트마스크 방식)
         return UserSurveyResponse.from(user);
+    }
+
+    public PeanutCountResponse getPeanutCount(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        return PeanutCountResponse.from(user);
     }
 }
