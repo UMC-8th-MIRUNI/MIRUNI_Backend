@@ -34,6 +34,7 @@ public class UserController implements UserApi {
     @GetMapping("/survey")
     public UserSurveyResponse getUserSurveyResult(@LoginUser Long userId) {
         return userQueryService.getUserSurveyResult(userId);
+    }
     
     @Override
     @GetMapping("/peanutCount")
