@@ -1,6 +1,5 @@
 package dgu.umc_app.domain.plan.entity;
 
-import dgu.umc_app.domain.plan.entity.Priority;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -78,4 +77,10 @@ public class Plan extends BaseEntity {
     public void updateScheduleEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
     public void updateStatus(Status status) {this.status = status;}
     public void updateStoppedAt(LocalDateTime stoppedAt) {this.stoppedAt = stoppedAt;}
+    public void updateTitle(String title) {this.title = title;}
+    public void updateDeadline(LocalDateTime deadline) {this.deadline = deadline;}
+    public void updatePriority(Priority priority) {this.priority = priority;}
+    public void updateDescription(String description) {this.description = description;}
+    public void updateScheduledStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
+    public void updateScheduledEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
 }
