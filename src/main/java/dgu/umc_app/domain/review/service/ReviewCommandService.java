@@ -18,6 +18,7 @@ import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import dgu.umc_app.domain.review.exception.ReviewErrorCode;
 
 
 @Service
@@ -34,6 +35,10 @@ public class ReviewCommandService {
      */
 
     public ReviewCreateResponse saveReview(Long userId, ReviewCreateRequest request) {
+      
+        AiPlan aiPlan = aiPlanRepository.findByIdAndUserId(request.aiPlanId(), userId)
+                .orElseThrow(() -> BaseException.type(AiPlanErrorCode.AIPLAN_NOT_FOUND));
+
         Plan plan = planRepository.findByIdAndUserId(request.planId(), userId)
                 .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
 

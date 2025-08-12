@@ -1,4 +1,8 @@
 spring:
+  config:
+    import: 
+      - classpath:mail-config.yml
+      
   datasource:
     url: jdbc:mysql://localhost:3306/miruni_test
     username: root
@@ -8,7 +12,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-      
+
   redis:
     host: localhost
     port: 6379
@@ -18,3 +22,4 @@ spring:
         max-active: 10
         max-idle: 10
         min-idle: 2
+ 

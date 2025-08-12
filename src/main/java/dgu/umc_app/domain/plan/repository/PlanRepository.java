@@ -24,7 +24,7 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     SELECT p FROM Plan p
     WHERE p.id = :planId AND p.user.id = :userId
 """)
-    Optional<Plan> findByIdAndUserId(@Param("planId") Long planId, @Param("userId") Long userId);
+    Optional<Plan> findByIdWithUserId(@Param("planId") Long planId, @Param("userId") Long userId);
 
     List<Plan> findByUserIdAndIsDoneFalseAndIsDelayedFalse(Long userId);    // 안 한 일정 조회
 
