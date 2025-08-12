@@ -3,6 +3,7 @@ package dgu.umc_app.domain.report.service;
 import dgu.umc_app.domain.report.entity.LastMonthReport;
 import dgu.umc_app.domain.report.repository.LastMonthReportRepository;
 import dgu.umc_app.domain.report.repository.ReportRepository;
+import dgu.umc_app.domain.user.repository.UserRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,8 @@ public class LastMonthReportSaveService {
     private final LastMonthReportRepository lastMonthReportRepository;
     private final ReportQueryService reportQueryService; // ReportResponse 조립 재사용
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private final UserRepository userRepository;
+
 
     /** 매달 1일 00:05 KST에 지난달 스냅샷 생성 */
     @Transactional
@@ -40,7 +43,8 @@ public class LastMonthReportSaveService {
                 var rr = reportQueryService.getMonthlyReport(userId, y, m);
                 var json = objectMapper.writeValueAsString(rr);
 
-                lastMonthReportRepository.save(LastMonthReport.of(userId, y, m, json, asOf));
+                var userRef = userRepository.getReferenceById(userId);
+                lastMonthReportRepository.save(LastMonthReport.of(userRef, y, m, json, asOf));
 
             } catch (org.springframework.dao.DataIntegrityViolationException dup) {
                 // 동시 실행 등으로 이미 들어갔으면 무시

@@ -1,14 +1,17 @@
 package dgu.umc_app.domain.report.entity;
 
+import dgu.umc_app.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Immutable;
 
 import java.time.LocalDateTime;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 
 @Entity
-@Immutable // UPDATE 금지(스냅샷 불변)
+@Immutable // UPDATE 금지
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -21,8 +24,9 @@ public class LastMonthReport {
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
 
-        @Column(name = "user_id", nullable = false)
-        private Long userId;
+        @ManyToOne(fetch = LAZY, optional = false)
+        @JoinColumn(name = "user_id", nullable = false)
+        private User user;
 
         @Column(nullable = false)
         private int year;
@@ -40,9 +44,9 @@ public class LastMonthReport {
         @Column(nullable = false)
         private LocalDateTime createdAt;
 
-        public static LastMonthReport of(Long userId, int year, int month, String json, LocalDateTime asOf) {
+        public static LastMonthReport of(User user, int year, int month, String json, LocalDateTime asOf) {
                 return LastMonthReport.builder()
-                        .userId(userId)
+                        .user(user)
                         .year(year)
                         .month(month)
                         .reportJson(json)

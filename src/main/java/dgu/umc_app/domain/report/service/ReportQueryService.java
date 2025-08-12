@@ -99,7 +99,7 @@ public class ReportQueryService {
     }
 
     private boolean isReportOpenedForMonth(Long userId, int year, int month) {
-        return reportRepository.existsByUser_IdAndYearAndMonthAndIsOpenedTrue(userId, year, month);
+        return reportRepository.existsByUserIdAndYearAndMonthAndIsOpenedTrue(userId, year, month);
     }
 
     /** 저번달 리포트 조회**/
@@ -107,7 +107,7 @@ public class ReportQueryService {
         var last = YearMonth.now(ZoneId.of("Asia/Seoul")).minusMonths(1);
 
         boolean openedLast = reportRepository
-                .existsByUser_IdAndYearAndMonthAndIsOpenedTrue(userId, last.getYear(), last.getMonthValue());
+                .existsByUserIdAndYearAndMonthAndIsOpenedTrue(userId, last.getYear(), last.getMonthValue());
         if (!openedLast) throw BaseException.type(ReportErrorCode.LAST_MONTH_REPORT_NOT_OPEN);
 
         var snap = lastMonthReportRepository
@@ -115,12 +115,12 @@ public class ReportQueryService {
                 .orElseThrow(() -> BaseException.type(ReportErrorCode.LAST_MONTH_REPORT_NOT_FOUND));
 
         try {
-            String json = snap.getReportJson(); // ← 여기!
-            return objectMapper.readValue(json, ReportResponse.class);
+            return objectMapper.readValue(snap.getReportJson(), ReportResponse.class);
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             throw new IllegalStateException("스냅샷 파싱 실패", e);
         }
     }
+
 
 
     /**

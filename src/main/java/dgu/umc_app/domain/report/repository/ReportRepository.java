@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
-    boolean existsByUser_IdAndYearAndMonthAndIsOpenedTrue(Long userId, int year, int month);
+    boolean existsByUserIdAndYearAndMonthAndIsOpenedTrue(Long userId, int year, int month);
 
     Optional<Report> findByUserIdAndYearAndMonth(Long userId, int year, int month);
 
@@ -35,10 +35,6 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
                               @Param("month") int month,
                               @Param("now") java.time.LocalDateTime now,
                               @Param("cost") int cost);
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select r from Report r where r.user.id=:userId and r.year=:year and r.month=:month")
-    Optional<Report> findForUpdate(Long userId, int year, int month);
 
     @Query("""
       select distinct r.user.id
