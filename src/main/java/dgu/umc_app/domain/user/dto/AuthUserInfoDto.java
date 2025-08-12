@@ -28,7 +28,7 @@ public record AuthUserInfoDto(
                 .lastPasswordChanged(LocalDateTime.now())
                 .agreedPrivacyPolicy(true)
                 .peanutCount(0)
-                // userPreference 필드 제거 - UserSurvey 엔티티로 대체
+                // userPreference 필드 제거 
                 .oauthProvider(provider)
                 .status(Status.PENDING) 
                 .build();

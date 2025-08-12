@@ -35,10 +35,6 @@ import dgu.umc_app.domain.user.validator.UserValidator;
 import lombok.extern.slf4j.Slf4j;
 import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
 import dgu.umc_app.domain.user.dto.request.SurveyRequest;
-import dgu.umc_app.domain.user.entity.UserSurvey;
-import dgu.umc_app.domain.user.entity.DelaySituation;
-import dgu.umc_app.domain.user.entity.DelayReason;
-import dgu.umc_app.domain.user.repository.UserSurveyRepository;
 
 @Service
 @Transactional
@@ -47,7 +43,6 @@ import dgu.umc_app.domain.user.repository.UserSurveyRepository;
 public class UserCommandService {
 
     private final UserRepository userRepository;
-    private final UserSurveyRepository userSurveyRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final UserValidator userValidator;
@@ -237,20 +232,8 @@ public class UserCommandService {
             throw BaseException.type(UserErrorCode.SURVEY_ALREADY_COMPLETED);
         }
 
-        // UserSurvey 엔티티 생성 및 저장
-        UserSurvey survey = UserSurvey.builder()
-                .user(user)
-                .situationDescriptions(request.situations().stream()
-                        .map(DelaySituation::getDescription)
-                        .collect(java.util.stream.Collectors.toSet()))
-                .levelDescription(request.level().getDescription())
-                .reasonDescriptions(request.reasons().stream()
-                        .map(DelayReason::getDescription)
-                        .collect(java.util.stream.Collectors.toSet()))
-                .build();
-
-        userSurveyRepository.save(survey);
-        user.completeSurvey(); 
+        // User 엔티티에 직접 survey 정보 저장 (비트마스크 방식)
+        user.updateSurveyInfo(request.situations(), request.level(), request.reasons());
         
         log.info("설문조사 완료: userId={}, Q1: {}, Q2: {}, Q3: {}", 
                 userId, request.situations(), request.level(), request.reasons());

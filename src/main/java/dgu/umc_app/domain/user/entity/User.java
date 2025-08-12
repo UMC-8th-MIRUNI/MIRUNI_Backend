@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -51,7 +53,7 @@ public class User extends BaseEntity {
     @Builder.Default
     private int peanutCount = 0;
 
-    // userPreference 필드 제거됨 - UserSurvey 엔티티로 대체
+    // userPreference 필드 제거
 
     @Enumerated(EnumType.STRING)
     private OauthProvider oauthProvider;
@@ -75,6 +77,17 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private ProfileImage profileImage = ProfileImage.GREEN;
+
+    // Survey 관련 비트마스크 컬럼들
+    @Column(name = "delay_situations_mask")
+    private Long delaySituationsMask;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delay_level")
+    private DelayLevel delayLevel;
+
+    @Column(name = "delay_reasons_mask")
+    private Long delayReasonsMask;
 
     // == User 상태 변경 메서드들 == //
     public void activate() {
@@ -132,5 +145,26 @@ public class User extends BaseEntity {
 
     public boolean isSurveyCompleted() {
         return this.surveyStatus == SurveyStatus.COMPLETED;
+    }
+
+    // Survey 관련 메서드들
+    public void updateSurveyInfo(Set<DelaySituation> situations, DelayLevel level, Set<DelayReason> reasons) {
+        this.delaySituationsMask = DelaySituation.createMask(situations);
+        this.delayLevel = level;
+        this.delayReasonsMask = DelayReason.createMask(reasons);
+        this.surveyStatus = SurveyStatus.COMPLETED;
+        this.status = Status.ACTIVE;
+    }
+
+    public Set<DelaySituation> getDelaySituations() {
+        return this.delaySituationsMask != null ? DelaySituation.fromMask(this.delaySituationsMask) : new HashSet<>();
+    }
+
+    public Set<DelayReason> getDelayReasons() {
+        return this.delayReasonsMask != null ? DelayReason.fromMask(this.delayReasonsMask) : new HashSet<>();
+    }
+
+    public DelayLevel getDelayLevel() {
+        return this.delayLevel;
     }
 }

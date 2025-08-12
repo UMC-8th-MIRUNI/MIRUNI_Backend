@@ -3,10 +3,8 @@ package dgu.umc_app.domain.user.service;
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
 import dgu.umc_app.domain.user.dto.response.UserSurveyResponse;
 import dgu.umc_app.domain.user.entity.User;
-import dgu.umc_app.domain.user.entity.UserSurvey;
 import dgu.umc_app.domain.user.exception.UserErrorCode;
 import dgu.umc_app.domain.user.repository.UserRepository;
-import dgu.umc_app.domain.user.repository.UserSurveyRepository;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserQueryService {
 
     private final UserRepository userRepository;
-    private final UserSurveyRepository userSurveyRepository;
 
     public UserInfoResponse getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
@@ -41,9 +38,7 @@ public class UserQueryService {
             throw BaseException.type(UserErrorCode.SURVEY_NOT_COMPLETED);
         }
 
-        UserSurvey survey = userSurveyRepository.findByUserId(userId)
-                .orElseThrow(() -> BaseException.type(UserErrorCode.SURVEY_NOT_COMPLETED));
-
-        return UserSurveyResponse.from(survey);
+        // User 엔티티에서 직접 survey 정보 가져오기 (비트마스크 방식)
+        return UserSurveyResponse.from(user);
     }
 }

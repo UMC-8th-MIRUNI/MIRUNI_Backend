@@ -46,7 +46,7 @@ public record UserSignupRequest(
                         .lastPasswordChanged(LocalDateTime.now())
                         .agreedPrivacyPolicy(true)
                         .peanutCount(0)
-                        // userPreference 필드 제거 - UserSurvey 엔티티로 대체
+                        // userPreference 필드 제거 
                         .oauthProvider(null)
                         .status(Status.PENDING)
                         .build();
