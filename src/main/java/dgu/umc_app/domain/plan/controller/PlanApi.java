@@ -3,6 +3,7 @@ package dgu.umc_app.domain.plan.controller;
 import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
+import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.global.authorize.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,6 +72,24 @@ public interface PlanApi {
     PlanDelayResponse delayPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanDelayRequest request,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    );
+
+    @Operation(summary = "일반/AI 일정 수정", description = "일정의 세부 정보들을 수정합니다.")
+    @PatchMapping("/{planId}")
+    PlanDetailResponse updatePlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanUpdateRequest request,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    );
+
+
+    @Operation(
+            summary = "일정별 세부 조회 API",
+            description = "일정별 세부정보를 조회합니다."
+    )
+    PlanDetailResponse getPlanDetail(
+            @PathVariable Long planId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 

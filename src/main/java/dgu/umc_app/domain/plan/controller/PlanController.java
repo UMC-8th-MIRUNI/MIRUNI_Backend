@@ -3,12 +3,14 @@ package dgu.umc_app.domain.plan.controller;
 import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
+import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.entity.Category;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.plan.service.PlanCommandService;
 import dgu.umc_app.domain.plan.service.PlanQueryService;
+import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -79,6 +81,23 @@ public class PlanController implements PlanApi{
         return planQueryService.getUnstartedPlans(userDetails.getUser());
     }
 
+    @PatchMapping("/{planId}")
+    public PlanDetailResponse updatePlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return planCommandService.updatePlan(planId, request, userDetails.getUser());
+    }
+
+    @GetMapping("/{planId}")
+    public PlanDetailResponse getPlanDetail(
+            @PathVariable Long planId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return planQueryService.getPlanDetail(planId, userDetails.getUser().getId());
+    }
+
     @PatchMapping("/{planId}/delay")
     public PlanDelayResponse delayPlan(
             @PathVariable Long planId,
@@ -90,4 +109,5 @@ public class PlanController implements PlanApi{
                 : planCommandService.delayPlan(planId, request, userDetails.getUser());
 
     }
+
 }

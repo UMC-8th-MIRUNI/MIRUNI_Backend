@@ -62,9 +62,14 @@ public class AiPlan extends BaseEntity {
         return LocalDateTime.of(scheduledStart.toLocalDate(), scheduledStart.toLocalTime());
     }
 
+    public void setPlan(Plan plan) {this.plan = plan;}
     public void updateExpectedDuration(Long expectedDuration) {this.expectedDuration = expectedDuration;}
     public void updateScheduleStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
     public void updateScheduleEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
+    public void updateDescription(String description) {this.description = description;}
+    public void updateTaskRange(String taskRange) {this.taskRange = taskRange;}
+    public void updatePriority(Priority priority) {this.priority = priority;}
+    public void updateStepOrder(Long stepOrder) {this.stepOrder = stepOrder;}
     public void updateStatus(Status status) {this.status = status;}
     public void updateStoppedAt(LocalDateTime stoppedAt) {this.stoppedAt = stoppedAt;}
     public void updateIsDelayed(boolean isDelayed) {this.isDelayed = isDelayed;}

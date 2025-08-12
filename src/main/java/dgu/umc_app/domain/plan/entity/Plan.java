@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -42,6 +44,9 @@ public class Plan extends BaseEntity {
     private boolean isDone; // 완료 체크
 
     @Column
+    private boolean isDelayed;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private Status status;  // 미완료, 진행중, 중지, 완료
 
@@ -51,6 +56,22 @@ public class Plan extends BaseEntity {
 
     @Column
     private LocalDateTime stoppedAt;
+
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("stepOrder ASC")
+    private List<AiPlan> aiPlans = new ArrayList<>();
+
+    public void addAiPlan(AiPlan ai) {
+        if (ai == null) return;
+        ai.setPlan(this);
+        aiPlans.add(ai);
+    }
+
+    public void removeAiPlan(AiPlan ai) {
+        if (ai == null) return;
+        aiPlans.remove(ai);
+        ai.setPlan(null);
+    }
 
     // --Plan 상태 변경 메서드--
     public void updateScheduleStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}

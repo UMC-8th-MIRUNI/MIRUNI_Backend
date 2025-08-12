@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,6 +53,7 @@ public class User extends BaseEntity {
     private boolean agreedPrivacyPolicy;
 
     @Column(nullable = false)
+    @Builder.Default
     private int peanutCount = 0;
 
     @Column
@@ -65,8 +68,7 @@ public class User extends BaseEntity {
     @ElementCollection
     private List<Long> focusList = new ArrayList<>(Collections.nCopies(84, 0L));    // 집중한 시간대
 
-    @Column(nullable = false, length = 50)
-    private String userPreference;
+    // userPreference 필드 제거
 
     @Enumerated(EnumType.STRING)
     private OauthProvider oauthProvider;
@@ -79,11 +81,28 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status = Status.ACTIVE;
+    @Builder.Default
+    private Status status = Status.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private SurveyStatus surveyStatus = SurveyStatus.NOT_COMPLETED;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private ProfileImage profileImage = ProfileImage.GREEN;
+
+    // Survey 관련 비트마스크 컬럼들
+    @Column(name = "delay_situations_mask")
+    private Long delaySituationsMask;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delay_level")
+    private DelayLevel delayLevel;
+
+    @Column(name = "delay_reasons_mask")
+    private Long delayReasonsMask;
 
     // == User 상태 변경 메서드들 == //
     public void activate() {
@@ -146,6 +165,36 @@ public class User extends BaseEntity {
   
     public void updateProfileImage(ProfileImage profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public void completeSurvey() {
+        this.surveyStatus = SurveyStatus.COMPLETED;
+        this.status = Status.ACTIVE;
+    }
+
+    public boolean isSurveyCompleted() {
+        return this.surveyStatus == SurveyStatus.COMPLETED;
+    }
+
+    // Survey 관련 메서드들
+    public void updateSurveyInfo(Set<DelaySituation> situations, DelayLevel level, Set<DelayReason> reasons) {
+        this.delaySituationsMask = DelaySituation.createMask(situations);
+        this.delayLevel = level;
+        this.delayReasonsMask = DelayReason.createMask(reasons);
+        this.surveyStatus = SurveyStatus.COMPLETED;
+        this.status = Status.ACTIVE;
+    }
+
+    public Set<DelaySituation> getDelaySituations() {
+        return this.delaySituationsMask != null ? DelaySituation.fromMask(this.delaySituationsMask) : new HashSet<>();
+    }
+
+    public Set<DelayReason> getDelayReasons() {
+        return this.delayReasonsMask != null ? DelayReason.fromMask(this.delayReasonsMask) : new HashSet<>();
+    }
+
+    public DelayLevel getDelayLevel() {
+        return this.delayLevel;
     }
 
     public void updateDelayTimes(Long delayTimes) {this.delayTimes = delayTimes;}
