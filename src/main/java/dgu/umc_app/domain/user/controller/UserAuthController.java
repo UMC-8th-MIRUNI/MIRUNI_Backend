@@ -12,10 +12,12 @@ import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.request.GoogleLoginRequest;
 import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
 import dgu.umc_app.domain.user.dto.request.ReissueTokenRequest;
+import dgu.umc_app.domain.user.dto.request.SurveyRequest;
 import dgu.umc_app.domain.user.dto.request.ChangePasswordRequest;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import dgu.umc_app.domain.user.dto.response.ReissueTokenResponse;
+import dgu.umc_app.domain.user.dto.response.SurveyResponse;
 import dgu.umc_app.global.authorize.LoginUser;
 import dgu.umc_app.global.authorize.TokenService;
 import jakarta.validation.Valid;
@@ -77,6 +79,10 @@ public class UserAuthController implements UserAuthApi {
         return tokenService.reissueToken(request.refreshToken());
     }
 
+    @PostMapping("/auth/survey")
+    public SurveyResponse survey(@Valid @RequestBody SurveyRequest request, @LoginUser Long userId) {
+        return userCommandService.survey(request, userId);
+    
     @PostMapping("/auth/withdraw")
     public void withdrawUser(@LoginUser Long userId) {
         userCommandService.withdrawUser(userId);

@@ -7,11 +7,12 @@ import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
 import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
 import dgu.umc_app.domain.user.dto.request.ReissueTokenRequest;
+import dgu.umc_app.domain.user.dto.request.SurveyRequest;
 import dgu.umc_app.domain.user.dto.request.ChangePasswordRequest;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import dgu.umc_app.domain.user.dto.response.ReissueTokenResponse;
+import dgu.umc_app.domain.user.dto.response.SurveyResponse;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
-import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -142,6 +143,24 @@ public interface UserAuthApi {
         @ApiResponse(responseCode = "400", description = "입력값 검증 실패")
     })
     ReissueTokenResponse reissueToken(@Valid @RequestBody ReissueTokenRequest request);
+
+    @Operation(
+        summary = "설문조사 완료",
+        description = "사용자 설문조사 응답을 저장합니다. \n" +
+                "미루는 상황(다중선택), 정도(단일선택), 이유(다중선택)에 대한 응답을 enum 기반으로 검증하고 " +
+                "한글 설명으로 DB에 저장하며, 사용자 상태를 ACTIVE로 변경합니다. \n" +
+                "요청은 문자열(PHONE, NORMAL, PERFECTIONISM...) 형태로 가능합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "설문 완료 성공",
+                content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = SurveyResponse.class))),
+        @ApiResponse(responseCode = "400", description = "입력값 검증 실패 (잘못된 enum 값 또는 범위 초과)"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음"),
+        @ApiResponse(responseCode = "409", description = "이미 설문을 완료한 사용자")
+    })
+    SurveyResponse survey(@Valid @RequestBody SurveyRequest request, @LoginUser Long userId);
 
     @Operation(
         summary = "회원 탈퇴",

@@ -2,6 +2,7 @@ package dgu.umc_app.domain.user.controller;
 
 import dgu.umc_app.domain.user.dto.response.PeanutCountResponse;
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
+import dgu.umc_app.domain.user.dto.response.UserSurveyResponse;
 import dgu.umc_app.domain.user.entity.ProfileImage;
 import dgu.umc_app.domain.user.service.UserCommandService;
 import dgu.umc_app.domain.user.service.UserQueryService;
@@ -29,6 +30,11 @@ public class UserController implements UserApi {
         return userCommandService.updateProfileImage(userId, profileImage);
     }
 
+    @Override  
+    @GetMapping("/survey")
+    public UserSurveyResponse getUserSurveyResult(@LoginUser Long userId) {
+        return userQueryService.getUserSurveyResult(userId);
+    
     @Override
     @GetMapping("/peanutCount")
     public PeanutCountResponse getPeanutCount(@LoginUser Long userId) {
