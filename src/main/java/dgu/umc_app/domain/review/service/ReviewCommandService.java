@@ -18,6 +18,7 @@ import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import dgu.umc_app.domain.review.exception.ReviewErrorCode;
 
 
 @Service
