@@ -1,5 +1,6 @@
 package dgu.umc_app.domain.user.service;
 
+import dgu.umc_app.domain.user.dto.response.PeanutCountResponse;
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.domain.user.exception.UserErrorCode;
@@ -29,4 +30,10 @@ public class UserQueryService {
         }
     }
 
+    public PeanutCountResponse getPeanutCount(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        return PeanutCountResponse.from(user);
+    }
 }
