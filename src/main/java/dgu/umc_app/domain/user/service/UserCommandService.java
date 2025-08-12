@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.user.service;
 
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
+import dgu.umc_app.domain.user.dto.response.VerifyResponse;
 import dgu.umc_app.domain.user.entity.ProfileImage;
 import org.springframework.stereotype.Service;
 import dgu.umc_app.domain.user.repository.UserRepository;
@@ -276,7 +277,7 @@ public class UserCommandService {
     }
 
     // 이메일로 전송된 인증 코드 검증
-    public void verifyResetCode(VerifyResetCodeRequest request) {
+    public VerifyResponse verifyResetCode(VerifyResetCodeRequest request) {
         String redisKey = "email_verification:" + request.email();
         String storedCode = redisTemplate.opsForValue().get(redisKey);
         
@@ -288,28 +289,27 @@ public class UserCommandService {
             throw BaseException.type(UserErrorCode.INVALID_VERIFICATION_CODE);
         }
         
-        log.info("인증 코드 검증 성공 - 이메일: {}", request.email());
+        // 검증 완료 토큰 생성
+        String resetToken = generateResetToken(request.email());
+        String tokenKey = "reset_token:" + resetToken;
+        redisTemplate.opsForValue().set(tokenKey, request.email(), Duration.ofMinutes(10));
+        
+        log.info("인증 코드 검증 성공 - 이메일: {}, 토큰: {}", request.email(), resetToken);
+        return new VerifyResponse(resetToken);
     }
 
     // 비밀번호 재설정(비밀번호 잊었을 때)
-    public void resetPassword(ResetPasswordRequest request) {
-        if (!request.isPasswordMatching()) {
-            throw BaseException.type(UserErrorCode.PASSWORDS_DO_NOT_MATCH);
-        }
-
-        // 인증 코드 재검증
-        String redisKey = "email_verification:" + request.email();
-        String storedCode = redisTemplate.opsForValue().get(redisKey);
+    public void resetPassword(String resetToken, ResetPasswordRequest request) {
         
-        if (storedCode == null) {
-            throw BaseException.type(UserErrorCode.VERIFICATION_CODE_EXPIRED);
+        //토큰으로 이메일 확인
+        String tokenKey = "reset_token:" + resetToken;
+        String email = redisTemplate.opsForValue().get(tokenKey);
+
+        if (email == null) {
+            throw BaseException.type(UserErrorCode.RESET_TOKEN_EXPIRED);
         }
         
-        if (!storedCode.equals(request.code())) {
-            throw BaseException.type(UserErrorCode.INVALID_VERIFICATION_CODE);
-        }
-
-        User user = userRepository.findByEmail(request.email())
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
 
         if (user.isSocialUser()) {
@@ -319,17 +319,25 @@ public class UserCommandService {
         String encodedNewPassword = passwordEncoder.encode(request.newPassword());
         user.updatePassword(encodedNewPassword);
 
-        redisTemplate.delete(redisKey);
+        redisTemplate.delete(tokenKey);
+        redisTemplate.delete("email_verification:" + email);
 
         tokenService.logoutUser(user.getId().toString());
         
-        log.info("비밀번호 재설정 완료 - 이메일: {}", request.email());
+        log.info("비밀번호 재설정 완료 - 이메일: {}", email);
     }
 
     private String generateVerificationCode() {
         Random random = new Random();
         int code = 1000 + random.nextInt(9000);
         return String.valueOf(code);
+    }
+    
+    private String generateResetToken(String email) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String combined = email + ":" + timestamp;
+        
+        return java.util.Base64.getEncoder().encodeToString(combined.getBytes()).substring(0, 32);
     }
     
     public UserInfoResponse updateProfileImage(Long userId, ProfileImage profileImage) {

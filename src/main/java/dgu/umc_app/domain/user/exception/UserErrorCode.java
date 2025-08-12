@@ -22,7 +22,8 @@ public enum UserErrorCode implements ErrorCode {
     VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "USER400_11", "인증 코드가 만료되었습니다."),
     VERIFICATION_CODE_ALREADY_USED(HttpStatus.BAD_REQUEST, "USER400_12", "이미 사용된 인증 코드입니다."),
     PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER400_13", "비밀번호와 비밀번호 확인이 일치하지 않습니다."),
-    EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "USER500_14", "이메일 전송에 실패했습니다.");
+    EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "USER500_14", "이메일 전송에 실패했습니다."),
+    RESET_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "USER400_15", "토큰이 만료되었습니다.");
 
     private final HttpStatus status;
     private final String errorCode;

@@ -19,6 +19,7 @@ import dgu.umc_app.domain.user.dto.request.ChangePasswordRequest;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import dgu.umc_app.domain.user.dto.response.ReissueTokenResponse;
+import dgu.umc_app.domain.user.dto.response.VerifyResponse;
 import dgu.umc_app.global.authorize.LoginUser;
 import dgu.umc_app.global.authorize.TokenService;
 import jakarta.validation.Valid;
@@ -96,12 +97,12 @@ public class UserAuthController implements UserAuthApi {
     }
 
     @PostMapping("/auth/password/reset/verify")
-    public void verifyResetCode(@Valid @RequestBody VerifyResetCodeRequest request) {
-        userCommandService.verifyResetCode(request);
+    public VerifyResponse verifyResetCode(@Valid @RequestBody VerifyResetCodeRequest request) {
+        return userCommandService.verifyResetCode(request);
     }
 
     @PostMapping("/auth/password/reset/complete")
-    public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        userCommandService.resetPassword(request);
+    public void resetPassword(@RequestHeader("Reset-Token") String resetToken, @Valid @RequestBody ResetPasswordRequest request) {
+        userCommandService.resetPassword(resetToken, request);
     }
 }

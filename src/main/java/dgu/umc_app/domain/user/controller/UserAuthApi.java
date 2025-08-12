@@ -14,6 +14,7 @@ import dgu.umc_app.domain.user.dto.request.ChangePasswordRequest;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import dgu.umc_app.domain.user.dto.response.ReissueTokenResponse;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
+import dgu.umc_app.domain.user.dto.response.VerifyResponse;
 import dgu.umc_app.global.authorize.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,6 +27,7 @@ import jakarta.validation.constraints.Email;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @Tag(name = "User", description = "회원가입, 로그인 API")
 public interface UserAuthApi {
@@ -181,17 +183,19 @@ public interface UserAuthApi {
     })
     void requestPasswordReset(@Valid @RequestBody PasswordResetRequest request);
 
-    @Operation(summary = "비밀번호 재설정 코드 검증", description = "이메일로 전송된 인증 코드를 검증합니다.")
+    @Operation(summary = "비밀번호 재설정 코드 검증", description = "이메일로 전송된 인증 코드를 검증하고 리셋 토큰을 반환합니다.")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "코드 검증 성공"),
+        @ApiResponse(responseCode = "200", description = "코드 검증 성공",
+                content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = VerifyResponse.class))),
         @ApiResponse(responseCode = "400", description = "잘못된 요청"),
         @ApiResponse(responseCode = "404", description = "유효하지 않은 인증 코드")
     })
-    void verifyResetCode(@Valid @RequestBody VerifyResetCodeRequest request);
+    VerifyResponse verifyResetCode(@Valid @RequestBody VerifyResetCodeRequest request);
 
     @Operation(
         summary = "비밀번호 재설정", 
-        description = "검증된 인증 코드로 새 비밀번호를 설정합니다. \n" + 
+        description = "검증된 토큰으로 새 비밀번호를 설정합니다. \n" + 
                 "현재 설정되어 있는 비밀번호를 모를때 사용합니다."
     )
     @ApiResponses({
@@ -199,5 +203,5 @@ public interface UserAuthApi {
         @ApiResponse(responseCode = "400", description = "잘못된 요청"),
         @ApiResponse(responseCode = "404", description = "유효하지 않은 인증 코드")
     })
-    void resetPassword(@Valid @RequestBody ResetPasswordRequest request);
+    void resetPassword(@RequestHeader("Reset-Token") String resetToken, @Valid @RequestBody ResetPasswordRequest request);
 } 

@@ -57,21 +57,12 @@ public class EmailService {
     }
     
     private String createSimpleEmailTemplate(String code) {
-        return String.format("""
-            <!DOCTYPE html>
-            <html>
-                <body>
-                    <div style="font-family: Arial; max-width: 600px; margin: 0 auto;">
-                        <h2 style="color: #333;">🔐 Miruni 비밀번호 재설정</h2>
-                        <p>안녕하세요! 비밀번호 재설정을 위한 인증 코드입니다.</p>
-                        <div style="background: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
-                            <h1 style="color: #007bff; font-size: 32px; margin: 0;">%s</h1>
-                        </div>
-                        <p><strong>주의:</strong> 이 코드는 10분 후 만료됩니다.</p>
-                        <p>본인이 요청하지 않은 경우 이 이메일을 무시하세요.</p>
-                    </div>
-                </body>
-            </html>
-            """, code);
+        try{
+            Context context = new Context();
+            context.setVariable("code", code);
+            return templateEngine.process("mailTemplate", context);
+        }catch(Exception e){
+            return "Miruni 비밀번호 재설정 인증 코드: " + code;
+        }
     }
 }
