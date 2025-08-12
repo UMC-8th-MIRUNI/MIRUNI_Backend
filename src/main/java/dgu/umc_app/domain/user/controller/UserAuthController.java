@@ -86,6 +86,7 @@ public class UserAuthController implements UserAuthApi {
     @PostMapping("/auth/survey")
     public SurveyResponse survey(@Valid @RequestBody SurveyRequest request, @LoginUser Long userId) {
         return userCommandService.survey(request, userId);
+    }
     
     @PostMapping("/auth/withdraw")
     public void withdrawUser(@LoginUser Long userId) {
