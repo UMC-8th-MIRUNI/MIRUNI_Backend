@@ -2,11 +2,15 @@ package dgu.umc_app.domain.report.dto.response;
 
 import lombok.Builder;
 
+import java.util.List;
+
 @Builder
 public record ReportResponse(
-//        SummaryDTO summary,
+        Summary summary,
 //        DelayPatternDTO delayPattern,
-        EmotionAchievement emotionAchievement
-//        KeywordAnalysisDTO keywordAnalysis,
+        EmotionAchievement emotionAchievement,
+        List<String> simpleKeywords
+        //SimplePatternSummary patternSummary
+        //KeywordAnalysis keywordAnalysis
 //        SuggestionsDTO suggestions
 ) {}

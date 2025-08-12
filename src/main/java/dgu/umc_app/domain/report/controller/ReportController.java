@@ -2,6 +2,7 @@ package dgu.umc_app.domain.report.controller;
 
 import dgu.umc_app.domain.report.dto.response.ReportResponse;
 import dgu.umc_app.domain.report.dto.response.StoragePageResponse;
+import dgu.umc_app.domain.report.service.ReportOpenService;
 import dgu.umc_app.domain.report.service.ReportQueryService;
 import dgu.umc_app.global.authorize.CustomUserDetails;
 import dgu.umc_app.global.authorize.LoginUser;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class ReportController implements ReportApi{
 
     private final ReportQueryService reportQueryService;
+    private final ReportOpenService reportOpenService;
 
     //보관함 페이지 조회(땅콩 갯수, 오픈 퍼센트, 이번달 리포트 오픈 여부)
     @GetMapping("/storage")
@@ -22,7 +24,16 @@ public class ReportController implements ReportApi{
         return reportQueryService.getStoragePage(userId, year, month);
     }
 
-    //리포트
+    //리포트 오픈 : 첫 오픈시 땅콩 30 차감
+    @PostMapping("/{year}/{month}/open")
+    public ReportResponse openThisMonth(@LoginUser Long userId,
+                                        @PathVariable int year,
+                                        @PathVariable int month) {
+        reportOpenService.openThisMonth(userId, year, month);
+        return reportQueryService.getMonthlyReport(userId, year, month);
+    }
+
+    //이번달 리포트 조회
     @GetMapping("/{year}/{month}")
     public ReportResponse getReport(@LoginUser Long userId,
                                     @PathVariable int year,
@@ -31,4 +42,9 @@ public class ReportController implements ReportApi{
     }
 
 
+    //저번달 리포트 조회
+    @GetMapping("/last")
+    public ReportResponse getLastMonth(@LoginUser Long userId) {
+        return reportQueryService.getLastMonthReport(userId);
+    }
 }

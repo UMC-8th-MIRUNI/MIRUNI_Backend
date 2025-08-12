@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.plan.repository;
 
 import dgu.umc_app.domain.plan.entity.AiPlan;
+import dgu.umc_app.domain.plan.entity.Plan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
