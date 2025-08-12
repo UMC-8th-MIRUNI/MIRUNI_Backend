@@ -37,6 +37,7 @@ public record PlanDetailResponse(
                 "", // 일반일정은 range 없음
                 plan.getPriority().name(),
                 List.of(new PlanDetail(
+                        plan.getId(),
                         plan.getScheduledStart().toLocalDate(),
                         plan.getDescription(),
                         expectedDuration,
@@ -49,6 +50,7 @@ public record PlanDetailResponse(
     public static PlanDetailResponse fromAiPlan(Plan plan, List<AiPlan> aiPlans) {
         List<PlanDetail> details = aiPlans.stream()
                 .map(ai -> new PlanDetail(
+                        ai.getId(),
                         ai.getScheduledStart().toLocalDate(),
                         ai.getDescription(),
                         ai.getExpectedDuration(),

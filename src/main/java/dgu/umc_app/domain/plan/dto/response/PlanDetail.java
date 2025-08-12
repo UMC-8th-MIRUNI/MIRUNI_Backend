@@ -7,6 +7,9 @@ import java.time.LocalTime;
 
 public record PlanDetail(
 
+        @Schema(description = "일정 ID")
+        Long planId,
+
         @Schema(description = "일정 수행 시작 날짜")
         LocalDate date,
 

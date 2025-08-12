@@ -7,9 +7,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -47,4 +50,20 @@ public class Plan extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column
     private Priority priority;
+
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("stepOrder ASC")
+    private List<AiPlan> aiPlans = new ArrayList<>();
+
+    public void addAiPlan(AiPlan ai) {
+        if (ai == null) return;
+        ai.setPlan(this);
+        aiPlans.add(ai);
+    }
+
+    public void removeAiPlan(AiPlan ai) {
+        if (ai == null) return;
+        aiPlans.remove(ai);
+        ai.setPlan(null);
+    }
 }
