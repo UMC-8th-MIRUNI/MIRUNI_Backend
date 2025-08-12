@@ -141,8 +141,13 @@ public class TokenService {
             TokenDto token = createAndStoreTokens(user);
             
             log.info("토큰 재발급 완료: userId={}", userId);
-            
-            return ReissueTokenResponse.of(token.accessToken(), token.refreshToken(), token.accessTokenExp());
+
+            return ReissueTokenResponse.of(
+                    token.accessToken(),
+                    token.refreshToken(),
+                    token.accessTokenExp(),
+                    token.refreshTokenExp()
+            );
         } catch (BaseException e) {
             throw e;
         } catch (Exception e) {
