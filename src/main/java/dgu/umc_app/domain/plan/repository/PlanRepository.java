@@ -17,6 +17,7 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     List<Plan> findByUserIdAndStatus(Long userId, Status status);   //미룬 일정, 안 한 일정 조회
 
     List<Plan> findByIsDoneFalse();
+    List<Plan> findByStatus(Status status);
     @Query("""
     SELECT p FROM Plan p
     WHERE p.id = :planId AND p.user.id = :userId

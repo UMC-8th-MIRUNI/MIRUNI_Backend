@@ -15,6 +15,7 @@ public interface AiPlanRepository extends JpaRepository<AiPlan, Long> {
     List<AiPlan> findByPlan_UserIdAndScheduledStartBetween(Long userId, LocalDateTime start, LocalDateTime end); //월별,일자별 조회
     List<AiPlan> findByPlan_UserIdAndStatus(Long userId, Status status);    //미룬 일정, 안한 일정 조회
     List<AiPlan> findByIsDoneFalse();
+    List<AiPlan> findByStatus(Status status);
 
     @Query("""
     SELECT ap FROM AiPlan ap

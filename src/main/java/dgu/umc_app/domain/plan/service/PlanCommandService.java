@@ -18,8 +18,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -29,6 +31,55 @@ public class PlanCommandService {
     private final PlanRepository planRepository;
     private final AiPlanRepository aiPlanRepository;
     private final AiSplitService aiSplitService;
+
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
+    private static final int SLOTS_PER_DAY = 12;
+    private static final int DAYS = 7;
+    private static final int TOTAL_BUCKETS = DAYS * SLOTS_PER_DAY;
+    private static final long FOCUS_MINUTES_THRESHOLD = 30;
+
+    private LocalDateTime toKst(LocalDateTime t) {
+        return t.atZone(ZoneId.systemDefault()).withZoneSameInstant(KST).toLocalDateTime();
+    }
+    private LocalDateTime bucketStartKst(LocalDateTime kst) {
+        int evenHour = (kst.getHour() / 2) * 2;
+        return kst.withHour(evenHour).withMinute(0).withSecond(0).withNano(0);
+    }
+    private int dayIndexKst(LocalDateTime kst) { return kst.getDayOfWeek().getValue() - 1; }
+    private int slotIndexKst(LocalDateTime kst) { return kst.getHour() / 2; }
+    private int flatIndexKst(LocalDateTime kst) { return dayIndexKst(kst) * SLOTS_PER_DAY + slotIndexKst(kst); }
+
+    private void incrementDelayBucket(User user, LocalDateTime stoppedAt) {
+        int idx = flatIndexKst(toKst(stoppedAt));
+        List<Long> slots = user.getDelayList();
+        slots.set(idx, slots.get(idx) + 1L);
+    }
+
+    private void incrementFocusBucketsTouching(User user,
+                                               LocalDateTime scheduledStart,
+                                               LocalDateTime stoppedAt,
+                                               long execMinutes) {
+        if (execMinutes < FOCUS_MINUTES_THRESHOLD || scheduledStart == null || stoppedAt == null) return;
+
+        LocalDateTime startKst = toKst(scheduledStart);
+        LocalDateTime endKst   = toKst(stoppedAt);
+        if (!endKst.isAfter(startKst)) return;
+
+        List<Long> bins = user.getFocusList();
+
+        LocalDateTime slotStart = bucketStartKst(startKst);
+        while (slotStart.isBefore(endKst)) {
+            LocalDateTime slotEnd = slotStart.plusHours(2);
+
+            LocalDateTime a = startKst.isAfter(slotStart) ? startKst : slotStart;
+            LocalDateTime b = endKst.isBefore(slotEnd) ? endKst : slotEnd;
+            if (a.isBefore(b)) {
+                int idx = flatIndexKst(slotStart);
+                bins.set(idx, bins.get(idx) + 1L);
+            }
+            slotStart = slotEnd;
+        }
+    }
 
     @Transactional
     public PlanCreateResponse createPlan(PlanCreateRequest request, User user) {
@@ -121,10 +172,18 @@ public class PlanCommandService {
         plan.updateStatus(Status.PAUSED);
         plan.updateStoppedAt(stoppedAt);
 
-        user.addDelayTime(delayDelta, stoppedAt);
-        user.addExecuteTime(execDelta, stoppedAt);
+        user.updateDelayTimes(safePlus(user.getDelayTimes(), delayDelta));
+        user.updateExecuteTimes(safePlus(user.getExecuteTimes(), execDelta));
+
+        incrementDelayBucket(user, stoppedAt);
+        incrementFocusBucketsTouching(user, originalStart, stoppedAt, execDelta);
 
         return PlanDelayResponse.from(plan, delayDelta, execDelta, stoppedAt);
+    }
+
+    private static long safePlus(Long current, long delta) {
+        if (delta <= 0) return current == null ? 0L : current;
+        return (current == null ? 0L : current) + delta;
     }
 
     @Transactional
@@ -140,7 +199,6 @@ public class PlanCommandService {
         if (request.expectedMinutes() == null) {
             throw BaseException.type(AiPlanErrorCode.EXPECTED_MINUTES_REQUIRED);
         }
-
 
         LocalDateTime stoppedAt = LocalDateTime.now();
         LocalDateTime newStart = request.newStartDateTime();
@@ -177,9 +235,13 @@ public class PlanCommandService {
         aiPlan.updateScheduleEnd(newStart.plusMinutes(request.expectedMinutes()));
         aiPlan.updateStatus(Status.PAUSED);
         aiPlan.updateStoppedAt(stoppedAt);
+        aiPlan.updateIsDelayed(true);
 
-        user.addDelayTime(delayDelta, stoppedAt);
-        user.addExecuteTime(execDelta, stoppedAt);
+        user.updateDelayTimes(safePlus(user.getDelayTimes(), delayDelta));
+        user.updateExecuteTimes(safePlus(user.getExecuteTimes(), execDelta));
+
+        incrementDelayBucket(user, stoppedAt);
+        incrementFocusBucketsTouching(user, originalStart, stoppedAt, execDelta);
 
         return PlanDelayResponse.from(aiPlan, delayDelta, execDelta, stoppedAt);
     }

@@ -63,7 +63,6 @@ public class PlanQueryService{
                 })
                 .sorted(Comparator.comparing(CalendarMonthResponse::getDate))
                 .collect(Collectors.toList());
-
     }
 
     public CalendarDayWrapperResponse getSchedulesByDate(LocalDate date, User user) {
