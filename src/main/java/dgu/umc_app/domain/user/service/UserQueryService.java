@@ -1,9 +1,12 @@
 package dgu.umc_app.domain.user.service;
 
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
+import dgu.umc_app.domain.user.dto.response.UserSurveyResponse;
 import dgu.umc_app.domain.user.entity.User;
+import dgu.umc_app.domain.user.entity.UserSurvey;
 import dgu.umc_app.domain.user.exception.UserErrorCode;
 import dgu.umc_app.domain.user.repository.UserRepository;
+import dgu.umc_app.domain.user.repository.UserSurveyRepository;
 import dgu.umc_app.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserQueryService {
 
     private final UserRepository userRepository;
+    private final UserSurveyRepository userSurveyRepository;
 
     public UserInfoResponse getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
@@ -29,4 +33,17 @@ public class UserQueryService {
         }
     }
 
+    public UserSurveyResponse getUserSurveyResult(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        if (!user.isSurveyCompleted()) {
+            throw BaseException.type(UserErrorCode.SURVEY_NOT_COMPLETED);
+        }
+
+        UserSurvey survey = userSurveyRepository.findByUserId(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.SURVEY_NOT_COMPLETED));
+
+        return UserSurveyResponse.from(survey);
+    }
 }

@@ -46,9 +46,9 @@ public record UserSignupRequest(
                         .lastPasswordChanged(LocalDateTime.now())
                         .agreedPrivacyPolicy(true)
                         .peanutCount(0)
-                        .userPreference("")
+                        // userPreference 필드 제거 - UserSurvey 엔티티로 대체
                         .oauthProvider(null)
-                        .status(Status.ACTIVE)
+                        .status(Status.PENDING)
                         .build();
         }
 }

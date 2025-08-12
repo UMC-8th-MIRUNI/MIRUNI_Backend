@@ -51,9 +51,7 @@ public class User extends BaseEntity {
     @Builder.Default
     private int peanutCount = 0;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private String userPreference = "";
+    // userPreference 필드 제거됨 - UserSurvey 엔티티로 대체
 
     @Enumerated(EnumType.STRING)
     private OauthProvider oauthProvider;
@@ -127,8 +125,7 @@ public class User extends BaseEntity {
         this.profileImage = profileImage;
     }
 
-    public void completeSurvey(String userPreference) {
-        this.userPreference = userPreference;
+    public void completeSurvey() {
         this.surveyStatus = SurveyStatus.COMPLETED;
         this.status = Status.ACTIVE;
     }

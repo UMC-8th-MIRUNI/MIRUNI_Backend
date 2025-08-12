@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.user.controller;
 
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
+import dgu.umc_app.domain.user.dto.response.UserSurveyResponse;
 import dgu.umc_app.domain.user.entity.ProfileImage;
 import dgu.umc_app.global.authorize.LoginUser;
 import dgu.umc_app.global.exception.CustomErrorResponse;
@@ -41,4 +42,21 @@ public interface UserApi {
                             schema = @Schema(implementation = CustomErrorResponse.class)))
     })
     UserInfoResponse updateProfileImage(@LoginUser Long userId, ProfileImage profileImage);
+
+    @Operation(
+            summary = "설문조사 결과 조회 API",
+            description = "사용자의 설문조사 결과를 조회하는 API 입니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "설문조사 결과 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class))),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CustomErrorResponse.class))),
+            @ApiResponse(responseCode = "400", description = "설문조사를 완료하지 않음",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CustomErrorResponse.class)))
+    })
+    UserSurveyResponse getUserSurveyResult(@LoginUser Long userId);
 }

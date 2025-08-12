@@ -35,6 +35,10 @@ import dgu.umc_app.domain.user.validator.UserValidator;
 import lombok.extern.slf4j.Slf4j;
 import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
 import dgu.umc_app.domain.user.dto.request.SurveyRequest;
+import dgu.umc_app.domain.user.entity.UserSurvey;
+import dgu.umc_app.domain.user.entity.DelaySituation;
+import dgu.umc_app.domain.user.entity.DelayReason;
+import dgu.umc_app.domain.user.repository.UserSurveyRepository;
 
 @Service
 @Transactional
@@ -43,6 +47,7 @@ import dgu.umc_app.domain.user.dto.request.SurveyRequest;
 public class UserCommandService {
 
     private final UserRepository userRepository;
+    private final UserSurveyRepository userSurveyRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final UserValidator userValidator;
@@ -232,16 +237,23 @@ public class UserCommandService {
             throw BaseException.type(UserErrorCode.SURVEY_ALREADY_COMPLETED);
         }
 
-        // 문자열 형식으로 설문 응답 저장: "1,3,4|7|2,5"
-        String delaySituation = String.join(",", request.delaySituation().stream().map(String::valueOf).toList());
-        String delayReason = String.join(",", request.delayReason().stream().map(String::valueOf).toList());
+        // UserSurvey 엔티티 생성 및 저장
+        UserSurvey survey = UserSurvey.builder()
+                .user(user)
+                .situationDescriptions(request.situations().stream()
+                        .map(DelaySituation::getDescription)
+                        .collect(java.util.stream.Collectors.toSet()))
+                .levelDescription(request.level().getDescription())
+                .reasonDescriptions(request.reasons().stream()
+                        .map(DelayReason::getDescription)
+                        .collect(java.util.stream.Collectors.toSet()))
+                .build();
+
+        userSurveyRepository.save(survey);
+        user.completeSurvey(); 
         
-        String userPreference = String.format("%s|%d|%s", delaySituation, request.delayDegree(), delayReason);
-
-        user.completeSurvey(userPreference);
-
         log.info("설문조사 완료: userId={}, Q1: {}, Q2: {}, Q3: {}", 
-                userId, request.delaySituation(), request.delayDegree(), request.delayReason());
+                userId, request.situations(), request.level(), request.reasons());
 
         return SurveyResponse.of(
             "설문조사가 완료되었습니다!",

@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.user.controller;
 
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
+import dgu.umc_app.domain.user.dto.response.UserSurveyResponse;
 import dgu.umc_app.domain.user.entity.ProfileImage;
 import dgu.umc_app.domain.user.service.UserCommandService;
 import dgu.umc_app.domain.user.service.UserQueryService;
@@ -26,5 +27,10 @@ public class UserController implements UserApi {
     @PutMapping("/profileImage")
     public UserInfoResponse updateProfileImage(@LoginUser Long userId, ProfileImage profileImage) {
         return userCommandService.updateProfileImage(userId, profileImage);
+    }
+
+    @GetMapping("/survey")
+    public UserSurveyResponse getUserSurveyResult(@LoginUser Long userId) {
+        return userQueryService.getUserSurveyResult(userId);
     }
 }
