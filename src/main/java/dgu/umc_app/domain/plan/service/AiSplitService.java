@@ -120,7 +120,7 @@ public class AiSplitService {
         Map<String, Object> requestBody = Map.of(
                 "model", "sonar-pro",
                 "messages", List.of(systemMessage, userMessage),
-                "max_tokens", 700,
+                "max_tokens", 1200,
                 "temperature", 0.0
         );
 

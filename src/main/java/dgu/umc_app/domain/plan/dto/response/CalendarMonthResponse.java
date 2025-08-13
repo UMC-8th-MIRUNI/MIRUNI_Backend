@@ -10,10 +10,7 @@ public record CalendarMonthResponse (
         LocalDate date,
 
         @Schema(description = "하지 않은 총 일정 갯수")
-        int scheduleCount,
-
-        @Schema(description = "모두 완료되었는지에 대한 여부")
-        boolean isAllDone
+        int unfinishedCount
 ) {
     public LocalDate getDate() {
         return this.date;

@@ -49,10 +49,14 @@ public class AiPlan extends BaseEntity {
     private LocalDateTime scheduledEnd; // 수행끝 예정 날짜&시간(ex: 2025-05-01T22:00:00)
 
     @Column(nullable = false)
-    private boolean isDone; // 완료 여부
+    private boolean isDelayed;  // 미루기 여부
 
-    @Column(nullable = false)
-    private boolean isDelayed = false;  // 미루기 여부
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Status status;  // 미완료, 진행중, 중지, 완료
+
+    @Column
+    private LocalDateTime stoppedAt;
 
     public LocalDateTime getTaskTime() {
         return LocalDateTime.of(scheduledStart.toLocalDate(), scheduledStart.toLocalTime());
@@ -66,4 +70,7 @@ public class AiPlan extends BaseEntity {
     public void updateTaskRange(String taskRange) {this.taskRange = taskRange;}
     public void updatePriority(Priority priority) {this.priority = priority;}
     public void updateStepOrder(Long stepOrder) {this.stepOrder = stepOrder;}
+    public void updateStatus(Status status) {this.status = status;}
+    public void updateStoppedAt(LocalDateTime stoppedAt) {this.stoppedAt = stoppedAt;}
+    public void updateIsDelayed(boolean isDelayed) {this.isDelayed = isDelayed;}
 }

@@ -18,6 +18,9 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Getter
@@ -60,6 +63,40 @@ public class User extends BaseEntity {
     @Builder.Default
     private int peanutCount = 0;
 
+    @Column
+    private int delayTime = 0; // 총 미룬 시간
+
+    @Column
+    private int executeTime = 0;  // 총 실행시간
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "user_delay_list",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @OrderColumn(name = "slot_order") // 0..83 순서 고정
+    @Column
+    private List<Long> delayList;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "user_focus_list",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @OrderColumn(name = "slot_order")
+    @Column
+    private List<Long> focusList;
+
+    @PrePersist
+    private void initSlotsOnCreate() {
+        if (delayList == null || delayList.isEmpty()) {
+            delayList = new ArrayList<>(Collections.nCopies(84, 0L));
+        }
+        if (focusList == null || focusList.isEmpty()) {
+            focusList = new ArrayList<>(Collections.nCopies(84, 0L));
+        }
+    }
+
     // userPreference 필드 제거
 
     @Enumerated(EnumType.STRING)
@@ -80,18 +117,6 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private SurveyStatus surveyStatus = SurveyStatus.NOT_COMPLETED;
-
-    @Column
-    private int executeTime;    //총 수행시간
-
-    @Column
-    private int delayTime;  //총 미룬 시간
-
-    @ElementCollection
-    private List<Long> delayList = new ArrayList<>(Collections.nCopies(84,0L));     //미룬 시간대
-
-    @ElementCollection
-    private List<Long> focusList = new ArrayList<>(Collections.nCopies(84,0L));       //집중한 시간대
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
@@ -221,4 +246,9 @@ public class User extends BaseEntity {
     public DelayLevel getDelayLevel() {
         return this.delayLevel;
     }
+
+    public void updateDelayTimes(int delayTimes) {this.delayTime = delayTime;}
+    public void updateExecuteTimes(int executeTimes) {this.executeTime = executeTime;}
+    public void updateDelayList(List<Long> delayTimeSlots) {this.delayList = delayTimeSlots;}
+    public void updateFocusList(List<Long> focusSlots) {this.focusList = focusSlots;}
 }
