@@ -152,6 +152,10 @@ public class User extends BaseEntity {
         this.profileImage = profileImage;
     }
 
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
     public void completeSurvey() {
         this.surveyStatus = SurveyStatus.COMPLETED;
         this.status = Status.ACTIVE;

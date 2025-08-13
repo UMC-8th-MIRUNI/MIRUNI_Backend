@@ -31,8 +31,10 @@ public interface UserApi {
     UserInfoResponse getUserInfo(@LoginUser Long userId);
 
     @Operation(
-            summary = "프로필사진 변경 API",
-            description = "프로필 사진 변경 API 입니다."
+            summary = "프로필사진, 닉네임 변경 API",
+            description = """
+                    프로필 사진은 색상으로 구분합니다. (YELLOW, GREEN, BLUE, BEIGE, PINK, RED)
+                    """
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "프로필사진 변경 성공",
@@ -42,7 +44,7 @@ public interface UserApi {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = CustomErrorResponse.class)))
     })
-    UserInfoResponse updateProfileImage(@LoginUser Long userId, ProfileImage profileImage);
+    UserInfoResponse updateProfile(@LoginUser Long userId, ProfileImage profileImage, String nickname);
   
   
     @Operation(

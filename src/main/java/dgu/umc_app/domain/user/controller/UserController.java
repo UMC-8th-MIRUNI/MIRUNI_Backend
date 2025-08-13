@@ -25,9 +25,9 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @PutMapping("/profileImage")
-    public UserInfoResponse updateProfileImage(@LoginUser Long userId, ProfileImage profileImage) {
-        return userCommandService.updateProfileImage(userId, profileImage);
+    @PatchMapping("/profileImage")
+    public UserInfoResponse updateProfile(@LoginUser Long userId, ProfileImage profileImage, String nickname) {
+        return userCommandService.updateProfile(userId, profileImage, nickname);
     }
 
     @Override  

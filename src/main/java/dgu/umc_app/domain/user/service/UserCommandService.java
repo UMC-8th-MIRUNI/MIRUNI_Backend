@@ -348,11 +348,12 @@ public class UserCommandService {
         return java.util.Base64.getEncoder().encodeToString(combined.getBytes()).substring(0, 32);
     }
     
-    public UserInfoResponse updateProfileImage(Long userId, ProfileImage profileImage) {
+    public UserInfoResponse updateProfile(Long userId, ProfileImage profileImage, String nickName) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
 
         user.updateProfileImage(profileImage);
+        user.updateNickname(nickName);
 
         return UserInfoResponse.from(user);
     }
