@@ -223,4 +223,5 @@ public class User extends BaseEntity {
     public void updateExecuteTimes(int executeTimes) {this.executeTime = executeTime;}
     public void updateDelayList(List<Long> delayTimeSlots) {this.delayList = delayTimeSlots;}
     public void updateFocusList(List<Long> focusSlots) {this.focusList = focusSlots;}
+    public void updatePeanutCount(int peanutCount) {this.peanutCount = peanutCount;}
 }
