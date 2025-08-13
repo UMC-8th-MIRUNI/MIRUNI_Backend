@@ -44,3 +44,4 @@ src/main/resources/mail-config.yml
 
 application-local.yml
 application.yml
+.DS_Store
