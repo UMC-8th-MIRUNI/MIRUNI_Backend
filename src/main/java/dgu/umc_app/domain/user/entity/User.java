@@ -185,4 +185,11 @@ public class User extends BaseEntity {
     public DelayLevel getDelayLevel() {
         return this.delayLevel;
     }
+
+    public void updateUser(String name, String email, String birthday, String phoneNumber) {
+        this.name = name;
+        this.email = email;
+        this.birthday = birthday;
+        this.phoneNumber = phoneNumber;
+    }
 }

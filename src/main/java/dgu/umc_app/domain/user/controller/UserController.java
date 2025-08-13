@@ -1,5 +1,6 @@
 package dgu.umc_app.domain.user.controller;
 
+import dgu.umc_app.domain.user.dto.request.AccountUpdateRequest;
 import dgu.umc_app.domain.user.dto.response.PeanutCountResponse;
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
 import dgu.umc_app.domain.user.dto.response.UserSurveyResponse;
@@ -7,6 +8,7 @@ import dgu.umc_app.domain.user.entity.ProfileImage;
 import dgu.umc_app.domain.user.service.UserCommandService;
 import dgu.umc_app.domain.user.service.UserQueryService;
 import dgu.umc_app.global.authorize.LoginUser;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,9 +27,15 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @PatchMapping("/profileImage")
+    @PatchMapping("/profile")
     public UserInfoResponse updateProfile(@LoginUser Long userId, ProfileImage profileImage, String nickname) {
         return userCommandService.updateProfile(userId, profileImage, nickname);
+    }
+
+    @Override
+    @PatchMapping("/account")
+    public UserInfoResponse updateAccount(@LoginUser Long userId, @RequestBody @Valid AccountUpdateRequest request) {
+        return userCommandService.updateAccount(userId, request);
     }
 
     @Override  
