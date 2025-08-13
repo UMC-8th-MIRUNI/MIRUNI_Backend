@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 
 @Entity
@@ -55,6 +57,7 @@ public class User extends BaseEntity {
     private boolean agreedPrivacyPolicy;
 
     @Column(nullable = false)
+    @Builder.Default
     private int peanutCount = 0;
 
     @Column(nullable = false, length = 50)
@@ -71,7 +74,13 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status = Status.ACTIVE;
+    @Builder.Default
+    private Status status = Status.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private SurveyStatus surveyStatus = SurveyStatus.NOT_COMPLETED;
 
     @Column
     private int executeTime;    //총 수행시간
@@ -88,6 +97,17 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private ProfileImage profileImage = ProfileImage.GREEN;
+
+    // Survey 관련 비트마스크 컬럼들
+    @Column(name = "delay_situations_mask")
+    private Long delaySituationsMask;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delay_level")
+    private DelayLevel delayLevel;
+
+    @Column(name = "delay_reasons_mask")
+    private Long delayReasonsMask;
 
     // == User 상태 변경 메서드들 == //
     public void activate() {
@@ -134,6 +154,20 @@ public class User extends BaseEntity {
         this.nickname = nickname;
     }
 
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+        this.lastPasswordChanged = LocalDateTime.now();
+        this.passwordExpired = false;
+    }
+
+    public boolean isSocialUser() {
+        return this.oauthProvider != null;
+    }
+
+    public boolean hasPassword() {
+        return this.password != null && !this.password.isEmpty();
+    }
+
     public void updateProfileImage(ProfileImage profileImage) {
         this.profileImage = profileImage;
     }
@@ -157,5 +191,35 @@ public class User extends BaseEntity {
         if (list.size() < LEN) list.addAll(java.util.Collections.nCopies(LEN - list.size(), 0L));
         else if (list.size() > LEN) list.subList(LEN, list.size()).clear();
         java.util.Collections.fill(list, 0L);
+    }
+
+    public void completeSurvey() {
+        this.surveyStatus = SurveyStatus.COMPLETED;
+        this.status = Status.ACTIVE;
+    }
+
+    public boolean isSurveyCompleted() {
+        return this.surveyStatus == SurveyStatus.COMPLETED;
+    }
+
+    // Survey 관련 메서드들
+    public void updateSurveyInfo(Set<DelaySituation> situations, DelayLevel level, Set<DelayReason> reasons) {
+        this.delaySituationsMask = DelaySituation.createMask(situations);
+        this.delayLevel = level;
+        this.delayReasonsMask = DelayReason.createMask(reasons);
+        this.surveyStatus = SurveyStatus.COMPLETED;
+        this.status = Status.ACTIVE;
+    }
+
+    public Set<DelaySituation> getDelaySituations() {
+        return this.delaySituationsMask != null ? DelaySituation.fromMask(this.delaySituationsMask) : new HashSet<>();
+    }
+
+    public Set<DelayReason> getDelayReasons() {
+        return this.delayReasonsMask != null ? DelayReason.fromMask(this.delayReasonsMask) : new HashSet<>();
+    }
+
+    public DelayLevel getDelayLevel() {
+        return this.delayLevel;
     }
 }

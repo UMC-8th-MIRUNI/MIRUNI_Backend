@@ -2,6 +2,7 @@ package dgu.umc_app.domain.plan.controller;
 
 import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
+import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.global.authorize.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,10 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -65,6 +63,24 @@ public interface PlanApi {
     @Operation(summary = "안 한 일정 조회", description = "미루지도 않고 수행하지도 않은 일정을 조회합니다.")
     @GetMapping("/unfinished")
     List<UnfinishedPlanResponse> getUnfinishedPlans(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    );
+
+    @Operation(summary = "일반/AI 일정 수정", description = "일정의 세부 정보들을 수정합니다.")
+    @PatchMapping("/{planId}")
+    PlanDetailResponse updatePlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanUpdateRequest request,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    );
+
+
+    @Operation(
+            summary = "일정별 세부 조회 API",
+            description = "일정별 세부정보를 조회합니다."
+    )
+    PlanDetailResponse getPlanDetail(
+            @PathVariable Long planId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 

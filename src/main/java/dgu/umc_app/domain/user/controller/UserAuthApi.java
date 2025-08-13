@@ -5,12 +5,18 @@ import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
 import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
+import dgu.umc_app.domain.user.dto.request.VerifyResetCodeRequest;
 import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
 import dgu.umc_app.domain.user.dto.request.ReissueTokenRequest;
+import dgu.umc_app.domain.user.dto.request.PasswordResetRequest;
+import dgu.umc_app.domain.user.dto.request.ResetPasswordRequest;
+import dgu.umc_app.domain.user.dto.request.SurveyRequest;
+import dgu.umc_app.domain.user.dto.request.ChangePasswordRequest;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import dgu.umc_app.domain.user.dto.response.ReissueTokenResponse;
+import dgu.umc_app.domain.user.dto.response.SurveyResponse;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
-import dgu.umc_app.domain.user.entity.User;
+import dgu.umc_app.domain.user.dto.response.VerifyResponse;
 import dgu.umc_app.global.authorize.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,6 +29,7 @@ import jakarta.validation.constraints.Email;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @Tag(name = "User", description = "회원가입, 로그인 API")
 public interface UserAuthApi {
@@ -141,4 +148,80 @@ public interface UserAuthApi {
         @ApiResponse(responseCode = "400", description = "입력값 검증 실패")
     })
     ReissueTokenResponse reissueToken(@Valid @RequestBody ReissueTokenRequest request);
+
+    @Operation(
+        summary = "설문조사 완료",
+        description = "사용자 설문조사 응답을 저장합니다. \n" +
+                "미루는 상황(다중선택), 정도(단일선택), 이유(다중선택)에 대한 응답을 enum 기반으로 검증하고 " +
+                "한글 설명으로 DB에 저장하며, 사용자 상태를 ACTIVE로 변경합니다. \n" +
+                "요청은 문자열(PHONE, NORMAL, PERFECTIONISM...) 형태로 가능합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "설문 완료 성공",
+                content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = SurveyResponse.class))),
+        @ApiResponse(responseCode = "400", description = "입력값 검증 실패 (잘못된 enum 값 또는 범위 초과)"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음"),
+        @ApiResponse(responseCode = "409", description = "이미 설문을 완료한 사용자")
+    })
+    SurveyResponse survey(@Valid @RequestBody SurveyRequest request, @LoginUser Long userId);
+
+    @Operation(
+        summary = "회원 탈퇴",
+        description = "현재 로그인한 사용자의 회원 탈퇴를 처리합니다. \n" +
+                "소프트 삭제 방식으로 처리되며, 모든 토큰이 무효화됩니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "회원 탈퇴 성공"),
+        @ApiResponse(responseCode = "400", description = "이미 탈퇴한 사용자"),
+        @ApiResponse(responseCode = "401", description = "인증 실패"),
+        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    void withdrawUser(@LoginUser Long userId);
+
+    @Operation(
+        summary = "비밀번호 변경",
+        description = "현재 비밀번호를 확인하고 새 비밀번호로 변경합니다. \n" +
+                "비밀번호 변경 후 모든 토큰이 무효화되어 재로그인이 필요합니다. \n" +
+                "현재 설정되어 있는 비밀번호를 아는 경우 사용합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
+        @ApiResponse(responseCode = "400", description = "비밀번호 형식 오류 또는 현재 비밀번호와 동일"),
+        @ApiResponse(responseCode = "401", description = "현재 비밀번호 불일치"),
+        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    void changePassword(@LoginUser Long userId, @Valid @RequestBody ChangePasswordRequest request);
+
+    
+    @Operation(summary = "비밀번호 재설정 요청", description = "이메일로 비밀번호 재설정 인증 코드가 전송됩니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "인증 코드 전송 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @ApiResponse(responseCode = "404", description = "해당 이메일로 가입된 사용자가 없음")
+    })
+    void requestPasswordReset(@Valid @RequestBody PasswordResetRequest request);
+
+    @Operation(summary = "비밀번호 재설정 코드 검증", description = "이메일로 전송된 인증 코드를 검증하고 리셋 토큰을 반환합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "코드 검증 성공",
+                content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = VerifyResponse.class))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @ApiResponse(responseCode = "404", description = "유효하지 않은 인증 코드")
+    })
+    VerifyResponse verifyResetCode(@Valid @RequestBody VerifyResetCodeRequest request);
+
+    @Operation(
+        summary = "비밀번호 재설정", 
+        description = "검증된 토큰으로 새 비밀번호를 설정합니다. \n" + 
+                "현재 설정되어 있는 비밀번호를 모를때 사용합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "비밀번호 재설정 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @ApiResponse(responseCode = "404", description = "유효하지 않은 인증 코드")
+    })
+    void resetPassword(@RequestHeader("Reset-Token") String resetToken, @Valid @RequestBody ResetPasswordRequest request);
 } 

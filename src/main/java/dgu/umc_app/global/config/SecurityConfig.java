@@ -46,16 +46,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(
                                 "/api/signup",
-                                "/api/auth/normal",
-                                "/api/auth/google",
-                                "/api/auth/kakao",
-                                "/api/auth/reissue",
+                                "/api/auth/**",
                                 "/api/signup/duplicate",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/actuator/**"
                         ).permitAll()
-                        .requestMatchers("/api/auth/logout").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );
