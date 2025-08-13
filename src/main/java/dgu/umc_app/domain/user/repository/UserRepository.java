@@ -30,13 +30,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     """)
     int trySpendPeanuts(Long userId, int cost);
 
-//    @Modifying(clearAutomatically = true, flushAutomatically = true)
-//    @Query("""
-//        update User u
-//           set u.delayTime   = 0,
-//               u.executeTime = 0,
-//               u.updatedAt   = CURRENT_TIMESTAMP
-//    """)
-//    int resetMonthlyTimesForAll();
     List<User> findAllByIdIn(Collection<Long> ids);
 }
