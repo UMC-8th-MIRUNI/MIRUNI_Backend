@@ -2,6 +2,7 @@ package dgu.umc_app.domain.plan.repository;
 
 import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.entity.Plan;
+import dgu.umc_app.domain.plan.entity.PlanType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,5 +33,7 @@ public interface AiPlanRepository extends JpaRepository<AiPlan, Long> {
 """)
     List<AiPlan> findByUserIdAndMonth(Long userId, int year, int month);
     List<AiPlan> findByPlan_UserIdAndIsDoneFalseAndIsDelayedFalse(Long userId); // 안 한 일정 조회
+
+    List<AiPlan> findByPlanUserIdAndIsDelayedTrue(Long userId);
 
 }

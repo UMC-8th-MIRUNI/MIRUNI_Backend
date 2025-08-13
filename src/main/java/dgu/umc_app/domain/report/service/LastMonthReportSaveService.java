@@ -3,12 +3,17 @@ package dgu.umc_app.domain.report.service;
 import dgu.umc_app.domain.report.entity.LastMonthReport;
 import dgu.umc_app.domain.report.repository.LastMonthReportRepository;
 import dgu.umc_app.domain.report.repository.ReportRepository;
+import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.domain.user.repository.UserRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -21,6 +26,8 @@ public class LastMonthReportSaveService {
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
     private final UserRepository userRepository;
 
+    private static final int DAYS = 7, SLOTS = 12, LEN = DAYS * SLOTS; // 84
+    private static final int BATCH = 500;
 
     /** 매달 1일 00:05 KST에 지난달 스냅샷 생성 */
     @Transactional
@@ -37,12 +44,10 @@ public class LastMonthReportSaveService {
         for (Long userId : userIds) {
             // 이미 저장되어 있으면 건너뛰기 (write-once)
             if (lastMonthReportRepository.existsByUserIdAndYearAndMonth(userId, y, m)) continue;
-
             try {
                 // 지난달 ReportResponse 생성
                 var rr = reportQueryService.getMonthlyReport(userId, y, m);
                 var json = objectMapper.writeValueAsString(rr);
-
                 var userRef = userRepository.getReferenceById(userId);
                 lastMonthReportRepository.save(LastMonthReport.of(userRef, y, m, json, asOf));
 
@@ -52,6 +57,21 @@ public class LastMonthReportSaveService {
                 log.error("LastMonthReport 직렬화 실패: userId={}, ym={}-{}", userId, y, m, e);
             }
         }
+        resetUsersForNewMonth(userIds);
         log.info("LastMonthReport rollover completed for {}-{}", y, m);
     }
+    private void resetUsersForNewMonth(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) return;
+
+        for (int i = 0; i < userIds.size(); i += BATCH) {
+            var slice = userIds.subList(i, Math.min(i + BATCH, userIds.size()));
+            var users = userRepository.findAllByIdIn(slice); // 배치 로딩
+
+            for (User u : users) {
+                u.resetForNewMonth(); // executeTime/delayTime + 84칸 버킷 초기화
+            }
+        }
+        log.info("Users monthly reset done. affected={}", userIds.size());
+    }
+
 }

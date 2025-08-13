@@ -22,7 +22,7 @@ public class ReportOpenService {
     @Transactional
     public void openThisMonth(Long userId, int year, int month) {
 
-        //리포트 행 없으면 생성 시도(경합 허용)
+        //리포트 행 없으면 생성 시도
         reportRepository.findByUserIdAndYearAndMonth(userId, year, month)
                 .orElseGet(() -> {
                     try {

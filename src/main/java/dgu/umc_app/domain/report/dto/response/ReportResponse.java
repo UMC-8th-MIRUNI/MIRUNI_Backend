@@ -7,10 +7,9 @@ import java.util.List;
 @Builder
 public record ReportResponse(
         Summary summary,
-//        DelayPatternDTO delayPattern,
+        DelayPattern delayPattern,
         EmotionAchievement emotionAchievement,
-        List<String> simpleKeywords
-        //SimplePatternSummary patternSummary
-        //KeywordAnalysis keywordAnalysis
-//        SuggestionsDTO suggestions
+        List<String> simpleKeywords,
+        List<String> selfReflections,
+        MonthOverMonthDelta monthOverMonthDelta
 ) {}

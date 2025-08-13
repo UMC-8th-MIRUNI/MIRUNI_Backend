@@ -2,14 +2,10 @@ package dgu.umc_app.domain.report.service;
 
 import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.entity.Plan;
+import dgu.umc_app.domain.plan.entity.PlanType;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
-import dgu.umc_app.domain.report.dto.response.EmotionAchievement;
-import dgu.umc_app.domain.report.dto.response.ReportResponse;
-//import dgu.umc_app.domain.report.dto.response.SimplePatternSummary;
-import dgu.umc_app.domain.report.dto.response.StoragePageResponse;
-import dgu.umc_app.domain.report.dto.response.Summary;
-import dgu.umc_app.domain.report.entity.LastMonthReport;
+import dgu.umc_app.domain.report.dto.response.*;
 import dgu.umc_app.domain.report.exception.ReportErrorCode;
 import dgu.umc_app.domain.report.repository.LastMonthReportRepository;
 import dgu.umc_app.domain.report.repository.ReportRepository;
@@ -49,6 +45,13 @@ public class ReportQueryService {
     private static final int CHUNK_MIN = 8_000;
     private static final int CHUNK_MAX = 12_000;
     private static final int CHUNK_TOPK = 6;    //각 청크에서 상위 몇개 키워드 뽑을지
+
+    private static final int DAYS = 7;
+    private static final int SLOTS = 12;          // 2시간 단위 12칸
+    private static final int LEN = DAYS * SLOTS;  // 84
+    private static final String[] DAY_FULL = {"월요일","화요일","수요일","목요일","금요일","토요일","일요일"};
+
+
     /**
      * 리포트 보관함
      * @param userId
@@ -128,12 +131,30 @@ public class ReportQueryService {
      */
     public ReportResponse getMonthlyReport(Long userId, int year, int month) {
         Summary summary = buildProgressSummary(userId, year, month);
+        DelayPattern delayPattern = buildDelayPattern(userId);
         EmotionAchievement emotionAchievement = buildEmotionAchievement(userId, year, month);
         List<String> simpleKeywords = buildSimpleKeywords(userId, year, month, 5);
+        List<String> reflections = buildSelfReflections(userId, year, month, 2);
+        var prev = java.time.YearMonth.of(year, month).minusMonths(1);
+        MonthOverMonthDelta delta = MonthOverMonthDelta.zero(); // 기본 0
+        var snapOpt = lastMonthReportRepository
+                .findByUserIdAndYearAndMonth(userId, prev.getYear(), prev.getMonthValue());
+        if (snapOpt.isPresent()) {
+            try {
+                ReportResponse last = objectMapper.readValue(snapOpt.get().getReportJson(), ReportResponse.class);
+                if (last != null && last.summary() != null) {
+                    delta = MonthOverMonthDelta.of(summary, last.summary());
+                }
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            }
+        }
         return ReportResponse.builder()
-                .summary((summary))
+                .summary(summary)
+                .delayPattern(delayPattern)
                 .emotionAchievement(emotionAchievement)
                 .simpleKeywords(simpleKeywords)
+                .selfReflections(reflections)
+                .monthOverMonthDelta(delta)
                 .build();
     }
 
@@ -159,8 +180,131 @@ public class ReportQueryService {
                 .count();
 
         int completed = (int) (independentDone + aiDone);
-        return Summary.ofCounts(total, completed);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        int executeTime = user.getExecuteTime();
+        int delayTime = user.getDelayTime();
+        return Summary.ofCounts(total, completed, executeTime,delayTime);
     }
+
+    /**
+     * 미루기 패턴 분석
+     */
+    public DelayPattern buildDelayPattern(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("user not found: " + userId));
+
+        List<Long> delay = ensureLen84(user.getDelayList());
+        List<Long> focus = ensureLen84(user.getFocusList());
+
+        Peak delayed = findPeak1D(delay);
+        Peak focused = findPeak1D(focus);
+
+        String mostDelayed = (delayed == null) ? "데이터 없음"
+                : DAY_FULL[delayed.day] + " " + slotKoreanLabel(delayed.slot);
+        String mostFocused = (focused == null) ? "데이터 없음"
+                : DAY_FULL[focused.day] + " " + slotKoreanLabel(focused.slot);
+
+        Map<String, Integer> delayByCategory = buildDelayByCategory(userId);
+
+
+        return DelayPattern.builder()
+                .mostDelayedTimeBand(mostDelayed)
+                .mostFocusedTimeBand(mostFocused)
+                .delayByCategory(delayByCategory)
+                .build();
+    }
+
+    private Map<String, Integer> buildDelayByCategory(Long userId) {
+        Map<String, Integer> result = new LinkedHashMap<>();
+        for (PlanType t : PlanType.values()) {
+            result.put(t.name(), 0); // 한글 라벨이 있으면 t.getDisplayName() 등으로 교체
+        }
+        List<AiPlan> delayedPlans = aiPlanRepository.findByPlanUserIdAndIsDelayedTrue(userId);
+
+        Map<PlanType, Long> counts = delayedPlans.stream()
+                .collect(Collectors.groupingBy(
+                        AiPlan::getPlanType,
+                        () -> new EnumMap<>(PlanType.class),
+                        Collectors.counting()
+                ));
+
+        counts.forEach((type, cnt) -> result.put(type.name(), cnt.intValue()));
+
+        return result;
+    }
+
+    /**
+     * 리스트를 84칸으로 보정
+     */
+    private static List<Long> ensureLen84(List<Long> list) {
+        if (list == null) return new ArrayList<>(Collections.nCopies(LEN, 0L));
+        if (list.size() < LEN) {
+            ArrayList<Long> copy = new ArrayList<>(list);
+            copy.addAll(Collections.nCopies(LEN - list.size(), 0L)); // 패딩
+            return copy;
+        }
+        return (list.size() > LEN) ? new ArrayList<>(list.subList(0, LEN)) : list; // 초과분 트림
+    }
+
+
+    /**
+     * 1차원 리스트에서 최댓값 찾기 (동률이면 가장 이른 칸). 전부 0이면 null
+     */
+    private static Peak findPeak1D(List<Long> flat) {
+        long best = Long.MIN_VALUE;
+        int bestIdx = -1;
+        long sum = 0;
+        for (int i = 0; i < flat.size(); i++) {
+            long v = flat.get(i);
+            sum += v;
+            if (v > best) {
+                best = v;
+                bestIdx = i;
+            } // 동률이면 갱신 안 함 → 더 이른 칸 유지
+        }
+        if (sum == 0 || bestIdx < 0) return null;
+        int day = bestIdx / SLOTS;
+        int slot = bestIdx % SLOTS;
+        return new Peak(day, slot, best);
+    }
+
+    /**
+     * 슬롯(0~11) → "오전 10시 ~ 12시" / "오후 6시 ~ 8시"
+     */
+    private static String slotKoreanLabel(int slot) {
+        int start = slot * 2;       // 0,2,...,22
+        int end = start + 2;      // 2,4,...,24
+        String sp = (start < 12) ? "오전" : "오후";
+        String ep = ((end % 24) < 12) ? "오전" : "오후";
+        int sh = to12h(start);
+        int eh = to12h(end % 24);
+        return sp.equals(ep) ? sp + " " + sh + "시 ~ " + eh + "시"
+                : sp + " " + sh + "시 ~ " + ep + " " + eh + "시";
+    }
+
+    private static int to12h(int h24) {
+        int h = h24 % 12;
+        return (h == 0) ? 12 : h;
+    }
+
+    /**
+     * 내부 보조 DTO
+     */
+    private static final class Peak {
+        final int day, slot;
+        final long value;
+
+        Peak(int day, int slot, long value) {
+            this.day = day;
+            this.slot = slot;
+            this.value = value;
+        }
+    }
+
+
 
     /**
      * 감정태그 & 성취도 통계
@@ -275,5 +419,26 @@ public class ReportQueryService {
     private String normalize(String s) {
         if (s == null) return "";
         return s.trim().replaceAll("\\s+", " ").toLowerCase();
+    }
+
+    /**2문장 추출*/
+    public List<String> buildSelfReflections(Long userId, int year, int month, int n) {
+        YearMonth ym = YearMonth.of(year, month);
+        LocalDateTime start = ym.atDay(1).atStartOfDay();
+        LocalDateTime end   = ym.atEndOfMonth().atTime(23, 59, 59);
+
+        List<Review> reviews = reviewRepository.findByPlanUserIdAndCreatedAtBetween(userId, start, end);
+        if (reviews.isEmpty()) return List.of();
+
+        String monthText = reviews.stream()
+                .map(r -> Optional.ofNullable(r.getMemo()).orElse(""))
+                .collect(Collectors.joining("\n"));
+
+        if (monthText.length() <= CHUNK_MAX) {
+            return simpleKeywordService.extractSelfReflections(List.of(monthText), n);
+        } else {
+            // 길면 청크로 나눠서 내부에서 병합됨
+            return simpleKeywordService.extractSelfReflections(List.of(monthText), n);
+        }
     }
 }

@@ -16,26 +16,36 @@ public record Summary(
         int completionRatePercent,
 
         @Schema(description = "표시용 비율 문자열: '완료/총 (xx%)'")
-        String completionRatioText
+        String completionRatioText,
+
+        @Schema(description = "총 수행 시간")
+        int totalExecuteTime,
+
+        @Schema(description = "총 미룬 시간")
+        int totalDelayTime
 ) {
     /** 완료건수/총건수로부터 퍼센트를 계산해서 생성 */
-    public static Summary ofCounts(int totalPlans, int completedPlans) {
+    public static Summary ofCounts(int totalPlans, int completedPlans, int totalExecuteTime, int totalDelayTime) {
         int percent = calcPercent(completedPlans, totalPlans);
         return Summary.builder()
                 .totalPlans(totalPlans)
                 .completedPlans(completedPlans)
                 .completionRatePercent(percent)
                 .completionRatioText(format(completedPlans, totalPlans, percent))
+                .totalExecuteTime(totalExecuteTime)
+                .totalDelayTime(totalDelayTime)
                 .build();
     }
 
     /** 퍼센트가 이미 계산되어 있을 때 생성 */
-    public static Summary from(int totalPlans, int completedPlans, int completionRatePercent) {
+    public static Summary from(int totalPlans, int completedPlans, int completionRatePercent, int totalExecuteTime, int totalDelayTime ) {
         return Summary.builder()
                 .totalPlans(totalPlans)
                 .completedPlans(completedPlans)
                 .completionRatePercent(completionRatePercent)
                 .completionRatioText(format(completedPlans, totalPlans, completionRatePercent))
+                .totalExecuteTime(totalExecuteTime)
+                .totalDelayTime(totalDelayTime)
                 .build();
     }
 
