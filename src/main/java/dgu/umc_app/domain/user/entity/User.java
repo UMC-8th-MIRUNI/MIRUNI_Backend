@@ -60,8 +60,7 @@ public class User extends BaseEntity {
     @Builder.Default
     private int peanutCount = 0;
 
-    @Column(nullable = false, length = 50)
-    private String userPreference;
+    // userPreference 필드 제거
 
     @Enumerated(EnumType.STRING)
     private OauthProvider oauthProvider;

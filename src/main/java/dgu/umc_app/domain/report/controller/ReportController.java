@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/report")
+@RequestMapping("/api/reports")
 @RequiredArgsConstructor
 public class ReportController implements ReportApi{
 
@@ -25,7 +25,7 @@ public class ReportController implements ReportApi{
     }
 
     //리포트 오픈 : 첫 오픈시 땅콩 30 차감
-    @PostMapping("/{year}/{month}/open")
+    @PostMapping("/{year}/{month}/openings")
     public ReportResponse openThisMonth(@LoginUser Long userId,
                                         @PathVariable int year,
                                         @PathVariable int month) {
