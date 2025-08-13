@@ -23,6 +23,6 @@ public record PlanDelayRequest(
 
         @Schema(description = "수행 시간")
         @NotNull
-        Long executeTime
+        int executeTime
 ) {}
 

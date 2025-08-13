@@ -57,16 +57,38 @@ public class User extends BaseEntity {
     private int peanutCount = 0;
 
     @Column
-    private Long delayTimes = 0L; // 총 미룬 시간
+    private int delayTime = 0; // 총 미룬 시간
 
     @Column
-    private Long executeTimes = 0L;  // 총 실행시간
+    private int executeTime = 0;  // 총 실행시간
 
-    @ElementCollection
-    private List<Long> delayList = new ArrayList<>(Collections.nCopies(84, 0L));   // 미룬 시간대
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "user_delay_list",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @OrderColumn(name = "slot_order") // 0..83 순서 고정
+    @Column
+    private List<Long> delayList;
 
-    @ElementCollection
-    private List<Long> focusList = new ArrayList<>(Collections.nCopies(84, 0L));    // 집중한 시간대
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "user_focus_list",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @OrderColumn(name = "slot_order")
+    @Column
+    private List<Long> focusList;
+
+    @PrePersist
+    private void initSlotsOnCreate() {
+        if (delayList == null || delayList.isEmpty()) {
+            delayList = new ArrayList<>(Collections.nCopies(84, 0L));
+        }
+        if (focusList == null || focusList.isEmpty()) {
+            focusList = new ArrayList<>(Collections.nCopies(84, 0L));
+        }
+    }
 
     // userPreference 필드 제거
 
@@ -197,8 +219,8 @@ public class User extends BaseEntity {
         return this.delayLevel;
     }
 
-    public void updateDelayTimes(Long delayTimes) {this.delayTimes = delayTimes;}
-    public void updateExecuteTimes(Long executeTimes) {this.executeTimes = executeTimes;}
+    public void updateDelayTimes(int delayTimes) {this.delayTime = delayTime;}
+    public void updateExecuteTimes(int executeTimes) {this.executeTime = executeTime;}
     public void updateDelayList(List<Long> delayTimeSlots) {this.delayList = delayTimeSlots;}
     public void updateFocusList(List<Long> focusSlots) {this.focusList = focusSlots;}
 }
