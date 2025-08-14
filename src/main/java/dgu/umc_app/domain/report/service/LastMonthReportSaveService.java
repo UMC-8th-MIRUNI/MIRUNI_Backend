@@ -5,11 +5,13 @@ import dgu.umc_app.domain.report.repository.LastMonthReportRepository;
 import dgu.umc_app.domain.report.repository.ReportRepository;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.domain.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.scheduling.annotation.Scheduled;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.PersistenceContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,21 +59,25 @@ public class LastMonthReportSaveService {
                 log.error("LastMonthReport 직렬화 실패: userId={}, ym={}-{}", userId, y, m, e);
             }
         }
-        resetUsersForNewMonth(userIds);
+        resetAllUsersForNewMonth();
         log.info("LastMonthReport rollover completed for {}-{}", y, m);
     }
-    private void resetUsersForNewMonth(List<Long> userIds) {
-        if (userIds == null || userIds.isEmpty()) return;
 
-        for (int i = 0; i < userIds.size(); i += BATCH) {
-            var slice = userIds.subList(i, Math.min(i + BATCH, userIds.size()));
-            var users = userRepository.findAllByIdIn(slice); // 배치 로딩
+    @PersistenceContext
+    private EntityManager em;
+    private void resetAllUsersForNewMonth() {
+        List<Long> allIds = userRepository.findAllIds();
+        for (int i = 0; i < allIds.size(); i += BATCH) {
+            var slice = allIds.subList(i, Math.min(i + BATCH, allIds.size()));
+            var users = userRepository.findAllById(slice); // 배치 로딩
 
             for (User u : users) {
                 u.resetForNewMonth(); // executeTime/delayTime + 84칸 버킷 초기화
             }
+            //메모리 보호
+            em.flush();
+            em.clear();
         }
-        log.info("Users monthly reset done. affected={}", userIds.size());
+        log.info("Users monthly reset done (ALL). affected={}", allIds.size());
     }
-
 }

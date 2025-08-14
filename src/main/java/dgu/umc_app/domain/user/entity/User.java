@@ -198,7 +198,7 @@ public class User extends BaseEntity {
         this.delayTime   = 0;
         this.updatedAt   = java.time.LocalDateTime.now();
 
-        // 리스트가 null일 가능성 방어 (구버전 데이터 대비)
+        // 리스트가 null일 가능성 방어
         if (this.delayList == null) this.delayList = new ArrayList<>(Collections.nCopies(84, 0L));
         if (this.focusList == null) this.focusList = new ArrayList<>(Collections.nCopies(84, 0L));
 

@@ -30,5 +30,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     """)
     int trySpendPeanuts(Long userId, int cost);
 
-    List<User> findAllByIdIn(Collection<Long> ids);
+    @Query("select u.id from User u")
+    List<Long> findAllIds();
 }
