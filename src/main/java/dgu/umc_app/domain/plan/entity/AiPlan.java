@@ -48,9 +48,6 @@ public class AiPlan extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime scheduledEnd; // 수행끝 예정 날짜&시간(ex: 2025-05-01T22:00:00)
 
-    @Column(nullable = false)
-    private boolean isDelayed;  // 미루기 여부
-
     @Column
     @Enumerated(EnumType.STRING)
     private Status status;  // 미완료, 진행중, 중지, 완료
@@ -72,5 +69,4 @@ public class AiPlan extends BaseEntity {
     public void updateStepOrder(Long stepOrder) {this.stepOrder = stepOrder;}
     public void updateStatus(Status status) {this.status = status;}
     public void updateStoppedAt(LocalDateTime stoppedAt) {this.stoppedAt = stoppedAt;}
-    public void updateIsDelayed(boolean isDelayed) {this.isDelayed = isDelayed;}
 }

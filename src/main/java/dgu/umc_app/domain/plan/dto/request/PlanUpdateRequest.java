@@ -108,7 +108,6 @@ public record PlanUpdateRequest(
                         .scheduledStart(start)
                         .scheduledEnd(end)
                         .status(Status.NOT_STARTED)
-                        .isDelayed(false)
                         .planType(PlanType.IMMERSIVE);
 
                 plan.addAiPlan(b.build());

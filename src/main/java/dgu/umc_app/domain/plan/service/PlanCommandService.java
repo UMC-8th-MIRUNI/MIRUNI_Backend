@@ -340,7 +340,6 @@ public class PlanCommandService {
         aiPlan.updateScheduleEnd(newStart.plusMinutes(request.expectedMinutes()));
         aiPlan.updateStatus(Status.PAUSED);
         aiPlan.updateStoppedAt(stoppedAt);
-        aiPlan.updateIsDelayed(true);
 
         user.updateDelayTimes(safePlusInt(user.getDelayTime(),  delayDelta) );
         user.updateExecuteTimes(safePlusInt(user.getExecuteTime(), execDelta) );
