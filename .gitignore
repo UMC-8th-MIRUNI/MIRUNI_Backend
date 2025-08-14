@@ -38,3 +38,10 @@ out/
 
 ### fire base ###
 src/main/resources/firebase/
+
+### Mail Configuration ###
+src/main/resources/mail-config.yml
+
+application-local.yml
+application.yml
+.DS_Store

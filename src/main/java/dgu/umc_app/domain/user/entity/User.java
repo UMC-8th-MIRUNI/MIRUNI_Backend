@@ -9,6 +9,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Getter
@@ -48,10 +53,44 @@ public class User extends BaseEntity {
     private boolean agreedPrivacyPolicy;
 
     @Column(nullable = false)
+    @Builder.Default
     private int peanutCount = 0;
 
-    @Column(nullable = false, length = 50)
-    private String userPreference;
+    @Column
+    private int delayTime = 0; // 총 미룬 시간
+
+    @Column
+    private int executeTime = 0;  // 총 실행시간
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "user_delay_list",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @OrderColumn(name = "slot_order") // 0..83 순서 고정
+    @Column
+    private List<Long> delayList;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "user_focus_list",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @OrderColumn(name = "slot_order")
+    @Column
+    private List<Long> focusList;
+
+    @PrePersist
+    private void initSlotsOnCreate() {
+        if (delayList == null || delayList.isEmpty()) {
+            delayList = new ArrayList<>(Collections.nCopies(84, 0L));
+        }
+        if (focusList == null || focusList.isEmpty()) {
+            focusList = new ArrayList<>(Collections.nCopies(84, 0L));
+        }
+    }
+
+    // userPreference 필드 제거
 
     @Enumerated(EnumType.STRING)
     private OauthProvider oauthProvider;
@@ -64,8 +103,28 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status = Status.ACTIVE;
+    @Builder.Default
+    private Status status = Status.PENDING;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private SurveyStatus surveyStatus = SurveyStatus.NOT_COMPLETED;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ProfileImage profileImage = ProfileImage.GREEN;
+
+    // Survey 관련 비트마스크 컬럼들
+    @Column(name = "delay_situations_mask")
+    private Long delaySituationsMask;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delay_level")
+    private DelayLevel delayLevel;
+
+    @Column(name = "delay_reasons_mask")
+    private Long delayReasonsMask;
 
     // == User 상태 변경 메서드들 == //
     public void activate() {
@@ -111,4 +170,57 @@ public class User extends BaseEntity {
         this.agreedPrivacyPolicy = agreedPrivacyPolicy != null ? agreedPrivacyPolicy : false;
         this.nickname = nickname;
     }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+        this.lastPasswordChanged = LocalDateTime.now();
+        this.passwordExpired = false;
+    }
+
+    public boolean isSocialUser() {
+        return this.oauthProvider != null;
+    }
+
+    public boolean hasPassword() {
+        return this.password != null && !this.password.isEmpty();
+    }
+  
+    public void updateProfileImage(ProfileImage profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    public void completeSurvey() {
+        this.surveyStatus = SurveyStatus.COMPLETED;
+        this.status = Status.ACTIVE;
+    }
+
+    public boolean isSurveyCompleted() {
+        return this.surveyStatus == SurveyStatus.COMPLETED;
+    }
+
+    // Survey 관련 메서드들
+    public void updateSurveyInfo(Set<DelaySituation> situations, DelayLevel level, Set<DelayReason> reasons) {
+        this.delaySituationsMask = DelaySituation.createMask(situations);
+        this.delayLevel = level;
+        this.delayReasonsMask = DelayReason.createMask(reasons);
+        this.surveyStatus = SurveyStatus.COMPLETED;
+        this.status = Status.ACTIVE;
+    }
+
+    public Set<DelaySituation> getDelaySituations() {
+        return this.delaySituationsMask != null ? DelaySituation.fromMask(this.delaySituationsMask) : new HashSet<>();
+    }
+
+    public Set<DelayReason> getDelayReasons() {
+        return this.delayReasonsMask != null ? DelayReason.fromMask(this.delayReasonsMask) : new HashSet<>();
+    }
+
+    public DelayLevel getDelayLevel() {
+        return this.delayLevel;
+    }
+
+    public void updateDelayTimes(int delayTimes) {this.delayTime = delayTime;}
+    public void updateExecuteTimes(int executeTimes) {this.executeTime = executeTime;}
+    public void updateDelayList(List<Long> delayTimeSlots) {this.delayList = delayTimeSlots;}
+    public void updateFocusList(List<Long> focusSlots) {this.focusList = focusSlots;}
 }

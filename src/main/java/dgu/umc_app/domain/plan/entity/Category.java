@@ -1,5 +1,5 @@
 package dgu.umc_app.domain.plan.entity;
 
-public enum PlanCategory {
+public enum Category {
     BASIC, AI
 }

@@ -1,12 +1,13 @@
 package dgu.umc_app.domain.plan.entity;
 
-import dgu.umc_app.domain.plan.entity.Priority;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -26,10 +27,6 @@ public class Plan extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String title; // 일정 제목
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PlanCategory planCategory;
-
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description; // 일정 내용
 
@@ -39,22 +36,52 @@ public class Plan extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime scheduledStart; // 수행시작 예정 날짜&시간(ex: 2025-05-01T21:00:00)
 
-    private LocalDateTime tempTime;
-    // 일반 일정은 마감기한이 있으므로 deadline으로 대체(추후에 기획팀과 논의 후 처리)
-//    @Column(nullable = false)
-//    private LocalDateTime scheduledEnd; // 수행끝 예정 날짜&시간(ex: 2025-05-01T22:00:00)
+
+    @Column(nullable = false)
+    private LocalDateTime scheduledEnd; // 수행종료 예정 날짜&시간(ex: 2025-05-01T22:00:00)
 
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
-    @Column(nullable = false)
-    private boolean isDelayed = false;  // 미루기 여부
+    @Column
+    private boolean isDelayed;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Status status;  // 미완료, 진행중, 중지, 완료
 
     @Enumerated(EnumType.STRING)
     @Column
     private Priority priority;
 
-    public void updateCategory(){
-        this.planCategory = PlanCategory.AI;
+    @Column
+    private LocalDateTime stoppedAt;
+
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("stepOrder ASC")
+    private List<AiPlan> aiPlans = new ArrayList<>();
+
+    public void addAiPlan(AiPlan ai) {
+        if (ai == null) return;
+        ai.setPlan(this);
+        aiPlans.add(ai);
     }
+
+    public void removeAiPlan(AiPlan ai) {
+        if (ai == null) return;
+        aiPlans.remove(ai);
+        ai.setPlan(null);
+    }
+
+    // --Plan 상태 변경 메서드--
+    public void updateScheduleStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
+    public void updateScheduleEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
+    public void updateStatus(Status status) {this.status = status;}
+    public void updateStoppedAt(LocalDateTime stoppedAt) {this.stoppedAt = stoppedAt;}
+    public void updateTitle(String title) {this.title = title;}
+    public void updateDeadline(LocalDateTime deadline) {this.deadline = deadline;}
+    public void updatePriority(Priority priority) {this.priority = priority;}
+    public void updateDescription(String description) {this.description = description;}
+    public void updateScheduledStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
+    public void updateScheduledEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
 }

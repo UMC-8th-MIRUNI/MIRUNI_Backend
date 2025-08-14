@@ -9,6 +9,7 @@ import dgu.umc_app.domain.fcm.entity.ReminderType;
 import dgu.umc_app.domain.fcm.exception.FcmErrorCode;
 import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.entity.Plan;
+import dgu.umc_app.domain.plan.entity.Status;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.global.exception.BaseException;
@@ -93,7 +94,8 @@ public class NotificationScheduleService {
     //AIPlan 알림 등록
     public void scheduleNotification(AiPlan aiplan){
 
-        if(aiplan.isDone()){
+        if(aiplan.getStatus().equals("FINISHED")){
+//        if(aiplan.isDone()){
             throw BaseException.type(FcmErrorCode.ALREADY_FINISHED_TASK);
         }
 
@@ -203,12 +205,14 @@ public class NotificationScheduleService {
 
         try{
             //미완료 Plan 재스케줄링
-            List<Plan> incompletePlans = planRepository.findByIsDoneFalse();
+//            List<Plan> incompletePlans = planRepository.findByIsDoneFalse();
+            List<Plan> incompletePlans = planRepository.findByStatus(Status.NOT_STARTED);
             for (Plan plan : incompletePlans) {
                 scheduleNotification(plan);
             }
             //미완료 AiPlan 재스케줄링
-            List<AiPlan> incompleteAiPlans = aiPlanRepository.findByIsDoneFalse();
+//            List<AiPlan> incompleteAiPlans = aiPlanRepository.findByIsDoneFalse();
+            List<AiPlan> incompleteAiPlans = aiPlanRepository.findByStatus(Status.NOT_STARTED);
             for (AiPlan aiplan : incompleteAiPlans) {
                 scheduleNotification(aiplan);
             }

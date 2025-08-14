@@ -19,7 +19,7 @@ public class Review extends BaseEntity {
     private Long id; // 회고 아이디 (PK, auto_increment)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ai_plan_id", nullable = false)
+    @JoinColumn(name = "ai_plan_id", nullable = true)
     private AiPlan aiPlan; // AI 계획 외래키
 
     @ManyToOne(fetch = FetchType.LAZY)
