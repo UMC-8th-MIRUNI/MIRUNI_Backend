@@ -8,14 +8,14 @@ import java.time.LocalTime;
 
 public record PlanDetail(
 
-        @Schema(description = "일정 ID")
+        @Schema(description = "일정 ID", example = "1")
         Long planId,
 
-        @Schema(description = "일정 수행 날짜")
+        @Schema(description = "일정 수행 날짜", example = "2025-08-20")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDate date,
 
-        @Schema(description = "세부 일정 내용")
+        @Schema(description = "세부 일정 내용", example = "와이어 프레임 만들기")
         String description,
 
         @Schema(description = "예상 소요 시간", example = "120")

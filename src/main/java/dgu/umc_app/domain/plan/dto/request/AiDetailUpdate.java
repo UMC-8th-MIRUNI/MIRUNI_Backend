@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public record AiDetailUpdate(
-        @Schema(description = "세부 일정 ID")
+        @Schema(description = "세부 일정 ID", example = "1")
         Long aiPlanId,
 
         @Schema(description = "세부 일정 수행 날짜", example = "2025-08-22")

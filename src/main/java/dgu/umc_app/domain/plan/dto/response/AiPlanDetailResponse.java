@@ -18,16 +18,16 @@ public record AiPlanDetailResponse(
         @NotNull
         Category category,
 
-        @Schema(description = "상위 일정 제목")
+        @Schema(description = "상위 일정 제목", example = "모바일 앱 개발")
         String title,
 
-        @Schema(description = "마감기한", example = "2025-08-30T23:59:59")
+        @Schema(description = "마감기한", example = "2025-08-20T23:59:00")
         LocalDateTime deadline,
 
-        @Schema(description = "일정 범위")
+        @Schema(description = "일정 범위" ,example = "앱 기획, 디자인, 프론트 개발, 백엔드 개발, 배포")
         String taskRange,
 
-        @Schema(description = "우선 순위")
+        @Schema(description = "우선 순위", example = "HIGH")
         Priority priority,
 
         @Schema(description = "일반 세부일정 리스트")

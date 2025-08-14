@@ -15,22 +15,22 @@ public record PlanDetailResponse(
         @NotNull
         Category category,
 
-        @Schema(description = "일정 제목")
+        @Schema(description = "일정 제목", example = "부모님 생신 준비")
         String title,
 
         @Schema(description = "마감기한", example = "2025-08-30T23:59:59")
         LocalDateTime deadline,
 
-        @Schema(description = "우선 순위")
+        @Schema(description = "우선 순위", example = "HIGH")
         Priority priority,
 
-        @Schema(description = "실행시작날짜")
+        @Schema(description = "실행시작날짜", example = "2025-08-17T11:00:00")
         LocalDateTime scheduledStart,
 
-        @Schema(description = "실행종료날짜")
+        @Schema(description = "실행종료날짜", example = "2025-08-18T10:00:00")
         LocalDateTime scheduledEnd,
 
-        @Schema(description = "일정 간단 설명")
+        @Schema(description = "일정 간단 설명", example = "축하 영상 제작")
         String description
 ) implements ScheduleDetailResponse{
     public static PlanDetailResponse fromPlan(Plan plan) {
