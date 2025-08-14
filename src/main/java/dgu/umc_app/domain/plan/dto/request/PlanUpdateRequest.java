@@ -18,31 +18,31 @@ import java.util.Map;
 
 public record PlanUpdateRequest(
 
-        @Schema(description = "일정 제목")
+        @Schema(description = "일정 제목", example = "프로젝트 중간 발표 준비")
         String title,
 
-        @Schema(description = "마감기한")
+        @Schema(description = "마감기한", example = "2025-09-25")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDate deadline,
 
-        @Schema(description = "일정 범위")
+        @Schema(description = "일정 범위", example = "팀 프로젝트 중간 발표")
         String taskRange,
 
-        @Schema(description = "우선 순위")
+        @Schema(description = "우선 순위", example = "MEDIUM")
         Priority priority,
 
-        @Schema(description = "일반 일정의 내용")
+        @Schema(description = "일반 일정의 내용", example = "중간 발표를 위한 진행상황 정리 및 PPT 제작")
         String description,
 
-        @Schema(description = "일정 수행 날짜")
+        @Schema(description = "일정 수행 날짜", example = "2025-09-20")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDate date,
 
-        @Schema(description = "예상 시작 시간")
+        @Schema(description = "예상 시작 시간", example = "14:00:00")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
         LocalTime startTime,
 
-        @Schema(description = "예상 종료 시간")
+        @Schema(description = "예상 종료 시간", example = "17:30:00")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
         LocalTime endTime,
 
