@@ -5,12 +5,12 @@ import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.entity.Category;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDateTime;
+import static dgu.umc_app.global.common.DateTimeFormatUtil.formatDateTime;
 
 public record UnstartedPlanResponse(
         Long id,
         String title,
-        LocalDateTime scheduledStart,
+        String scheduledStart,
 
         @Schema(description = "일정 유형(미루기 일정 판단)")
         Category category
@@ -19,7 +19,7 @@ public record UnstartedPlanResponse(
         return new UnstartedPlanResponse(
                 plan.getId(),
                 plan.getTitle(),
-                plan.getScheduledStart(),
+                formatDateTime(plan.getScheduledStart()),
                 Category.BASIC
         );
     }
@@ -28,7 +28,7 @@ public record UnstartedPlanResponse(
         return new UnstartedPlanResponse(
                 aiPlan.getId(),
                 aiPlan.getDescription(),
-                aiPlan.getScheduledStart(),
+                formatDateTime(aiPlan.getScheduledStart()),
                 Category.AI
         );
     }

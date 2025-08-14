@@ -18,8 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import static dgu.umc_app.global.common.DateTimeFormatUtil.DATE_FORMATTER;
+import static dgu.umc_app.global.common.DateTimeFormatUtil.TIME_FORMATTER;
 
 @Service
 @Transactional(readOnly = true)
@@ -53,19 +55,15 @@ public class HomeQueryService {
         int scheduled = (int) rows.stream().filter(r -> r.status() == Status.NOT_STARTED).count(); // 미완료
         int rate = (rows.isEmpty()) ? 0 : (int) Math.round(completed * 100.0 / rows.size());
 
-        // 시간 포맷터
-        DateTimeFormatter koreanTime = DateTimeFormatter.ofPattern("a h:mm", java.util.Locale.KOREAN);
-        DateTimeFormatter dateDots = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-
         List<Tasks.NotStartedItem> notStarted = new ArrayList<>();
         List<Tasks.PausedItem> pausedList = new ArrayList<>();
         List<Tasks.FinishedItem> finished = new ArrayList<>();
 
         for (HomeTaskRow r : rows) {
             switch (r.status()) {
-                case NOT_STARTED -> notStarted.add(Tasks.NotStartedItem.from(r, koreanTime));
-                case PAUSED -> pausedList.add(Tasks.PausedItem.from(r, koreanTime));
-                case FINISHED -> finished.add(Tasks.FinishedItem.from(r, koreanTime));
+                case NOT_STARTED -> notStarted.add(Tasks.NotStartedItem.from(r, TIME_FORMATTER));
+                case PAUSED -> pausedList.add(Tasks.PausedItem.from(r, TIME_FORMATTER));
+                case FINISHED -> finished.add(Tasks.FinishedItem.from(r, TIME_FORMATTER));
 //                case IN_PROGRESS -> {} // 진행 중일 경우 홈페이지 접속 불가하기에 생략
             }
         }
@@ -79,7 +77,7 @@ public class HomeQueryService {
                 .min(Comparator.comparing(HomeTaskRow::scheduledStart));
 
         List<NextTask> nextTask = nextOpt
-                .map(r -> List.of(NextTask.from(r, dateDots, koreanTime)))
+                .map(r -> List.of(NextTask.from(r, DATE_FORMATTER, TIME_FORMATTER)))
                 .orElseGet(List::of);
 
         return HomeResponse.of(user, totalCnt, scheduled, paused, completed, rate, new Tasks(notStarted, pausedList, finished), nextTask);

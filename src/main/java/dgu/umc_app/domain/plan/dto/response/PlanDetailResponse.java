@@ -5,8 +5,9 @@ import dgu.umc_app.domain.plan.entity.Plan;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.List;
+
+import static dgu.umc_app.global.common.DateTimeFormatUtil.*;
 
 public record PlanDetailResponse(
 
@@ -14,7 +15,7 @@ public record PlanDetailResponse(
         String title,
 
         @Schema(description = "마감기한")
-        LocalDateTime deadline,
+        String deadline,
 
         @Schema(description = "일정 범위")
         String taskRange,
@@ -33,7 +34,7 @@ public record PlanDetailResponse(
 
         return new PlanDetailResponse(
                 plan.getTitle(),
-                plan.getDeadline(),
+                plan.getDeadline().format(DATE_TIME_FORMATTER),
                 "", // 일반일정은 range 없음
                 plan.getPriority().name(),
                 List.of(new PlanDetail(
@@ -48,6 +49,7 @@ public record PlanDetailResponse(
     }
 
     public static PlanDetailResponse fromAiPlan(Plan plan, List<AiPlan> aiPlans) {
+
         List<PlanDetail> details = aiPlans.stream()
                 .map(ai -> new PlanDetail(
                         ai.getId(),
@@ -61,7 +63,7 @@ public record PlanDetailResponse(
 
         return new PlanDetailResponse(
                 plan.getTitle(),
-                plan.getDeadline(),
+                plan.getDeadline().format(DATE_TIME_FORMATTER),
                 aiPlans.get(0).getTaskRange(),
                 plan.getPriority().name(),
                 details
