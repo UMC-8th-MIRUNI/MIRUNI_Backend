@@ -26,9 +26,6 @@ public record AiDetailUpdate(
 
         @Schema(description = "예상 종료 시간", example = "16:30:00")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
-        LocalTime endTime,
-
-        @Schema(description = "삭제 여부")
-        Boolean delete
+        LocalTime endTime
 ) {
 }

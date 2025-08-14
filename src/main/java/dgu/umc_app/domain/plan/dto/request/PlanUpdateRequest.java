@@ -36,10 +36,7 @@ public record PlanUpdateRequest(
         LocalDateTime scheduledEnd,
 
         @Schema(description = "일정 간단 설명")
-        String description,
-
-        @Schema(description = "삭제 여부")
-        Boolean delete
+        String description
 ) implements ScheduleUpdateRequest { }
 
 

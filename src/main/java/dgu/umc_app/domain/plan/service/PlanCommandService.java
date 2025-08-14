@@ -247,13 +247,13 @@ public class PlanCommandService {
         int order = 1;
         if (req.plans() != null) {
             for (AiDetailUpdate d : req.plans()) {
-                // 삭제
-                if (Boolean.TRUE.equals(d.delete())) {
-                    if (d.aiPlanId() != null && existing.containsKey(d.aiPlanId())) {
-                        plan.removeAiPlan(existing.get(d.aiPlanId()));
-                    }
-                    continue;
-                }
+//                // 삭제
+//                if (Boolean.TRUE.equals(d.delete())) {
+//                    if (d.aiPlanId() != null && existing.containsKey(d.aiPlanId())) {
+//                        plan.removeAiPlan(existing.get(d.aiPlanId()));
+//                    }
+//                    continue;
+//                }
 
                 // 시간 계산
                 LocalDateTime start = (d.date() != null && d.startTime() != null)
