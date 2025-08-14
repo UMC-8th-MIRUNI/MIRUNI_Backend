@@ -19,15 +19,15 @@ public record PlanCreateRequest(
         String title,
 
         @NotNull(message = "마감 기한은 필수입니다.")
-        @Schema(description = "마감 기한", example = "2025-09-30T18:00:00")
+        @Schema(description = "마감 기한", example = "2025-09-30T09:00:00Z")
         LocalDateTime deadline,
 
         @NotNull(message = "수행 시작 날짜는 필수입니다.")
-        @Schema(description = "수행 시작 날짜", example = "2025-09-20T09:00:00")
+        @Schema(description = "수행 시작 날짜", example = "2025-09-20T00:00:00Z")
         LocalDateTime scheduledStart,
 
         @NotNull(message = "수행 종료 날짜는 필수입니다.")
-        @Schema(description = "수행 종료 날짜", example = "2025-09-29T17:00:00")
+        @Schema(description = "수행 종료 날짜", example = "2025-09-29T08:00:00Z")
         LocalDateTime scheduledEnd,
 
         @NotNull(message = "우선순위는 필수입니다.")
