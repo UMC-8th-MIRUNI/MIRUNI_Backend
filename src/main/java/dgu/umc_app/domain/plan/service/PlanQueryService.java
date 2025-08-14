@@ -169,7 +169,7 @@ public class PlanQueryService{
         return HomeResponse.of(user, totalCount, scheduledCount, pausedCount, completedCount, achievementRate, tasks);
     }
 
-    public PlanDetailResponse getPlanDetail(Long planId, Long userId) {
+    public ScheduleDetailResponse getPlanDetail(Long planId, Long userId) {
         // 1. Plan 조회
         Plan plan = planRepository.findByIdWithUserId(planId, userId)
                 .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
@@ -177,13 +177,11 @@ public class PlanQueryService{
         // 2. 해당 Plan이 AI 일정인지 확인
         List<AiPlan> aiPlans = aiPlanRepository.findByPlanId(planId);
 
-//        if (!aiPlans.isEmpty()) {
-//            // AI 일정이면
-//            return PlanDetailResponse.fromAiPlan(plan, aiPlans);
-//        }
-
-        // 일반 일정이면
-        return PlanDetailResponse.fromPlan(plan);
+        if (aiPlans != null && !aiPlans.isEmpty()) {
+            return AiPlanDetailResponse.fromAiPlan(plan, aiPlans);
+        } else {
+            return PlanDetailResponse.fromPlan(plan);
+        }
     }
 
 }

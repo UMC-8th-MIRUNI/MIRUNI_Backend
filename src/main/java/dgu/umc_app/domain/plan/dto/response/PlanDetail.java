@@ -15,14 +15,17 @@ public record PlanDetail(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDate date,
 
-        @Schema(description = "일반 세부 일정")
+        @Schema(description = "세부 일정 내용")
         String description,
 
-        @Schema(description = "예상 시작 시간")
+        @Schema(description = "예상 소요 시간", example = "120")
+        Long expectedDuration,
+
+        @Schema(description = "예상 시작 시간", example = "15:00:00")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
         LocalTime startTime,
 
-        @Schema(description = "예상 종료 시간")
+        @Schema(description = "예상 종료 시간", example = "16:30:00")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
         LocalTime endTime
 ) {

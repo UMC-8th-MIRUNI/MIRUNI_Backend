@@ -87,7 +87,7 @@ public class PlanController implements PlanApi{
     }
 
     @GetMapping("/{planId}")
-    public PlanDetailResponse getPlanDetail(
+    public ScheduleDetailResponse getPlanDetail(
             @PathVariable Long planId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {

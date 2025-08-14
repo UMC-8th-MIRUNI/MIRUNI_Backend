@@ -98,34 +98,33 @@ public interface PlanApi {
                             @ExampleObject(
                                     name = "AI 요청 예시(새로운 일정 id는 꼭 null로 입력)",
                                     value = """
-                                            {
-                                              "category": "AI",
-                                              "title": "AI 상위 일정 제목 수정",
-                                              "deadline": "2025-08-30T23:59:59",
-                                              "priority": "MEDIUM",
-                                              "taskRange": "UNIT",
-                                              "plans": [
-                                                {
-                                                  "aiPlanId": 2, 
-                                                  "date": "2025-08-14",
-                                                  "description": "세부 작업 내용 수정",
-                                                  "expectedDuration": 120,
-                                                  "startTime": "13:00:00",
-                                                  "endTime": "14:30:00",
-                                                  "delete": false
-                                                },
-                                                {
-                                                  "aiPlanId": null, 
-                                                  "date": "2025-08-15",
-                                                  "description": "새로운 AI 일정",
-                                                  "expectedDuration": 90,
-                                                  "startTime": "15:00:00",
-                                                  "endTime": "16:30:00",
-                                                  "delete": false
-                                                }
-                                              ]
-                                            }
-                                            
+{
+  "category": "AI",
+  "title": "AI 상위 일정 제목 수정",
+  "deadline": "2025-08-30T23:59:59",
+  "priority": "MEDIUM",
+  "taskRange": "UNIT",
+  "plans": [
+    {
+      "aiPlanId": 2,
+      "date": "2025-08-14",
+      "description": "세부 작업 내용 수정",
+      "expectedDuration": 120,
+      "startTime": "13:00:00",
+      "endTime": "14:30:00",
+      "delete": false
+    },
+    {
+      "aiPlanId": null,
+      "date": "2025-08-15",
+      "description": "새로운 AI 일정",
+      "expectedDuration": 90,
+      "startTime": "15:00:00",
+      "endTime": "16:30:00",
+      "delete": false
+    }
+  ]
+}
                 """
                             )
                     }
@@ -142,7 +141,7 @@ public interface PlanApi {
             summary = "일정별 세부 조회 API",
             description = "일정별 세부정보를 조회합니다."
     )
-    PlanDetailResponse getPlanDetail(
+    ScheduleDetailResponse getPlanDetail(
             @PathVariable Long planId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );

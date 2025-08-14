@@ -134,6 +134,7 @@ public class PlanCommandService {
                 plan.getTitle(),
                 plan.getDeadline(),
                 plan.getScheduledStart(),
+                plan.getScheduledEnd(),
                 plan.getPriority(),
                 request.planType(),
                 request.taskRange(),
