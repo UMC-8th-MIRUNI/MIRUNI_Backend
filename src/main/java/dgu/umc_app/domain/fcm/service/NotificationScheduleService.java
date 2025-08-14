@@ -94,8 +94,7 @@ public class NotificationScheduleService {
     //AIPlan 알림 등록
     public void scheduleNotification(AiPlan aiplan){
 
-        if(aiplan.getStatus().equals("FINISHED")){
-//        if(aiplan.isDone()){
+        if(aiplan.getStatus().equals(Status.FINISHED)){
             throw BaseException.type(FcmErrorCode.ALREADY_FINISHED_TASK);
         }
 
@@ -354,9 +353,9 @@ public class NotificationScheduleService {
     private boolean isTaskAlreadyStarted(NotificationTask task){
         try{
             if(task.type() == NotificationType.PLAN){
-                return planRepository.existsByIdAndTempTimeIsNotNull(task.targetId());
+                return !planRepository.existsByIdAndStatus(task.targetId(), Status.NOT_STARTED);
             }else{
-                    return aiPlanRepository.existsByIdAndTempTimeIsNotNull(task.targetId());
+                    return !aiPlanRepository.existsByIdAndStatus(task.targetId(), Status.NOT_STARTED);
                 }
             } catch (Exception e) {
                 return false; //오류시 알림 발송
