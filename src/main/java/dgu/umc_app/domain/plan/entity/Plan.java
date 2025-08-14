@@ -36,6 +36,7 @@ public class Plan extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime scheduledStart; // 수행시작 예정 날짜&시간(ex: 2025-05-01T21:00:00)
 
+
     @Column(nullable = false)
     private LocalDateTime scheduledEnd; // 수행종료 예정 날짜&시간(ex: 2025-05-01T22:00:00)
 
