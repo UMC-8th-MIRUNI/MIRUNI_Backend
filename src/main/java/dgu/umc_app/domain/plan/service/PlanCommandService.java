@@ -1,13 +1,7 @@
 package dgu.umc_app.domain.plan.service;
 
-import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
-import dgu.umc_app.domain.plan.dto.response.PlanCreateResponse;
-import dgu.umc_app.domain.plan.dto.response.PlanDelayResponse;
-import dgu.umc_app.domain.plan.dto.response.PlanDetailResponse;
-import dgu.umc_app.domain.plan.dto.response.PlanSplitResponse;
+import dgu.umc_app.domain.plan.dto.request.*;
+import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.entity.*;
 import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
@@ -23,10 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -351,4 +342,52 @@ public class PlanCommandService {
         return PlanDelayResponse.from(aiPlan, delayDelta, execDelta, stoppedAt);
     }
 
+    @Transactional
+    public PlanDeleteResponse planDelete(PlanDeleteRequest req, Long userId) {
+        if (req.category() == Category.BASIC) {
+            // BASIC: 단일 삭제만 허용
+            if (req.aiPlanIds() != null && !req.aiPlanIds().isEmpty()) {
+                throw BaseException.type(PlanErrorCode.INVALID_REQUEST); // "BASIC은 aiPlanIds 허용 안 함"
+            }
+            return deleteSinglePlan(req.planId(), userId);
+        } else {
+            // AI: 다건 삭제
+            List<Long> ids = (req.aiPlanIds() == null) ? List.of() : req.aiPlanIds();
+            if (ids.isEmpty()) {
+                throw BaseException.type(AiPlanErrorCode.AIPLAN_IDS_REQUIRED);
+            }
+            return deleteAiPlans(req.planId(), ids, userId);
+        }
+    }
+
+    private PlanDeleteResponse deleteSinglePlan(Long planId, Long userId) {
+        Plan plan = planRepository.findByIdWithUserId(planId, userId)
+                .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
+        if (plan == null) {
+            return new PlanDeleteResponse(1, 0, List.of(planId), List.of());
+        }
+        planRepository.delete(plan); // AiPlan은 cascade/orphanRemoval로 같이 제거
+        return new PlanDeleteResponse(1, 1, List.of(), List.of());
+    }
+
+    private PlanDeleteResponse deleteAiPlans(Long planId, List<Long> ids, Long userId) {
+        Plan plan = planRepository.findByIdWithUserId(planId, userId)
+                .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
+
+        List<AiPlan> targets = aiPlanRepository.findByIdInAndPlanId(ids, plan.getId());
+        var foundIds = targets.stream().map(AiPlan::getId).toList();
+
+        // notFound 계산
+        List<Long> notFound = new ArrayList<>(ids);
+        notFound.removeAll(foundIds);
+
+        // 실제 삭제 (연관 편의 메서드로 제거해서 stepOrder 재정렬)
+        targets.forEach(plan::removeAiPlan);
+        plan.getAiPlans().sort(Comparator.comparing(AiPlan::getScheduledStart));
+        for (int i = 0; i < plan.getAiPlans().size(); i++) {
+            plan.getAiPlans().get(i).updateStepOrder((long) (i + 1));
+        }
+
+        return new PlanDeleteResponse(ids.size(), foundIds.size(), notFound, List.of());
+    }
 }

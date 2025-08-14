@@ -1,9 +1,6 @@
 package dgu.umc_app.domain.plan.controller;
 
-import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
+import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.entity.Category;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
@@ -12,6 +9,7 @@ import dgu.umc_app.domain.plan.service.PlanCommandService;
 import dgu.umc_app.domain.plan.service.PlanQueryService;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.CustomUserDetails;
+import dgu.umc_app.global.authorize.LoginUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -108,6 +106,14 @@ public class PlanController implements PlanApi{
                 ? planCommandService.delayAiPlan(planId, request, userDetails.getUser())
                 : planCommandService.delayPlan(planId, request, userDetails.getUser());
 
+    }
+
+    @DeleteMapping
+    public PlanDeleteResponse bulkDelete(
+            @RequestBody @Valid PlanDeleteRequest req,
+            @LoginUser Long userId
+    ) {
+        return planCommandService.planDelete(req,userId);
     }
 
 }

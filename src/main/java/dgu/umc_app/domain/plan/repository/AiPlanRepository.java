@@ -35,5 +35,6 @@ public interface AiPlanRepository extends JpaRepository<AiPlan, Long> {
 """)
     List<AiPlan> findByUserIdAndMonth(Long userId, int year, int month);
     boolean existsByIdAndStatus(Long planId, Status status);
+    List<AiPlan> findByIdInAndPlanId(List<Long> ids, Long planId);
 
 }
