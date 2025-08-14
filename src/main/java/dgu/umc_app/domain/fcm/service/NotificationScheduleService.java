@@ -2,12 +2,14 @@ package dgu.umc_app.domain.fcm.service;
 
 import com.google.firebase.FirebaseException;
 import com.google.firebase.messaging.*;
+import dgu.umc_app.domain.fcm.entity.AlarmType;
 import dgu.umc_app.domain.fcm.entity.FcmErrorResponse;
 import dgu.umc_app.domain.fcm.entity.NotificationType;
 import dgu.umc_app.domain.fcm.entity.ReminderType;
 import dgu.umc_app.domain.fcm.exception.FcmErrorCode;
 import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.entity.Plan;
+import dgu.umc_app.domain.plan.entity.Status;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.global.exception.BaseException;
@@ -53,23 +55,37 @@ public class NotificationScheduleService {
 
         scheduleNotificationAtTime(NotificationTask.builder()
                 .userId(plan.getUser().getId())
-                .title("할일 알림")
-                .body(String.format("1시간 뒤에 '%s'가 예정되어 있어!", plan.getTitle()))
+                .title(String.format("1시간 뒤에 '%s'가 예정되어 있어요!", plan.getTitle()))
+                .body(String.format("어? 벌써 '%s' 시간이 다가오고 있어요! 미루니와 함께 미리 준비해볼까요?",plan.getTitle()))
                 .type(NotificationType.PLAN)
                 .targetId(plan.getId())
                 .reminderType(ReminderType.ONE_HOUR_BEFORE)
                 .notificationTime(plan.getScheduledStart().minusHours(1))
+                .alarmType(AlarmType.BANNER)
                 .build());
 
         scheduleNotificationAtTime(NotificationTask.builder()
                 .userId(plan.getUser().getId())
-                .title("할일 알림")
-                .body(String.format("10분 뒤에 '%s'가 예정되어 있어!", plan.getTitle()))
+                .title(String.format("10분 뒤에 '%s'가 예정되어 있어요!", plan.getTitle()))
+                .body(String.format("10분 '%s' 일정을 시작하고, 땅콩 3개를 획득하세요!", plan.getTitle()))
                 .type(NotificationType.PLAN)
                 .targetId(plan.getId())
                 .reminderType(ReminderType.TEN_MINUTES_BEFORE)
                 .notificationTime(plan.getScheduledStart().minusMinutes(10))
+                .alarmType(AlarmType.BANNER)
                 .build());
+
+        scheduleNotificationAtTime(NotificationTask.builder()
+                .userId(plan.getUser().getId())
+                .title(String.format("'%s'님, '%s'를 얼른 시작하세요!", plan.getUser().getName(), plan.getTitle()))
+                .body(String.format("지금 바로 '%s' 일정을 시작하지 않으면, 땅콩을 잃어버릴거에요", plan.getTitle()))
+                .type(NotificationType.PLAN)
+                .targetId(plan.getId())
+                .reminderType(ReminderType.TEN_MINUTES_AFTER)
+                .notificationTime(plan.getScheduledStart().plusMinutes(10))
+                .alarmType(AlarmType.POPUP)
+                .build());
+
 
 
         log.info("Plan 알림 스케줄 등록 완료: planId = {}, startTime = {}", plan.getId(), plan.getScheduledStart());
@@ -78,29 +94,42 @@ public class NotificationScheduleService {
     //AIPlan 알림 등록
     public void scheduleNotification(AiPlan aiplan){
 
-        if(aiplan.isDone()){
+        if(aiplan.getStatus().equals(Status.FINISHED)){
             throw BaseException.type(FcmErrorCode.ALREADY_FINISHED_TASK);
         }
 
         scheduleNotificationAtTime(NotificationTask.builder()
                 .userId(aiplan.getPlan().getUser().getId())
-                .title("할일 알림")
-                .body(String.format("1시간 뒤에 '%s'가 예정되어 있어!", aiplan.getDescription()))
+                .title(String.format("1시간 뒤에 '%s'가 예정되어 있어요!", aiplan.getDescription()))
+                .body(String.format("어? 벌써 '%s' 시간이 다가오고 있어요! 미루니와 함께 미리 준비해볼까요?",aiplan.getDescription()))
                 .type(NotificationType.AI_PLAN)
                 .targetId(aiplan.getId())
                 .reminderType(ReminderType.ONE_HOUR_BEFORE)
                 .notificationTime(aiplan.getTaskTime().minusHours(1))
+                .alarmType(AlarmType.BANNER)
                 .build());
 
 
         scheduleNotificationAtTime(NotificationTask.builder()
                 .userId(aiplan.getPlan().getUser().getId())
-                .title("할일 알림")
-                .body(String.format("10분 뒤에 '%s'가 예정되어 있어!", aiplan.getDescription()))
+                .title(String.format("10분 뒤에 '%s'가 예정되어 있어요!", aiplan.getDescription()))
+                .body(String.format("10분 '%s' 일정을 시작하고, 땅콩 3개를 획득하세요!", aiplan.getDescription()))
                 .type(NotificationType.AI_PLAN)
                 .targetId(aiplan.getId())
                 .reminderType(ReminderType.TEN_MINUTES_BEFORE)
                 .notificationTime(aiplan.getTaskTime().minusMinutes(10))
+                .alarmType(AlarmType.BANNER)
+                .build());
+
+        scheduleNotificationAtTime(NotificationTask.builder()
+                .userId(aiplan.getPlan().getUser().getId())
+                .title(String.format("'%s'님, '%s'를 얼른 시작하세요!", aiplan.getPlan().getUser().getName(), aiplan.getDescription()))
+                .body(String.format("지금 바로 '%s' 일정을 시작하지 않으면, 땅콩을 잃어버릴거에요", aiplan.getDescription()))
+                .type(NotificationType.AI_PLAN)
+                .targetId(aiplan.getId())
+                .reminderType(ReminderType.TEN_MINUTES_AFTER)
+                .notificationTime(aiplan.getScheduledStart().plusMinutes(10))
+                .alarmType(AlarmType.POPUP)
                 .build());
 
 
@@ -118,13 +147,21 @@ public class NotificationScheduleService {
 
         cancelExistingSchedule(oneHourKey);
 
-        String tenMinutesKey = createScheduleKey(NotificationTask.builder()
+        String tenMinutesBannerKey = createScheduleKey(NotificationTask.builder()
                 .type(NotificationType.PLAN)
                 .targetId(plan.getId())
                 .reminderType(ReminderType.TEN_MINUTES_BEFORE)
                 .build());
 
-        cancelExistingSchedule(tenMinutesKey);
+        cancelExistingSchedule(tenMinutesBannerKey);
+
+        String tenMinutesPopupKey = createScheduleKey(NotificationTask.builder()
+                .type(NotificationType.PLAN)
+                .targetId(plan.getId())
+                .reminderType(ReminderType.TEN_MINUTES_AFTER)
+                .build());
+
+        cancelExistingSchedule(tenMinutesPopupKey);
 
         log.info("알림 스케줄 취소 완료: type = {}, targetId = {}", NotificationType.PLAN, plan.getId());
     }
@@ -140,13 +177,21 @@ public class NotificationScheduleService {
 
         cancelExistingSchedule(oneHourKey);
 
-        String tenMinutesKey = createScheduleKey(NotificationTask.builder()
+        String tenMinutesBannerKey = createScheduleKey(NotificationTask.builder()
                 .type(NotificationType.AI_PLAN)
                 .targetId(aiplan.getId())
                 .reminderType(ReminderType.TEN_MINUTES_BEFORE)
                 .build());
 
-        cancelExistingSchedule(tenMinutesKey);
+        cancelExistingSchedule(tenMinutesBannerKey);
+
+        String tenMinutesPopupKey = createScheduleKey(NotificationTask.builder()
+                .type(NotificationType.AI_PLAN)
+                .targetId(aiplan.getId())
+                .reminderType(ReminderType.TEN_MINUTES_AFTER)
+                .build());
+
+        cancelExistingSchedule(tenMinutesPopupKey);
 
         log.info("알림 스케줄 취소 완료: type = {}, targetId = {}", NotificationType.AI_PLAN, aiplan.getId());
     }
@@ -159,12 +204,14 @@ public class NotificationScheduleService {
 
         try{
             //미완료 Plan 재스케줄링
-            List<Plan> incompletePlans = planRepository.findByIsDoneFalse();
+//            List<Plan> incompletePlans = planRepository.findByIsDoneFalse();
+            List<Plan> incompletePlans = planRepository.findByStatus(Status.NOT_STARTED);
             for (Plan plan : incompletePlans) {
                 scheduleNotification(plan);
             }
             //미완료 AiPlan 재스케줄링
-            List<AiPlan> incompleteAiPlans = aiPlanRepository.findByIsDoneFalse();
+//            List<AiPlan> incompleteAiPlans = aiPlanRepository.findByIsDoneFalse();
+            List<AiPlan> incompleteAiPlans = aiPlanRepository.findByStatus(Status.NOT_STARTED);
             for (AiPlan aiplan : incompleteAiPlans) {
                 scheduleNotification(aiplan);
             }
@@ -212,6 +259,12 @@ public class NotificationScheduleService {
     // == 알림 전송 메서드(전체 과정) == /
     private void sendNotification(NotificationTask task){
         try{
+
+            if(task.alarmType() == AlarmType.POPUP){
+                if(isTaskAlreadyStarted(task)){
+                    return ;
+                }
+            }
             sendFcmMessage(task);
             log.info("알림전송 성공: type = {}, targetId = {}, reminderType = {}",
                     task.type(), task.targetId(), task.reminderType());
@@ -240,6 +293,7 @@ public class NotificationScheduleService {
                     .putData("type", task.type().name())
                     .putData("targetId", task.targetId().toString())
                     .putData("reminderType", task.reminderType().name())
+                    .putData("alarmType", task.alarmType().name())
                     .setNotification(Notification.builder()
                             .setTitle(task.title())
                             .setBody(task.body())
@@ -295,6 +349,19 @@ public class NotificationScheduleService {
         return FcmErrorResponse.fromErrorCode(errorCode).isShouldDeleteToken();
     }
 
+    // == 일정 시작여부 판단 메서드 == //
+    private boolean isTaskAlreadyStarted(NotificationTask task){
+        try{
+            if(task.type() == NotificationType.PLAN){
+                return !planRepository.existsByIdAndStatus(task.targetId(), Status.NOT_STARTED);
+            }else{
+                    return !aiPlanRepository.existsByIdAndStatus(task.targetId(), Status.NOT_STARTED);
+                }
+            } catch (Exception e) {
+                return false; //오류시 알림 발송
+            }
+    }
+
     // == 관련 record == //
     @Builder
     private record NotificationTask(Long userId,
@@ -303,7 +370,8 @@ public class NotificationScheduleService {
                                     NotificationType type,
                                     Long targetId,
                                     ReminderType reminderType,
-                                    LocalDateTime notificationTime){}
+                                    LocalDateTime notificationTime,
+                                    AlarmType alarmType){}
 
 
 }

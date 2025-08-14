@@ -1,6 +1,7 @@
 package dgu.umc_app.domain.plan.controller;
 
 import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
+import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
 import dgu.umc_app.domain.plan.dto.response.*;
@@ -537,7 +538,15 @@ public interface PlanApi {
             )
     })
     @GetMapping("/unfinished")
-    List<UnfinishedPlanResponse> getUnfinishedPlans(
+    List<UnstartedPlanResponse> getUnfinishedPlans(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    );
+
+    @Operation(summary = "일정 미루기 API", description = "일정을 수행하다가 수행예정 날짜와 소요시간을 설정해 미룹니다.")
+    @PatchMapping("/{planId}/delay")
+    PlanDelayResponse delayPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanDelayRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 

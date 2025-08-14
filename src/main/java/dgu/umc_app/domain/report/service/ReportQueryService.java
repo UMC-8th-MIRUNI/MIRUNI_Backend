@@ -3,6 +3,7 @@ package dgu.umc_app.domain.report.service;
 import com.google.api.gax.rpc.NotFoundException;
 import dgu.umc_app.domain.plan.entity.AiPlan;
 import dgu.umc_app.domain.plan.entity.Plan;
+import dgu.umc_app.domain.plan.entity.Status;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.report.dto.response.StoragePageResponse;
@@ -35,11 +36,20 @@ public class ReportQueryService {
         int peanutCount = user.getPeanutCount();
 
         // 1. 이번달 일정 완료율 계산
+//        List<AiPlan> aiPlans = aiPlanRepository.findByUserIdAndMonth(userId, year, month);
+//        long doneAiCount = aiPlans.stream().filter(AiPlan::isDone).count();
+//
+//        List<Plan> purePlans = planRepository.findIndependentPlans(userId, year, month);
+//        long donePlanCount = purePlans.stream().filter(Plan::isDone).count();
         List<AiPlan> aiPlans = aiPlanRepository.findByUserIdAndMonth(userId, year, month);
-        long doneAiCount = aiPlans.stream().filter(AiPlan::isDone).count();
+        long doneAiCount = aiPlans.stream()
+                .filter(p -> p.getStatus() == Status.FINISHED)
+                .count();
 
         List<Plan> purePlans = planRepository.findIndependentPlans(userId, year, month);
-        long donePlanCount = purePlans.stream().filter(Plan::isDone).count();
+        long donePlanCount = purePlans.stream()
+                .filter(p -> p.getStatus() == Status.FINISHED)
+                .count();
 
         long totalCount = aiPlans.size() + purePlans.size();
         int completionRate = totalCount > 0

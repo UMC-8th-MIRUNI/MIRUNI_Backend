@@ -1,9 +1,13 @@
 package dgu.umc_app.domain.plan.controller;
 
 import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
+import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
 import dgu.umc_app.domain.plan.dto.response.*;
+import dgu.umc_app.domain.plan.entity.Category;
+import dgu.umc_app.domain.plan.repository.AiPlanRepository;
+import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.plan.service.PlanCommandService;
 import dgu.umc_app.domain.plan.service.PlanQueryService;
 import dgu.umc_app.domain.user.entity.User;
@@ -26,6 +30,8 @@ public class PlanController implements PlanApi{
 
     private final PlanCommandService planCommandService;
     private final PlanQueryService planQueryService;
+    private final AiPlanRepository aiPlanRepository;
+    private final PlanRepository planRepository;
 
     @PostMapping
     public PlanCreateResponse createPlan(@RequestBody @Valid PlanCreateRequest request,
@@ -69,10 +75,10 @@ public class PlanController implements PlanApi{
     }
 
     @GetMapping("/unfinished")
-    public List<UnfinishedPlanResponse> getUnfinishedPlans(
+    public List<UnstartedPlanResponse> getUnfinishedPlans(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return planQueryService.getUnfinishedPlans(userDetails.getUser());
+        return planQueryService.getUnstartedPlans(userDetails.getUser());
     }
 
     @PatchMapping("/{planId}")
@@ -84,13 +90,24 @@ public class PlanController implements PlanApi{
         return planCommandService.updatePlan(planId, request, userDetails.getUser());
     }
 
-
     @GetMapping("/{planId}")
     public PlanDetailResponse getPlanDetail(
             @PathVariable Long planId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return planQueryService.getPlanDetail(planId, userDetails.getUser().getId());
+    }
+
+    @PatchMapping("/{planId}/delay")
+    public PlanDelayResponse delayPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanDelayRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        return (request.category() == Category.AI)
+                ? planCommandService.delayAiPlan(planId, request, userDetails.getUser())
+                : planCommandService.delayPlan(planId, request, userDetails.getUser());
+
     }
 
 }

@@ -130,9 +130,15 @@ public class UserCommandService {
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
             headers.set("Authorization", "Bearer " + kakaoAccessToken);
             org.springframework.http.HttpEntity<String> entity = new org.springframework.http.HttpEntity<>(headers);
+            
+            log.info("카카오 API 호출 시작 - URL: {}, Token: {}", url, kakaoAccessToken.substring(0, Math.min(20, kakaoAccessToken.length())) + "...");
+            
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
             
+            log.info("카카오 API 응답 - Status: {}, Body: {}", response.getStatusCode(), response.getBody());
+            
             if (response.getStatusCode() != HttpStatus.OK) {
+                log.error("카카오 API 응답 실패 - Status: {}, Body: {}", response.getStatusCode(), response.getBody());
                 throw BaseException.type(UserErrorCode.INVALID_SOCIAL_TOKEN);
             }
 
@@ -142,13 +148,17 @@ public class UserCommandService {
             String email = node.at("/kakao_account/email").asText("");
             String name = node.at("/properties/nickname").asText("");
             
+            log.info("카카오 사용자 정보 파싱 - Email: {}, Name: {}", email, name);
+            
             if (email.isEmpty()) {
+                log.error("카카오 계정에서 이메일을 찾을 수 없음 - Response: {}", response.getBody());
                 throw BaseException.type(UserErrorCode.INVALID_SOCIAL_TOKEN);
             }
 
             return AuthUserInfoDto.of(email, name);
 
         } catch (Exception e) {
+            log.error("카카오 토큰 검증 중 오류 발생: {}", e.getMessage(), e);
             throw BaseException.type(UserErrorCode.INVALID_SOCIAL_TOKEN);
         }
     }

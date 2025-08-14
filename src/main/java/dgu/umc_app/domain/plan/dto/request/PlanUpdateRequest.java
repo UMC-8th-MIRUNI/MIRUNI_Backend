@@ -1,10 +1,7 @@
 package dgu.umc_app.domain.plan.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import dgu.umc_app.domain.plan.entity.AiPlan;
-import dgu.umc_app.domain.plan.entity.Plan;
-import dgu.umc_app.domain.plan.entity.PlanType;
-import dgu.umc_app.domain.plan.entity.Priority;
+import dgu.umc_app.domain.plan.entity.*;
 import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
 import dgu.umc_app.global.exception.BaseException;
@@ -51,16 +48,16 @@ public record PlanUpdateRequest(
 ) {
 
     public void applyToPlan(Plan plan) {
-        if (title != null) plan.setTitle(title);
-        if(deadline != null) plan.setDeadline(deadline.atTime(23, 59, 59));
-        if (priority != null) plan.setPriority(priority);
-        if (description != null) plan.setDescription(description);
+        if (title != null) plan.updateTitle(title);
+        if(deadline != null) plan.updateDeadline(deadline.atTime(23, 59, 59));
+        if (priority != null) plan.updatePriority(priority);
+        if (description != null) plan.updateDescription(description);
 
         if (date != null && startTime != null) {
-            plan.setScheduledStart(LocalDateTime.of(date, startTime));
+            plan.updateScheduledStart(LocalDateTime.of(date, startTime));
         }
         if (date != null && endTime != null) {
-            plan.setScheduledEnd(LocalDateTime.of(date, endTime));
+            plan.updateScheduledEnd(LocalDateTime.of(date, endTime));
         }
 
         // 시간 검증
@@ -110,7 +107,7 @@ public record PlanUpdateRequest(
                         .expectedDuration(d.expectedDuration())
                         .scheduledStart(start)
                         .scheduledEnd(end)
-                        .isDone(false)
+                        .status(Status.NOT_STARTED)
                         .isDelayed(false)
                         .planType(PlanType.IMMERSIVE);
 
