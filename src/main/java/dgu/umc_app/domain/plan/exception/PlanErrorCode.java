@@ -9,9 +9,13 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum PlanErrorCode implements ErrorCode {
 
-    INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "PLAN400_1", "시작일은 종료일보다 이전이어야 합니다."),
     PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAN404_1", "해당 일정이 존재하지 않습니다."),
-    INVALID_CATEGORY(HttpStatus.NOT_FOUND, "PLAN404_2", "해당 카테고리가 존재하지 않습니다.");
+    INVALID_CATEGORY(HttpStatus.NOT_FOUND, "PLAN404_2", "해당 카테고리가 존재하지 않습니다."),
+    INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "PLAN400_1", "시작일은 종료일보다 이전이어야 합니다."),
+    CANNOT_DELETE_BASE_PLAN(HttpStatus.BAD_REQUEST, "PLAN400_2", "기존 일정 삭제를 방지합니다."),
+    PAST_DEADLINE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "PLAN400_3", "마감 기한은 오늘 이전일 수 없습니다."),
+    PAST_START_NOT_ALLOWED   (HttpStatus.BAD_REQUEST, "PLAN400_4", "시작 시간은 오늘 이전일 수 없습니다."),
+    PAST_END_NOT_ALLOWED     (HttpStatus.BAD_REQUEST, "PLAN400_5", "종료 시간은 오늘 이전일 수 없습니다.");
 
     private final HttpStatus status;
     private final String errorCode;
