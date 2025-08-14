@@ -1,6 +1,5 @@
 package dgu.umc_app.domain.plan.entity;
 
-import dgu.umc_app.domain.plan.entity.Priority;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -12,7 +11,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -38,18 +36,26 @@ public class Plan extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime scheduledStart; // 수행시작 예정 날짜&시간(ex: 2025-05-01T21:00:00)
 
+
     @Column(nullable = false)
     private LocalDateTime scheduledEnd; // 수행종료 예정 날짜&시간(ex: 2025-05-01T22:00:00)
 
     @Column(nullable = false)
     private boolean isDone; // 완료 체크
 
-    @Column(nullable = false)
-    private boolean isDelayed = false;  // 미루기 여부
+    @Column
+    private boolean isDelayed;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Status status;  // 미완료, 진행중, 중지, 완료
 
     @Enumerated(EnumType.STRING)
     @Column
     private Priority priority;
+
+    @Column
+    private LocalDateTime stoppedAt;
 
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("stepOrder ASC")
@@ -66,4 +72,16 @@ public class Plan extends BaseEntity {
         aiPlans.remove(ai);
         ai.setPlan(null);
     }
+
+    // --Plan 상태 변경 메서드--
+    public void updateScheduleStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
+    public void updateScheduleEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
+    public void updateStatus(Status status) {this.status = status;}
+    public void updateStoppedAt(LocalDateTime stoppedAt) {this.stoppedAt = stoppedAt;}
+    public void updateTitle(String title) {this.title = title;}
+    public void updateDeadline(LocalDateTime deadline) {this.deadline = deadline;}
+    public void updatePriority(Priority priority) {this.priority = priority;}
+    public void updateDescription(String description) {this.description = description;}
+    public void updateScheduledStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
+    public void updateScheduledEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
 }
