@@ -1,11 +1,9 @@
 package dgu.umc_app.domain.plan.controller;
 
-import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
+import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.global.authorize.CustomUserDetails;
+import dgu.umc_app.global.authorize.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -91,6 +89,14 @@ public interface PlanApi {
     PlanDetailResponse getPlanDetail(
             @PathVariable Long planId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    );
+    @Operation(
+            summary = "일정 삭제 API",
+            description = "일정/Ai일정을 삭제합니다."
+    )
+    PlanDeleteResponse bulkDelete(
+            @RequestBody @Valid PlanDeleteRequest req,
+            @LoginUser Long userId
     );
 
 }
