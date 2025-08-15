@@ -1,6 +1,8 @@
 package dgu.umc_app.domain.plan.repository;
 
 import dgu.umc_app.domain.plan.entity.AiPlan;
+import dgu.umc_app.domain.plan.entity.Plan;
+import dgu.umc_app.domain.plan.entity.PlanType;
 import dgu.umc_app.domain.plan.entity.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -35,5 +37,7 @@ public interface AiPlanRepository extends JpaRepository<AiPlan, Long> {
 """)
     List<AiPlan> findByUserIdAndMonth(Long userId, int year, int month);
     boolean existsByIdAndStatus(Long planId, Status status);
+
+    List<AiPlan> findByPlanUserIdAndIsDelayedTrue(Long userId);
 
 }

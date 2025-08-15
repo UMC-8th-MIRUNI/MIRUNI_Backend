@@ -107,6 +107,15 @@ public class PlanController implements PlanApi{
 
     }
 
+    @PatchMapping("/{planId}/finished")
+    public PlanFinishResponse finishPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanFinishRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            ){
+        return planCommandService.finishPlanOrAiPlan(planId, request, userDetails.getUser());
+    }
+
     @PatchMapping("/{planId}/status/in-progress")
     public PlanStartResponse startPlan(
             @PathVariable Long planId,

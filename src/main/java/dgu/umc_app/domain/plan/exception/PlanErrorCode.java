@@ -16,6 +16,8 @@ public enum PlanErrorCode implements ErrorCode {
     PAST_DEADLINE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "PLAN400_3", "마감 기한은 오늘 이전일 수 없습니다."),
     PAST_START_NOT_ALLOWED   (HttpStatus.BAD_REQUEST, "PLAN400_4", "시작 시간은 오늘 이전일 수 없습니다."),
     PAST_END_NOT_ALLOWED     (HttpStatus.BAD_REQUEST, "PLAN400_5", "종료 시간은 오늘 이전일 수 없습니다.");
+    INVALID_EXECUTE_MINUTES(HttpStatus.BAD_REQUEST, "PLAN400_2", "수행시간 입력값이 음수입니다."),
+    ACTUAL_START_REQUIRED(HttpStatus.BAD_REQUEST, "PLAN400_3", "시작시간은 필수값입니다.");
 
     private final HttpStatus status;
     private final String errorCode;

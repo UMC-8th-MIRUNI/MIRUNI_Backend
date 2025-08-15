@@ -2,7 +2,9 @@ package dgu.umc_app.domain.plan.controller;
 
 import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
+import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.CustomUserDetails;
+import dgu.umc_app.global.authorize.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -142,8 +144,17 @@ public interface PlanApi {
             description = "일정별 세부정보를 조회합니다."
     )
     ScheduleDetailResponse getPlanDetail(
+    PlanDetailResponse getPlanDetail(
             @PathVariable Long planId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
+
+    @Operation(summary = "일정 상태 완료 변경", description = "일정의 상태를 '완료'로 변경하고 땅콩 개수를 반환합니다.")
+    PlanFinishResponse finishPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanFinishRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            );
+
 
 }
