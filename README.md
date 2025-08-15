@@ -78,7 +78,7 @@ src/main/java/dgu/umc_app/
 
 ## 🏗️ 서버 아키텍처
 
-![Alt](image/umc-miruni1.png)
+![Alt](image/umc-miruni_arc.png)
 
 ## 📄 마무리
 
