@@ -32,7 +32,7 @@ public class FcmController implements FcmApi {
     }
 
     @Override
-    @PatchMapping("/notification/setting")
+    @PatchMapping("/notification")
     public void updateFcmNotification(UpdateFcmNotificationRequestDto request, Authentication authentication) {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();

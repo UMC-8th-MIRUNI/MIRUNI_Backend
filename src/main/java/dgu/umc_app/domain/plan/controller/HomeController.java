@@ -16,7 +16,7 @@ public class HomeController implements HomeApi {
     private final HomeQueryService homeQueryService;
 
     @Override
-    @GetMapping("/homePage")
+    @GetMapping("/users/home")
     public HomeResponse getHomePage(@LoginUser Long userId) {
         return homeQueryService.getHomePage(userId);
     }

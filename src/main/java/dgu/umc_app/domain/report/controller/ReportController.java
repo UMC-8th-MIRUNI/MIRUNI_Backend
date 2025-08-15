@@ -25,7 +25,7 @@ public class ReportController implements ReportApi{
     }
 
     //리포트 오픈 : 첫 오픈시 땅콩 30 차감
-    @PostMapping("/{year}/{month}/openings")
+    @PostMapping("/{year}/{month}")
     public ReportResponse openThisMonth(@LoginUser Long userId,
                                         @PathVariable int year,
                                         @PathVariable int month) {

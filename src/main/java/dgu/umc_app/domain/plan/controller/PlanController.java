@@ -68,7 +68,7 @@ public class PlanController implements PlanApi{
         return planQueryService.getSchedulesByDate(date, userDetails.getUser());
     }
 
-    @PostMapping("/{planId}/aiplans")
+    @PostMapping("/{planId}")
     public List<PlanSplitResponse> splitPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanSplitRequest request,
@@ -95,7 +95,7 @@ public class PlanController implements PlanApi{
         return planQueryService.getPlanDetail(planId, userDetails.getUser().getId());
     }
 
-    @PatchMapping("/{planId}/timeslot")
+    @PatchMapping("/{planId}/paused")
     public PlanDelayResponse delayPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanDelayRequest request,
@@ -116,7 +116,7 @@ public class PlanController implements PlanApi{
         return planCommandService.finishPlanOrAiPlan(planId, request, userDetails.getUser());
     }
 
-    @PatchMapping("/{planId}/status/in-progress")
+    @PatchMapping("/{planId}/in-progress")
     public PlanStartResponse startPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanStartRequest request,
