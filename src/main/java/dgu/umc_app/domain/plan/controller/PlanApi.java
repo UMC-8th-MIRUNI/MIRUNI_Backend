@@ -37,7 +37,6 @@ public interface PlanApi {
     );
 
     @Operation(summary = "미룬 일정 조회", description = "수행날짜가 지났지만 완료되지 않은 일정을 조회합니다.")
-    @GetMapping("/delayed")
     List<DelayedPlanResponse> getDelayedPlans(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
@@ -62,13 +61,11 @@ public interface PlanApi {
     );
 
     @Operation(summary = "안 한 일정 조회", description = "미루지도 않고 수행하지도 않은 일정을 조회합니다.")
-    @GetMapping("/unfinished")
     List<UnstartedPlanResponse> getUnfinishedPlans(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
     @Operation(summary = "일정 미루기 API", description = "일정을 수행하다가 수행예정 날짜와 소요시간을 설정해 미룹니다.")
-    @PatchMapping("/{planId}/delay")
     PlanDelayResponse delayPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanDelayRequest request,
@@ -76,7 +73,6 @@ public interface PlanApi {
     );
 
     @Operation(summary = "일반/AI 일정 수정", description = "일정의 세부 정보들을 수정합니다.")
-    @PatchMapping("/{planId}")
     PlanDetailResponse updatePlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanUpdateRequest request,
