@@ -148,6 +148,14 @@ public interface PlanApi {
             @PathVariable Long planId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
+    @Operation(
+            summary = "일정 삭제 API",
+            description = "일정/Ai일정을 삭제합니다."
+    )
+    PlanDeleteResponse bulkDelete(
+            @RequestBody @Valid PlanDeleteRequest req,
+            @LoginUser Long userId
+    );
 
     @Operation(summary = "일정 상태 완료 변경", description = "일정의 상태를 '완료'로 변경하고 땅콩 개수를 반환합니다.")
     PlanFinishResponse finishPlan(

@@ -2,6 +2,7 @@ package dgu.umc_app.domain.plan.repository;
 
 import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.entity.Status;
+import dgu.umc_app.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,4 +36,6 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
 """)
     List<Plan> findIndependentPlans(Long userId, int year, int month);
     boolean existsByIdAndStatus(Long planId, Status status);
+
+    Long user(User user);
 }

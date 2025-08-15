@@ -127,4 +127,12 @@ public class PlanController implements PlanApi{
                 : planCommandService.startPlan(planId, userId);
     }
 
+    @DeleteMapping
+    public PlanDeleteResponse bulkDelete(
+            @RequestBody @Valid PlanDeleteRequest req,
+            @LoginUser Long userId
+    ) {
+        return planCommandService.planDelete(req,userId);
+    }
+
 }
