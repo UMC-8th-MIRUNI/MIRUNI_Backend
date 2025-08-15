@@ -5,13 +5,12 @@ import dgu.umc_app.domain.report.repository.LastMonthReportRepository;
 import dgu.umc_app.domain.report.repository.ReportRepository;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.domain.user.repository.UserRepository;
-import jakarta.persistence.EntityManager;
 import org.springframework.scheduling.annotation.Scheduled;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.persistence.PersistenceContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +26,7 @@ public class LastMonthReportSaveService {
     private final ReportQueryService reportQueryService; // ReportResponse 조립 재사용
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
     private final UserRepository userRepository;
+    private final MonthlyResetService monthlyResetService;
 
     private static final int DAYS = 7, SLOTS = 12, LEN = DAYS * SLOTS; // 84
     private static final int BATCH = 500;
@@ -59,25 +59,13 @@ public class LastMonthReportSaveService {
                 log.error("LastMonthReport 직렬화 실패: userId={}, ym={}-{}", userId, y, m, e);
             }
         }
-        resetAllUsersForNewMonth();
         log.info("LastMonthReport rollover completed for {}-{}", y, m);
-    }
 
-    @PersistenceContext
-    private EntityManager em;
-    private void resetAllUsersForNewMonth() {
         List<Long> allIds = userRepository.findAllIds();
         for (int i = 0; i < allIds.size(); i += BATCH) {
             var slice = allIds.subList(i, Math.min(i + BATCH, allIds.size()));
-            var users = userRepository.findAllById(slice); // 배치 로딩
-
-            for (User u : users) {
-                u.resetForNewMonth(); // executeTime/delayTime + 84칸 버킷 초기화
-            }
-            //메모리 보호
-            em.flush();
-            em.clear();
+            monthlyResetService.resetBatch(slice);
         }
-        log.info("Users monthly reset done (ALL). affected={}", allIds.size());
     }
+
 }
