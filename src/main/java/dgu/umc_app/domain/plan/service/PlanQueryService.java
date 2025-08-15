@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -104,15 +103,15 @@ public class PlanQueryService{
         return new CalendarDayWrapperResponse(result.size(), result);
     }
 
-    public List<DelayedPlanResponse> getDelayedPlans(User user) {
+    public List<PausedPlanResponse> getDelayedPlans(User user) {
         Long userId = user.getId();
 
         List<Plan> delayedPlans = planRepository.findByUserIdAndStatus(userId, Status.PAUSED);
         List<AiPlan> delayedAiPlans = aiPlanRepository.findByPlan_UserIdAndStatus(userId, Status.PAUSED);
 
-        List<DelayedPlanResponse> result = new ArrayList<>();
-        delayedPlans.forEach(plan -> result.add(DelayedPlanResponse.from(plan)));
-        delayedAiPlans.forEach(aiPlan -> result.add(DelayedPlanResponse.from(aiPlan)));
+        List<PausedPlanResponse> result = new ArrayList<>();
+        delayedPlans.forEach(plan -> result.add(PausedPlanResponse.from(plan)));
+        delayedAiPlans.forEach(aiPlan -> result.add(PausedPlanResponse.from(aiPlan)));
 
         return result;
     }
@@ -170,7 +169,7 @@ public class PlanQueryService{
         return HomeResponse.of(user, totalCount, scheduledCount, pausedCount, completedCount, achievementRate, tasks);
     }
 
-    public PlanDetailResponse getPlanDetail(Long planId, Long userId) {
+    public ScheduleDetailResponse getPlanDetail(Long planId, Long userId) {
         // 1. Plan 조회
         Plan plan = planRepository.findByIdWithUserId(planId, userId)
                 .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
@@ -178,13 +177,11 @@ public class PlanQueryService{
         // 2. 해당 Plan이 AI 일정인지 확인
         List<AiPlan> aiPlans = aiPlanRepository.findByPlanId(planId);
 
-        if (!aiPlans.isEmpty()) {
-            // AI 일정이면
-            return PlanDetailResponse.fromAiPlan(plan, aiPlans);
+        if (aiPlans != null && !aiPlans.isEmpty()) {
+            return AiPlanDetailResponse.fromAiPlan(plan, aiPlans);
+        } else {
+            return PlanDetailResponse.fromPlan(plan);
         }
-
-        // 일반 일정이면
-        return PlanDetailResponse.fromPlan(plan);
     }
 
 }

@@ -7,6 +7,9 @@ import dgu.umc_app.global.authorize.CustomUserDetails;
 import dgu.umc_app.global.authorize.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,7 +39,12 @@ public interface PlanApi {
     );
 
     @Operation(summary = "미룬 일정 조회", description = "수행날짜가 지났지만 완료되지 않은 일정을 조회합니다.")
-    List<DelayedPlanResponse> getDelayedPlans(
+    List<PausedPlanResponse> getDelayedPlans(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    );
+
+    @Operation(summary = "안 한 일정 조회", description = "미루지도 않고 수행하지도 않은 일정을 조회합니다.")
+    List<UnstartedPlanResponse> getUnstartedPlans(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
@@ -59,11 +67,6 @@ public interface PlanApi {
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
-    @Operation(summary = "안 한 일정 조회", description = "미루지도 않고 수행하지도 않은 일정을 조회합니다.")
-    List<UnstartedPlanResponse> getUnfinishedPlans(
-            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
-    );
-
     @Operation(summary = "일정 미루기 API", description = "일정을 수행하다가 수행예정 날짜와 소요시간을 설정해 미룹니다.")
     PlanDelayResponse delayPlan(
             @PathVariable Long planId,
@@ -72,9 +75,66 @@ public interface PlanApi {
     );
 
     @Operation(summary = "일반/AI 일정 수정", description = "일정의 세부 정보들을 수정합니다.")
-    PlanDetailResponse updatePlan(
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    schema = @Schema(
+                            oneOf = { PlanUpdateRequest.class, AiPlanUpdateRequest.class },
+                            discriminatorProperty = "category"
+                    ),
+                    examples = {
+                            @ExampleObject(
+                                    name = "BASIC 요청 예시",
+                                    value = """
+                            {
+                              "category": "BASIC",
+                              "title": "일반 일정 제목 수정",
+                              "deadline": "2025-08-30T23:59:59",
+                              "priority": "HIGH",
+                              "scheduledStart" : "2025-08-30T23:59:59",
+                              "scheduledEnd" : "2025-08-30T23:59:59",
+                              "description" : "한줄설명",
+                              "delete" : false
+                            }
+                """
+                            ),
+                            @ExampleObject(
+                                    name = "AI 요청 예시(새로운 일정 id는 꼭 null로 입력)",
+                                    value = """
+{
+  "category": "AI",
+  "title": "AI 상위 일정 제목 수정",
+  "deadline": "2025-08-30T23:59:59",
+  "priority": "MEDIUM",
+  "taskRange": "UNIT",
+  "plans": [
+    {
+      "aiPlanId": 2,
+      "date": "2025-08-14",
+      "description": "세부 작업 내용 수정",
+      "expectedDuration": 120,
+      "startTime": "13:00:00",
+      "endTime": "14:30:00",
+      "delete": false
+    },
+    {
+      "aiPlanId": null,
+      "date": "2025-08-15",
+      "description": "새로운 AI 일정",
+      "expectedDuration": 90,
+      "startTime": "15:00:00",
+      "endTime": "16:30:00",
+      "delete": false
+    }
+  ]
+}
+                """
+                            )
+                    }
+            )
+    )
+    UpdateResponse updatePlan(
             @PathVariable Long planId,
-            @RequestBody @Valid PlanUpdateRequest request,
+            @org.springframework.web.bind.annotation.RequestBody @Valid ScheduleUpdateRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
@@ -83,14 +143,13 @@ public interface PlanApi {
             summary = "일정별 세부 조회 API",
             description = "일정별 세부정보를 조회합니다."
     )
-    @GetMapping("/{planId}")
+    ScheduleDetailResponse getPlanDetail(
     PlanDetailResponse getPlanDetail(
             @PathVariable Long planId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
     @Operation(summary = "일정 상태 완료 변경", description = "일정의 상태를 '완료'로 변경하고 땅콩 개수를 반환합니다.")
-    @PatchMapping("/{planId}/finished")
     PlanFinishResponse finishPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanFinishRequest request,

@@ -1,9 +1,6 @@
 package dgu.umc_app.domain.plan.service;
 
-import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
+import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.entity.*;
@@ -27,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -179,6 +175,7 @@ public class PlanCommandService {
                 plan.getTitle(),
                 plan.getDeadline(),
                 plan.getScheduledStart(),
+                plan.getScheduledEnd(),
                 plan.getPriority(),
                 request.planType(),
                 request.taskRange(),
@@ -200,66 +197,164 @@ public class PlanCommandService {
         return splitResponses;
     }
 
-    @Transactional
-    public PlanDetailResponse updatePlan(Long planId, PlanUpdateRequest request, User user) {
-
-        // 1) 소유자 검증 + 로드
-        Plan plan = planRepository.findByIdWithUserId(planId, user.getId())
-                .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
-
-        // 2) 상위 Plan 부분 수정
-        request.applyToPlan(plan);
-
-        // 3) 신규/부분수정 검증 (신규 AiPlan not-null, 시간 범위 등)
-        validateForMerge(request);
-
-        // 4) 기존 AiPlan 맵(id -> entity)
-        Map<Long, AiPlan> existing = plan.getAiPlans().stream()
-                .collect(Collectors.toMap(AiPlan::getId, a -> a));
-
-        // 5) AiPlan 컬렉션 부분 수정/추가/삭제 (planType 보존, 신규만 기본값)
-        request.mergeIntoAiPlan(plan, existing);
-
-        // 6) stepOrder normalize (1..N)
-        long order = 1L;
-        for (AiPlan ap : plan.getAiPlans()) {
-            ap.updateStepOrder(order++);
-        }
-
-        // 7) 저장 및 응답 (일반 일정/AI 일정에 따라 분기)
-        if (plan.getAiPlans() == null || plan.getAiPlans().isEmpty()) {
-            return PlanDetailResponse.fromPlan(plan);
-        } else {
-            return PlanDetailResponse.fromAiPlan(plan, plan.getAiPlans());
+    private void assertTimeOrder(LocalDateTime start, LocalDateTime end) {
+        if (start != null && end != null && end.isBefore(start)) {
+            throw BaseException.type(PlanErrorCode.INVALID_DATE_RANGE);
         }
     }
-    private void validateForMerge(PlanUpdateRequest req) {
-        if (req.plans() == null) return;
 
-        for (var d : req.plans()) {
-            // 신규 + 삭제 조합 방지
-            if (d.id() == null && Boolean.TRUE.equals(d.aiDelete())) {
-                throw new BaseException(AiPlanErrorCode.INVALID_REQUEST_STATE);
+    @Transactional
+    public UpdateResponse updateSchedule(Long planId, ScheduleUpdateRequest req, User user) {
+        if (req instanceof PlanUpdateRequest r) {
+            return updateBasicPlan(planId, r, user);
+        } else if (req instanceof AiPlanUpdateRequest r) {
+            return updateAiPlan(planId, r, user);
+        } else {
+            throw new IllegalArgumentException("Unknown request type: " + req.getClass());
+        }
+    }
+    private static <T> T nvl(T v, T fallback) { return v != null ? v : fallback; }
+
+    private static void assertWithinDeadline(LocalDateTime deadline, LocalDateTime end) {
+        if (deadline != null && end != null && end.isAfter(deadline)) {
+            throw BaseException.type(AiPlanErrorCode.AFTER_DEADLINE);
+        }
+    }
+    private void assertStartEndRequired(LocalDateTime start, LocalDateTime end) {
+        if (start == null || end == null) {
+            throw BaseException.type(PlanErrorCode.INVALID_DATE_RANGE); // "시작/종료 시간은 필수" 등 전용 코드 권장
+        }
+    }
+
+    private void assertNotBeforeToday(LocalDateTime dt, PlanErrorCode code) {
+        if (dt != null && dt.isBefore(LocalDateTime.now())) {
+            throw BaseException.type(code);
+        }
+    }
+
+    @Transactional
+    public UpdateResponse updateBasicPlan(Long planId, PlanUpdateRequest req, User user) {
+
+        Plan base = planRepository.findByIdWithUserId(planId, user.getId())
+                .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
+
+        if (req.title() != null)    base.updateTitle(req.title());
+        if (req.priority() != null) base.updatePriority(req.priority());
+        if (req.deadline() != null){
+            assertNotBeforeToday(req.deadline(), PlanErrorCode.PAST_DEADLINE_NOT_ALLOWED);
+            base.updateDeadline(req.deadline());
+        }
+        if (req.description() != null) base.updateDescription(req.description());
+
+        LocalDateTime newStart = base.getScheduledStart();
+        LocalDateTime newEnd   = base.getScheduledEnd();
+
+        assertTimeOrder(newStart, newEnd);
+        assertWithinDeadline(nvl(req.deadline(), base.getDeadline()), newEnd);
+        assertNotBeforeToday(newStart, PlanErrorCode.PAST_START_NOT_ALLOWED);
+        assertNotBeforeToday(newEnd,   PlanErrorCode.PAST_END_NOT_ALLOWED);
+
+        base.updateScheduledStart(newStart);
+        base.updateScheduledEnd(newEnd);
+
+        base.touch();
+        return UpdateResponse.fromPlan(planId, base.getUpdatedAt());
+    }
+
+    @Transactional
+    public UpdateResponse updateAiPlan(Long planId, AiPlanUpdateRequest req, User user) {
+
+        // 상위 일정 조회 먼저
+        Plan plan = planRepository.findByIdWithUserId(planId, user.getId())
+                .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
+
+        if (req.title() != null)     plan.updateTitle(req.title());
+        if (req.priority() != null)  plan.updatePriority(req.priority());
+        if (req.deadline() != null){
+            assertNotBeforeToday(req.deadline(), PlanErrorCode.PAST_DEADLINE_NOT_ALLOWED);
+            plan.updateDeadline(req.deadline());
+        }
+
+        Map<Long, AiPlan> existing = plan.getAiPlans().stream()
+                .collect(java.util.stream.Collectors.toMap(AiPlan::getId, java.util.function.Function.identity()));
+
+
+        PlanType basePlanType = plan.getAiPlans().stream()
+                .map(AiPlan::getPlanType)
+                .filter(java.util.Objects::nonNull)
+                .findFirst()
+                .orElse(PlanType.IMMERSIVE);
+
+        int order = 1;
+        if (req.plans() != null) {
+            for (AiDetailUpdate d : req.plans()) {
+//                // 삭제
+//                if (Boolean.TRUE.equals(d.delete())) {
+//                    if (d.aiPlanId() != null && existing.containsKey(d.aiPlanId())) {
+//                        plan.removeAiPlan(existing.get(d.aiPlanId()));
+//                    }
+//                    continue;
+//                }
+
+                // 시간 계산
+                LocalDateTime start = (d.date() != null && d.startTime() != null)
+                        ? LocalDateTime.of(d.date(), d.startTime())
+                        : null;
+                LocalDateTime end = (d.date() != null && d.endTime() != null)
+                        ? LocalDateTime.of(d.date(), d.endTime())
+                        : null;
+
+                // 신규 생성
+                if (d.aiPlanId() == null) {
+                    assertNotBeforeToday(start, PlanErrorCode.PAST_START_NOT_ALLOWED);
+                    assertNotBeforeToday(end,   PlanErrorCode.PAST_END_NOT_ALLOWED);
+                    assertStartEndRequired(start, end);
+                    assertTimeOrder(start, end);
+                    assertWithinDeadline(plan.getDeadline(), end);
+
+                    AiPlan ai = AiPlan.builder()
+                            .plan(plan)
+                            .stepOrder((long) order++)
+                            .priority(req.priority() != null ? req.priority() : plan.getPriority())
+                            .planType(basePlanType)
+                            .taskRange(req.taskRange())
+                            .description(d.description())
+                            .expectedDuration(d.expectedDuration())
+                            .scheduledStart(start)
+                            .scheduledEnd(end)
+                            .status(Status.NOT_STARTED)
+                            .isDelayed(false)
+                            .build();
+
+                    plan.addAiPlan(ai);
+                    continue;
+                }
+                // 수정
+                AiPlan target = existing.get(d.aiPlanId());
+                if (target == null) continue;
+
+                // 부분 수정 허용(널은 유지)
+                if (d.description() != null) target.updateDescription(d.description());
+                if (d.expectedDuration() != null) target.updateExpectedDuration(d.expectedDuration());
+                if (start != null) target.updateScheduleStart(start);
+                if (end != null) target.updateScheduleEnd(end);
+                if (req.priority() != null) target.updatePriority(req.priority());
+                if (req.taskRange() != null) target.updateTaskRange(req.taskRange());
+                // planType은 유지
+
+                assertNotBeforeToday(target.getScheduledStart(), PlanErrorCode.PAST_START_NOT_ALLOWED);
+                assertNotBeforeToday(target.getScheduledEnd(),   PlanErrorCode.PAST_END_NOT_ALLOWED);
+                assertTimeOrder(target.getScheduledStart(), target.getScheduledEnd());
+                assertWithinDeadline(plan.getDeadline(), target.getScheduledEnd());
             }
 
-            // 신규 생성 필수값 (AiPlan: description, expectedDuration, scheduledStart, scheduledEnd, planType(신규시 기본값으로 세팅), taskRange)
-            if (d.id() == null) {
-                boolean missing = d.description() == null
-                        || d.expectedDuration() == null
-                        || d.date() == null
-                        || d.scheduledStartTime() == null
-                        || d.scheduledEndTime() == null
-                        || req.taskRange() == null;
-                if (missing) throw new BaseException(AiPlanErrorCode.INVALID_AIPLAN_FIELDS);
-            }
-
-            // 시간 유효성
-            if (d.date() != null && d.scheduledStartTime() != null && d.scheduledEndTime() != null) {
-                var start = LocalDateTime.of(d.date(), d.scheduledStartTime());
-                var end   = LocalDateTime.of(d.date(), d.scheduledEndTime());
-                if (end.isBefore(start)) throw new BaseException(AiPlanErrorCode.INVALID_TIME_RANGE);
+            plan.getAiPlans().sort(java.util.Comparator.comparing(AiPlan::getScheduledStart));
+            for (int i = 0; i < plan.getAiPlans().size(); i++) {
+                plan.getAiPlans().get(i).updateStepOrder((long) (i + 1));
             }
         }
+            plan.touch();
+            return UpdateResponse.fromPlan(plan.getId(), plan.getUpdatedAt());
     }
 
     @Transactional

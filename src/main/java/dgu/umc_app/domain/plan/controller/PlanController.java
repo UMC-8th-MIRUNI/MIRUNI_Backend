@@ -7,7 +7,6 @@ import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.plan.service.PlanCommandService;
 import dgu.umc_app.domain.plan.service.PlanQueryService;
-import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.CustomUserDetails;
 import dgu.umc_app.global.authorize.LoginUser;
 import jakarta.validation.Valid;
@@ -38,7 +37,7 @@ public class PlanController implements PlanApi{
         return planCommandService.createPlan(request, userDetails.getUser());
     }
 
-    @GetMapping
+    @GetMapping("/monthly")
     public List<CalendarMonthResponse> getSchedulesByMonth(
             @RequestParam int year,
             @RequestParam int month,
@@ -48,13 +47,20 @@ public class PlanController implements PlanApi{
     }
 
     @GetMapping("/delayed")
-    public List<DelayedPlanResponse> getDelayedPlans(
+    public List<PausedPlanResponse> getDelayedPlans(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return planQueryService.getDelayedPlans(userDetails.getUser());
     }
 
-    @GetMapping("/day")
+    @GetMapping("/unstarted")
+    public List<UnstartedPlanResponse> getUnstartedPlans(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return planQueryService.getUnstartedPlans(userDetails.getUser());
+    }
+
+    @GetMapping("/daily")
     public CalendarDayWrapperResponse getSchedulesByDay(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate date,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -62,7 +68,7 @@ public class PlanController implements PlanApi{
         return planQueryService.getSchedulesByDate(date, userDetails.getUser());
     }
 
-    @PostMapping("/{planId}/split")
+    @PostMapping("/{planId}/aiplans")
     public List<PlanSplitResponse> splitPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanSplitRequest request,
@@ -72,31 +78,24 @@ public class PlanController implements PlanApi{
         return planCommandService.splitPlan(planId, request, userDetails.getUser());
     }
 
-    @GetMapping("/unfinished")
-    public List<UnstartedPlanResponse> getUnfinishedPlans(
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        return planQueryService.getUnstartedPlans(userDetails.getUser());
-    }
-
     @PatchMapping("/{planId}")
-    public PlanDetailResponse updatePlan(
+    public UpdateResponse updatePlan(
             @PathVariable Long planId,
-            @RequestBody @Valid PlanUpdateRequest request,
+            @RequestBody @Valid ScheduleUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return planCommandService.updatePlan(planId, request, userDetails.getUser());
+        return planCommandService.updateSchedule(planId, request, userDetails.getUser());
     }
 
     @GetMapping("/{planId}")
-    public PlanDetailResponse getPlanDetail(
+    public ScheduleDetailResponse getPlanDetail(
             @PathVariable Long planId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return planQueryService.getPlanDetail(planId, userDetails.getUser().getId());
     }
 
-    @PatchMapping("/{planId}/delay")
+    @PatchMapping("/{planId}/timeslot")
     public PlanDelayResponse delayPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanDelayRequest request,
