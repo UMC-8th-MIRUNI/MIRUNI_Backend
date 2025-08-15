@@ -212,7 +212,8 @@ public class User extends BaseEntity {
         if (list.size() < LEN) list.addAll(java.util.Collections.nCopies(LEN - list.size(), 0L));
         else if (list.size() > LEN) list.subList(LEN, list.size()).clear();
         java.util.Collections.fill(list, 0L);
-      
+    }
+
     public void updateNickname(String nickname) {
         this.nickname = nickname;
     }

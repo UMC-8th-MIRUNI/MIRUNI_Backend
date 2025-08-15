@@ -492,7 +492,6 @@ public class PlanCommandService {
         aiPlan.updateExpectedDuration(remaining);
         aiPlan.updateStatus(Status.PAUSED);
         aiPlan.updateStoppedAt(stoppedAt);
-        aiPlan.updateIsDelayed(true);
 
         user.updateDelayTime(safePlusInt(user.getDelayTime(),  delayDelta) );
         user.updateExecuteTime(safePlusInt(user.getExecuteTime(), execDelta) );
@@ -551,8 +550,9 @@ public class PlanCommandService {
         }
 
         return new PlanDeleteResponse(ids.size(), foundIds.size(), notFound, List.of());
+    }
 
-      public PlanFinishResponse finishPlanOrAiPlan(Long planId, PlanFinishRequest request, User sessionUser) {
+    public PlanFinishResponse finishPlanOrAiPlan(Long planId, PlanFinishRequest request, User sessionUser) {
         log.info("[FINISH>REQ] planId={}, category={}, execMinutes={}, actualStart={}",
                 planId, request.category(), request.executeTime(), request.actualStart());
 

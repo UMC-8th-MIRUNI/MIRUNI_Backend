@@ -8,6 +8,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
+import java.time.Duration;
+import java.util.List;
+
+import static dgu.umc_app.global.common.DateTimeFormatUtil.*;
 
 public record PlanDetailResponse(
 
@@ -19,7 +23,7 @@ public record PlanDetailResponse(
         String title,
 
         @Schema(description = "마감기한", example = "2025-08-30T23:59:59")
-        LocalDateTime deadline,
+        String deadline,
 
         @Schema(description = "우선 순위", example = "HIGH")
         Priority priority,
@@ -37,7 +41,7 @@ public record PlanDetailResponse(
         return new PlanDetailResponse(
                 Category.BASIC,
                 plan.getTitle(),
-                plan.getDeadline(),
+                plan.getDeadline().format(DATE_TIME_FORMATTER),
                 plan.getPriority(),
                 plan.getScheduledStart(),
                 plan.getScheduledEnd(),

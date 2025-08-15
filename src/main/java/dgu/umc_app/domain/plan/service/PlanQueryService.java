@@ -139,36 +139,6 @@ public class PlanQueryService{
         return result;
     }
 
-    public HomeResponse getHomePage(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
-
-        LocalDate today = LocalDate.now();
-        LocalDateTime start = today.atStartOfDay();
-        LocalDateTime end = today.atTime(23, 59, 59);
-
-        List<Plan> plans = planRepository.findByUserIdAndScheduledStartBetween(userId, start, end);
-
-        // TODO isDone 상태 세가지로 나눈거 반영
-        int totalCount = plans.size();
-        int completedCount = (int) plans.stream().filter(Plan::isDone).count();
-        int pausedCount = (int) plans.stream().filter(Plan::isDelayed).count();
-        int scheduledCount = totalCount - completedCount - pausedCount;
-
-        int achievementRate = (totalCount == 0) ? 0 : (int) Math.round((completedCount * 100.0) / totalCount);
-
-        List<HomeResponse.TaskInfo> tasks = plans.stream()
-                .sorted(
-                        Comparator
-                                .comparing(Plan::isDone)
-                                .thenComparing(Plan::getScheduledStart)
-                )
-                .map(HomeResponse.TaskInfo::from)
-                .toList();
-
-        return HomeResponse.of(user, totalCount, scheduledCount, pausedCount, completedCount, achievementRate, tasks);
-    }
-
     public ScheduleDetailResponse getPlanDetail(Long planId, Long userId) {
         // 1. Plan 조회
         Plan plan = planRepository.findByIdWithUserId(planId, userId)

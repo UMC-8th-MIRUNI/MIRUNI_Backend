@@ -44,9 +44,6 @@ public class Plan extends BaseEntity {
     private boolean isDone; // 완료 체크
 
     @Column
-    private boolean isDelayed;
-
-    @Column
     @Enumerated(EnumType.STRING)
     private Status status;  // 미완료, 진행중, 중지, 완료
 

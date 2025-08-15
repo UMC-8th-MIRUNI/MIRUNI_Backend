@@ -144,10 +144,10 @@ public interface PlanApi {
             description = "일정별 세부정보를 조회합니다."
     )
     ScheduleDetailResponse getPlanDetail(
-    PlanDetailResponse getPlanDetail(
             @PathVariable Long planId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
+
     @Operation(
             summary = "일정 삭제 API",
             description = "일정/Ai일정을 삭제합니다."
