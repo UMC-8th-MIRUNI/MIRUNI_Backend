@@ -1,5 +1,10 @@
 package dgu.umc_app.domain.plan.service;
 
+import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
+import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
+import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
+import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
+import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.entity.*;
@@ -143,6 +148,24 @@ public class PlanCommandService {
 
         Plan savedPlan = planRepository.save(request.toEntity(user));
         return PlanCreateResponse.from(savedPlan);
+    }
+
+    @Transactional
+    public PlanStartResponse startPlan(Long planId, Long userId) {
+        Plan plan = planRepository.findByIdWithUserId(planId, userId)
+                .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
+
+        plan.updateStatus(Status.IN_PROGRESS);
+        return PlanStartResponse.fromPlan(plan);
+    }
+
+    @Transactional
+    public PlanStartResponse startAiPlan(Long aiPlanId, Long userId) {
+        AiPlan aiPlan = aiPlanRepository.findByIdAndUserId(aiPlanId, userId)
+                .orElseThrow(() -> new BaseException(AiPlanErrorCode.AIPLAN_NOT_FOUND));
+
+        aiPlan.updateStatus(Status.IN_PROGRESS);
+        return PlanStartResponse.fromAiPlan(aiPlan);
     }
 
     @Transactional

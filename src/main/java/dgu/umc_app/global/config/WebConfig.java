@@ -19,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
+    // 프론트엔드 로컬 주소 -> yml에 추가 완료
     @Value("${frontend.local:}")
     private String frontend;
 
