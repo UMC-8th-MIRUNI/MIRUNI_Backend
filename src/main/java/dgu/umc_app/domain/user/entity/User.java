@@ -59,10 +59,10 @@ public class User extends BaseEntity {
     @Builder.Default
     private int peanutCount = 0;
 
-    @Column
+    @Column(name = "delay_time")
     private int delayTime = 0; // 총 미룬 시간
 
-    @Column
+    @Column(name = "execute_time")
     private int executeTime = 0;  // 총 실행시간
 
     @ElementCollection(fetch = FetchType.LAZY)
@@ -206,11 +206,15 @@ public class User extends BaseEntity {
         ensureLenAndZero(this.delayList);
         ensureLenAndZero(this.focusList);
     }
+  
     private static void ensureLenAndZero(List<Long> list) {
         final int LEN = 84;
         if (list.size() < LEN) list.addAll(java.util.Collections.nCopies(LEN - list.size(), 0L));
         else if (list.size() > LEN) list.subList(LEN, list.size()).clear();
         java.util.Collections.fill(list, 0L);
+      
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     public void completeSurvey() {
@@ -243,8 +247,15 @@ public class User extends BaseEntity {
         return this.delayLevel;
     }
 
-    public void updateDelayTimes(int delayTimes) {this.delayTime = delayTime;}
-    public void updateExecuteTimes(int executeTimes) {this.executeTime = executeTime;}
+    public void updateUser(String name, String email, String birthday, String phoneNumber) {
+        this.name = name;
+        this.email = email;
+        this.birthday = birthday;
+        this.phoneNumber = phoneNumber;
+    }
+    public void updateDelayTime(int delayTime) {this.delayTime = delayTime;}
+    public void updateExecuteTime(int executeTime) {this.executeTime = executeTime;}
     public void updateDelayList(List<Long> delayTimeSlots) {this.delayList = delayTimeSlots;}
     public void updateFocusList(List<Long> focusSlots) {this.focusList = focusSlots;}
+    public void updatePeanutCount(int peanutCount) {this.peanutCount = peanutCount;}
 }

@@ -1,5 +1,6 @@
 package dgu.umc_app.domain.user.service;
 
+import dgu.umc_app.domain.user.dto.request.*;
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
 import dgu.umc_app.domain.user.dto.response.VerifyResponse;
 import dgu.umc_app.domain.user.entity.ProfileImage;
@@ -11,13 +12,10 @@ import dgu.umc_app.global.exception.CommonErrorCode;
 import dgu.umc_app.domain.user.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import dgu.umc_app.domain.user.dto.request.UserSignupRequest;
-import dgu.umc_app.domain.user.dto.request.UserLoginRequest;
 import dgu.umc_app.domain.user.dto.response.UserResponse;
 import dgu.umc_app.domain.user.exception.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import dgu.umc_app.domain.user.dto.AuthUserInfoDto;
-import dgu.umc_app.domain.user.dto.request.GoogleLoginRequest;
 import dgu.umc_app.domain.user.dto.response.AuthLoginResponse;
 import dgu.umc_app.domain.user.dto.response.SurveyResponse;
 import dgu.umc_app.domain.user.entity.OauthProvider;
@@ -30,18 +28,11 @@ import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dgu.umc_app.domain.user.dto.request.KakaoLoginRequest;
-import dgu.umc_app.domain.user.dto.request.GoogleSignUpRequest;
 import dgu.umc_app.domain.user.validator.UserValidator;
 import lombok.extern.slf4j.Slf4j;
-import dgu.umc_app.domain.user.dto.request.KakaoSignUpRequest;
-import dgu.umc_app.domain.user.dto.request.PasswordResetRequest;
-import dgu.umc_app.domain.user.dto.request.VerifyResetCodeRequest;
-import dgu.umc_app.domain.user.dto.request.ResetPasswordRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import java.time.Duration;
 import java.util.Random;
-import dgu.umc_app.domain.user.dto.request.SurveyRequest;
 
 @Service
 @Transactional
@@ -358,11 +349,12 @@ public class UserCommandService {
         return java.util.Base64.getEncoder().encodeToString(combined.getBytes()).substring(0, 32);
     }
     
-    public UserInfoResponse updateProfileImage(Long userId, ProfileImage profileImage) {
+    public UserInfoResponse updateProfile(Long userId, ProfileImage profileImage, String nickName) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
 
         user.updateProfileImage(profileImage);
+        user.updateNickname(nickName);
 
         return UserInfoResponse.from(user);
     }
@@ -388,5 +380,11 @@ public class UserCommandService {
         );    
     }
 
+    public UserInfoResponse updateAccount(Long userId, AccountUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
 
+        user.updateUser(request.name(), request.email(), request.birthday(), request.phoneNumber());
+        return UserInfoResponse.from(user);
+    }
 }

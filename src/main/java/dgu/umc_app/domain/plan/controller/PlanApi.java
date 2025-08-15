@@ -1,11 +1,10 @@
 package dgu.umc_app.domain.plan.controller;
 
-import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
+import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
+import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.CustomUserDetails;
+import dgu.umc_app.global.authorize.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,7 +36,6 @@ public interface PlanApi {
     );
 
     @Operation(summary = "미룬 일정 조회", description = "수행날짜가 지났지만 완료되지 않은 일정을 조회합니다.")
-    @GetMapping("/delayed")
     List<DelayedPlanResponse> getDelayedPlans(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
@@ -62,13 +60,11 @@ public interface PlanApi {
     );
 
     @Operation(summary = "안 한 일정 조회", description = "미루지도 않고 수행하지도 않은 일정을 조회합니다.")
-    @GetMapping("/unfinished")
     List<UnstartedPlanResponse> getUnfinishedPlans(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
     @Operation(summary = "일정 미루기 API", description = "일정을 수행하다가 수행예정 날짜와 소요시간을 설정해 미룹니다.")
-    @PatchMapping("/{planId}/delay")
     PlanDelayResponse delayPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanDelayRequest request,
@@ -76,7 +72,6 @@ public interface PlanApi {
     );
 
     @Operation(summary = "일반/AI 일정 수정", description = "일정의 세부 정보들을 수정합니다.")
-    @PatchMapping("/{planId}")
     PlanDetailResponse updatePlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanUpdateRequest request,
@@ -88,9 +83,19 @@ public interface PlanApi {
             summary = "일정별 세부 조회 API",
             description = "일정별 세부정보를 조회합니다."
     )
+    @GetMapping("/{planId}")
     PlanDetailResponse getPlanDetail(
             @PathVariable Long planId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
+
+    @Operation(summary = "일정 상태 완료 변경", description = "일정의 상태를 '완료'로 변경하고 땅콩 개수를 반환합니다.")
+    @PatchMapping("/{planId}/finished")
+    PlanFinishResponse finishPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanFinishRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            );
+
 
 }

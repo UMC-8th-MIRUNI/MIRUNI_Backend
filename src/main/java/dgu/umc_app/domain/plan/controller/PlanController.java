@@ -1,9 +1,6 @@
 package dgu.umc_app.domain.plan.controller;
 
-import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
+import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.entity.Category;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
@@ -12,6 +9,7 @@ import dgu.umc_app.domain.plan.service.PlanCommandService;
 import dgu.umc_app.domain.plan.service.PlanQueryService;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.CustomUserDetails;
+import dgu.umc_app.global.authorize.LoginUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,7 +22,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/schedule")
+@RequestMapping("/api/schedules")
 @RequiredArgsConstructor
 public class PlanController implements PlanApi{
 
@@ -108,6 +106,26 @@ public class PlanController implements PlanApi{
                 ? planCommandService.delayAiPlan(planId, request, userDetails.getUser())
                 : planCommandService.delayPlan(planId, request, userDetails.getUser());
 
+    }
+
+    @PatchMapping("/{planId}/finished")
+    public PlanFinishResponse finishPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanFinishRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            ){
+        return planCommandService.finishPlanOrAiPlan(planId, request, userDetails.getUser());
+    }
+
+    @PatchMapping("/{planId}/status/in-progress")
+    public PlanStartResponse startPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanStartRequest request,
+            @LoginUser Long userId
+    ) {
+        return (request.category() == Category.AI)
+                ? planCommandService.startAiPlan(planId, userId)
+                : planCommandService.startPlan(planId, userId);
     }
 
 }
