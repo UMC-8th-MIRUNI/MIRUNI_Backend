@@ -58,6 +58,8 @@ public class AiPlan extends BaseEntity {
     @Column
     private LocalDateTime stoppedAt;
 
+    private LocalDateTime tempTime;
+
     public LocalDateTime getTaskTime() {
         return LocalDateTime.of(scheduledStart.toLocalDate(), scheduledStart.toLocalTime());
     }
