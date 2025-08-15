@@ -710,5 +710,10 @@ public interface PlanApi {
             @AuthenticationPrincipal CustomUserDetails userDetails
             );
 
-
+    @Operation(summary = "일정 시작", description = "일정의 상태를 '시작(진행 중)'으로 변경합니다.")
+    PlanStartResponse startPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanStartRequest request,
+            @LoginUser Long userId
+    );
 }

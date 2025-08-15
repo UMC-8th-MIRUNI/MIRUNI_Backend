@@ -48,27 +48,27 @@ public class UserAuthController implements UserAuthApi {
         userQueryService.duplicateCheck(email);
     }
     
-    @PostMapping("/auth/normal")
+    @PostMapping("/auth/login/normal")
     public UserResponse login(@Valid @RequestBody UserLoginRequest request) {
         return userCommandService.login(request);
     }
 
-    @PostMapping("/auth/google")
+    @PostMapping("/auth/login/google")
     public AuthLoginResponse googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
         return userCommandService.loginWithGoogle(request);
     }
 
-    @PostMapping("/auth/kakao")
+    @PostMapping("/auth/login/kakao")
     public AuthLoginResponse kakaoLogin(@Valid @RequestBody KakaoLoginRequest request) {
         return userCommandService.loginWithKakao(request);
     }
 
-    @PatchMapping("/auth/google/complete")
+    @PatchMapping("/auth/google")
     public UserResponse googleSignUp(@Valid @RequestBody GoogleSignUpRequest request, @LoginUser Long userId) {
         return userCommandService.googleSignUp(request, userId);
     }
 
-    @PatchMapping("/auth/kakao/complete")
+    @PatchMapping("/auth/kakao")
     public UserResponse kakaoSignUp(@Valid @RequestBody KakaoSignUpRequest request, @LoginUser Long userId) {
         return userCommandService.kakaoSignUp(request, userId);
     }
@@ -88,27 +88,27 @@ public class UserAuthController implements UserAuthApi {
         return userCommandService.survey(request, userId);
     }
     
-    @PostMapping("/auth/withdraw")
+    @DeleteMapping("/auth")
     public void withdrawUser(@LoginUser Long userId) {
         userCommandService.withdrawUser(userId);
     }
 
-    @PatchMapping("/auth/password/change")
+    @PatchMapping("/auth/password")
     public void changePassword(@LoginUser Long userId, @Valid @RequestBody ChangePasswordRequest request) {
         userCommandService.changePassword(userId, request.currentPassword(), request.newPassword());
     }
 
-    @PostMapping("/auth/password/reset/request")
+    @PostMapping("/auth/password/reset")
     public void requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
         userCommandService.requestPasswordReset(request);
     }
 
-    @PostMapping("/auth/password/reset/verify")
+    @PostMapping("/auth/password/reset/verification")
     public VerifyResponse verifyResetCode(@Valid @RequestBody VerifyResetCodeRequest request) {
         return userCommandService.verifyResetCode(request);
     }
 
-    @PostMapping("/auth/password/reset/complete")
+    @PatchMapping("/auth/password/reset")
     public void resetPassword(@RequestHeader("Reset-Token") String resetToken, @Valid @RequestBody ResetPasswordRequest request) {
         userCommandService.resetPassword(resetToken, request);
     }

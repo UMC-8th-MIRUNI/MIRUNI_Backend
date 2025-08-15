@@ -40,7 +40,7 @@ public class ReviewController implements ReviewApi{
      }
 
     //회고록 날짜별 갯수 조회
-    @GetMapping("/stats/days")
+    @GetMapping("/days")
     public List<ReviewCountByDateResponse> getReviewCountByDate(@LoginUser Long userId) {
         return reviewQueryService.getReviewCountByDate(userId);
     }
@@ -62,7 +62,7 @@ public class ReviewController implements ReviewApi{
     }
 
     //날짜 검색으로 인한 회고 블럭 조회
-    @GetMapping("/stats/days/{date}")
+    @GetMapping("/days/{date}")
     public ReviewCountByDateResponse getReviewSearch( @LoginUser Long userId,
                                                       @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
