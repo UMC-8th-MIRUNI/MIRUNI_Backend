@@ -7,13 +7,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 @Entity
 @Getter
@@ -56,10 +59,10 @@ public class User extends BaseEntity {
     @Builder.Default
     private int peanutCount = 0;
 
-    @Column
+    @Column(name = "delay_time")
     private int delayTime = 0; // 총 미룬 시간
 
-    @Column
+    @Column(name = "execute_time")
     private int executeTime = 0;  // 총 실행시간
 
     @ElementCollection(fetch = FetchType.LAZY)
@@ -184,9 +187,34 @@ public class User extends BaseEntity {
     public boolean hasPassword() {
         return this.password != null && !this.password.isEmpty();
     }
-  
+
     public void updateProfileImage(ProfileImage profileImage) {
         this.profileImage = profileImage;
+    }
+
+    /** 월초 롤오버: 카운터/버킷 초기화 */
+    public void resetForNewMonth() {
+        this.executeTime = 0;
+        this.delayTime   = 0;
+        this.updatedAt   = java.time.LocalDateTime.now();
+
+        // 리스트가 null일 가능성 방어
+        if (this.delayList == null) this.delayList = new ArrayList<>(Collections.nCopies(84, 0L));
+        if (this.focusList == null) this.focusList = new ArrayList<>(Collections.nCopies(84, 0L));
+
+        // 84칸 보장 후 0으로 초기화 (in-place: 변경감지 대상)
+        ensureLenAndZero(this.delayList);
+        ensureLenAndZero(this.focusList);
+    }
+  
+    private static void ensureLenAndZero(List<Long> list) {
+        final int LEN = 84;
+        if (list.size() < LEN) list.addAll(java.util.Collections.nCopies(LEN - list.size(), 0L));
+        else if (list.size() > LEN) list.subList(LEN, list.size()).clear();
+        java.util.Collections.fill(list, 0L);
+      
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     public void completeSurvey() {
@@ -219,6 +247,12 @@ public class User extends BaseEntity {
         return this.delayLevel;
     }
 
+    public void updateUser(String name, String email, String birthday, String phoneNumber) {
+        this.name = name;
+        this.email = email;
+        this.birthday = birthday;
+        this.phoneNumber = phoneNumber;
+    }
     public void updateDelayTime(int delayTime) {this.delayTime = delayTime;}
     public void updateExecuteTime(int executeTime) {this.executeTime = executeTime;}
     public void updateDelayList(List<Long> delayTimeSlots) {this.delayList = delayTimeSlots;}

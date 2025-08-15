@@ -40,19 +40,20 @@ public class AiSplitService {
             String title,
             LocalDateTime deadline,
             LocalDateTime scheduledStart,
+            LocalDateTime scheduledEnd,
             Priority priority,
             PlanType planType,
             String taskRange,
             String detailRequest,
             Plan savedPlan
     ) {
-        String prompt = buildPrompt(title, deadline, scheduledStart, priority, planType, taskRange, detailRequest);
+        String prompt = buildPrompt(title, deadline, scheduledStart, scheduledEnd ,priority, planType, taskRange, detailRequest);
         String responseBody = sendRequestToAi(prompt);
         return parseResponse(responseBody);
     }
 
     // 1. 프롬프트 생성
-    private String buildPrompt(String title, LocalDateTime deadline, LocalDateTime scheduledStart,
+    private String buildPrompt(String title, LocalDateTime deadline, LocalDateTime scheduledStart, LocalDateTime scheduledEnd,
                                Priority priority, PlanType planType, String taskRange, String detailRequest) {
         return String.format("""
             아래 일정을 참고하여 최소 2개에서 최대 10개 단계로 나눠줘. 단계갯수는 너가 생각해서 정해줘.
@@ -92,12 +93,13 @@ public class AiSplitService {
             - 제목: %s
             - 마감기한: %s
             - 수행시작일자: %s
+            - 수행종료일자: %s
             - 우선순위: %s
             - 작업유형: %s
             - 일정범위: %s
             - 추가 요청: %s
             """,
-                title, deadline, scheduledStart, priority.name(), planType, taskRange, detailRequest
+                title, deadline, scheduledStart, scheduledEnd,priority.name(), planType, taskRange, detailRequest
         );
     }
 
