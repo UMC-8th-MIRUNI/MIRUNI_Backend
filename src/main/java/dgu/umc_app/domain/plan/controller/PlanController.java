@@ -22,7 +22,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/schedule")
+@RequestMapping("/api/schedules")
 @RequiredArgsConstructor
 public class PlanController implements PlanApi{
 
@@ -106,6 +106,17 @@ public class PlanController implements PlanApi{
                 ? planCommandService.delayAiPlan(planId, request, userDetails.getUser())
                 : planCommandService.delayPlan(planId, request, userDetails.getUser());
 
+    }
+
+    @PatchMapping("/{planId}/status/in-progress")
+    public PlanStartResponse startPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanStartRequest request,
+            @LoginUser Long userId
+    ) {
+        return (request.category() == Category.AI)
+                ? planCommandService.startAiPlan(planId, userId)
+                : planCommandService.startPlan(planId, userId);
     }
 
     @DeleteMapping
