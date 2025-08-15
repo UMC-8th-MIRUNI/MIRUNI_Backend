@@ -123,6 +123,24 @@ public class PlanCommandService {
     }
 
     @Transactional
+    public PlanStartResponse startPlan(Long planId, Long userId) {
+        Plan plan = planRepository.findByIdWithUserId(planId, userId)
+                .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
+
+        plan.updateStatus(Status.IN_PROGRESS);
+        return PlanStartResponse.fromPlan(plan);
+    }
+
+    @Transactional
+    public PlanStartResponse startAiPlan(Long aiPlanId, Long userId) {
+        AiPlan aiPlan = aiPlanRepository.findByIdAndUserId(aiPlanId, userId)
+                .orElseThrow(() -> new BaseException(AiPlanErrorCode.AIPLAN_NOT_FOUND));
+
+        aiPlan.updateStatus(Status.IN_PROGRESS);
+        return PlanStartResponse.fromAiPlan(aiPlan);
+    }
+
+    @Transactional
     public List<PlanSplitResponse> splitPlan(Long planId, PlanSplitRequest request, User user) {
 
         // 1. 임시로 등록된 plan 조회하기

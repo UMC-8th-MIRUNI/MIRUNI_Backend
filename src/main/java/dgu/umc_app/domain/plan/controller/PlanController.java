@@ -8,6 +8,7 @@ import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.plan.service.PlanCommandService;
 import dgu.umc_app.domain.plan.service.PlanQueryService;
 import dgu.umc_app.global.authorize.CustomUserDetails;
+import dgu.umc_app.global.authorize.LoginUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -104,6 +105,17 @@ public class PlanController implements PlanApi{
                 ? planCommandService.delayAiPlan(planId, request, userDetails.getUser())
                 : planCommandService.delayPlan(planId, request, userDetails.getUser());
 
+    }
+
+    @PatchMapping("/{planId}/status/in-progress")
+    public PlanStartResponse startPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanStartRequest request,
+            @LoginUser Long userId
+    ) {
+        return (request.category() == Category.AI)
+                ? planCommandService.startAiPlan(planId, userId)
+                : planCommandService.startPlan(planId, userId);
     }
 
 }
