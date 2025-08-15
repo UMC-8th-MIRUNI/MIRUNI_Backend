@@ -69,7 +69,6 @@ public record   PlanSplitResponse(
                                     .description(response.description())
                                     .expectedDuration(response.expectedDuration())
                                     .priority(parentPlan.getPriority())
-                                    .isDelayed(false)
                                     .status(Status.NOT_STARTED)
                                     .build();
                         }).toList();

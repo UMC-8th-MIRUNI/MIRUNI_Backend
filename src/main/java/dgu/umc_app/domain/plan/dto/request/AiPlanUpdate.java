@@ -8,24 +8,24 @@ import java.time.LocalTime;
 
 public record AiPlanUpdate(
 
-        @Schema(description = "AI 세부 일정 ID (신규 생성 시 null)")
+        @Schema(description = "AI 세부 일정 ID (신규 생성 시 null)", example = "null")
         Long id,
 
-        @Schema(description = "일정 수행 시작 날짜")
+        @Schema(description = "일정 수행 시작 날짜", example = "2025-09-15")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDate date,
 
-        @Schema(description = "할 일")
+        @Schema(description = "할 일", example = "프로젝트 기획서 1차 초안 작성")
         String description,
 
-        @Schema(description = "예상 소요 시간")
+        @Schema(description = "예상 소요 시간 (분)", example = "120")
         Long expectedDuration,
 
-        @Schema(description = "예상 시작 시간")
+        @Schema(description = "예상 시작 시간", example = "09:30:00")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
         LocalTime scheduledStartTime,
 
-        @Schema(description = "예상 종료 시간")
+        @Schema(description = "예상 종료 시간", example = "11:30:00")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
         LocalTime scheduledEndTime,
 
