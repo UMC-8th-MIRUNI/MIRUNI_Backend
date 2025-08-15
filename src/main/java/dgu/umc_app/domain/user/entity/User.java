@@ -11,6 +11,9 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Getter
@@ -52,6 +55,40 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private int peanutCount = 0;
+
+    @Column
+    private int delayTime = 0; // 총 미룬 시간
+
+    @Column
+    private int executeTime = 0;  // 총 실행시간
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "user_delay_list",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @OrderColumn(name = "slot_order") // 0..83 순서 고정
+    @Column
+    private List<Long> delayList;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "user_focus_list",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @OrderColumn(name = "slot_order")
+    @Column
+    private List<Long> focusList;
+
+    @PrePersist
+    private void initSlotsOnCreate() {
+        if (delayList == null || delayList.isEmpty()) {
+            delayList = new ArrayList<>(Collections.nCopies(84, 0L));
+        }
+        if (focusList == null || focusList.isEmpty()) {
+            focusList = new ArrayList<>(Collections.nCopies(84, 0L));
+        }
+    }
 
     // userPreference 필드 제거
 
@@ -192,4 +229,9 @@ public class User extends BaseEntity {
         this.birthday = birthday;
         this.phoneNumber = phoneNumber;
     }
+    public void updateDelayTime(int delayTime) {this.delayTime = delayTime;}
+    public void updateExecuteTime(int executeTime) {this.executeTime = executeTime;}
+    public void updateDelayList(List<Long> delayTimeSlots) {this.delayList = delayTimeSlots;}
+    public void updateFocusList(List<Long> focusSlots) {this.focusList = focusSlots;}
+    public void updatePeanutCount(int peanutCount) {this.peanutCount = peanutCount;}
 }

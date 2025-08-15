@@ -1,8 +1,8 @@
 package dgu.umc_app.domain.plan.dto.request;
 
 import dgu.umc_app.domain.plan.entity.Plan;
-import dgu.umc_app.domain.plan.entity.PlanCategory;
 import dgu.umc_app.domain.plan.entity.Priority;
+import dgu.umc_app.domain.plan.entity.Status;
 import dgu.umc_app.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -47,6 +47,7 @@ public record PlanCreateRequest(
                 .scheduledStart(scheduledStart)
                 .scheduledEnd(scheduledEnd)
                 .priority(priority)
+                .status(Status.NOT_STARTED)
                 .isDone(false)
                 .user(user)
                 .build();

@@ -1,26 +1,27 @@
 package dgu.umc_app.domain.plan.service;
 
 import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
+import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
-import dgu.umc_app.domain.plan.dto.response.PlanCreateResponse;
-import dgu.umc_app.domain.plan.dto.response.PlanDetailResponse;
-import dgu.umc_app.domain.plan.dto.response.PlanSplitResponse;
-import dgu.umc_app.domain.plan.entity.AiPlan;
-import dgu.umc_app.domain.plan.entity.Plan;
-import dgu.umc_app.domain.plan.entity.PlanType;
-import dgu.umc_app.domain.plan.entity.Priority;
+import dgu.umc_app.domain.plan.dto.response.*;
+import dgu.umc_app.domain.plan.entity.*;
 import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.user.entity.User;
+import dgu.umc_app.domain.user.repository.UserRepository;
 import dgu.umc_app.global.exception.BaseException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,9 +30,87 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PlanCommandService {
 
+    private final UserRepository userRepository;
     private final PlanRepository planRepository;
     private final AiPlanRepository aiPlanRepository;
     private final AiSplitService aiSplitService;
+
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
+    private static final int SLOTS_PER_DAY = 12;
+    private static final int DAYS = 7;
+    private static final int TOTAL_BUCKETS = DAYS * SLOTS_PER_DAY;
+    private static final long FOCUS_MINUTES_THRESHOLD = 30;
+    private static final int SLOT_COUNT = 84;
+
+    private void ensureSlotsInitialized(User user) {
+        // delay
+        if (user.getDelayList() == null || user.getDelayList().size() != SLOT_COUNT) {
+            List<Long> slots = new ArrayList<>(Collections.nCopies(SLOT_COUNT, 0L));
+            // 기존 값이 일부라도 있으면 복사 (사이즈 0인 경우 스킵)
+            List<Long> old = user.getDelayList();
+            if (old != null) {
+                for (int i = 0; i < Math.min(old.size(), SLOT_COUNT); i++) {
+                    slots.set(i, old.get(i));
+                }
+            }
+            user.updateDelayList(slots);
+        }
+
+        // focus
+        if (user.getFocusList() == null || user.getFocusList().size() != SLOT_COUNT) {
+            List<Long> slots = new ArrayList<>(Collections.nCopies(SLOT_COUNT, 0L));
+            List<Long> old = user.getFocusList();
+            if (old != null) {
+                for (int i = 0; i < Math.min(old.size(), SLOT_COUNT); i++) {
+                    slots.set(i, old.get(i));
+                }
+            }
+            user.updateFocusList(slots);
+        }
+    }
+
+    private LocalDateTime toKst(LocalDateTime t) {
+        return t.atZone(ZoneId.systemDefault()).withZoneSameInstant(KST).toLocalDateTime();
+    }
+    private LocalDateTime bucketStartKst(LocalDateTime kst) {
+        int evenHour = (kst.getHour() / 2) * 2;
+        return kst.withHour(evenHour).withMinute(0).withSecond(0).withNano(0);
+    }
+    private int dayIndexKst(LocalDateTime kst) { return kst.getDayOfWeek().ordinal(); }
+    private int slotIndexKst(LocalDateTime kst) { return kst.getHour() / 2; }
+    private int flatIndexKst(LocalDateTime kst) { return dayIndexKst(kst) * SLOTS_PER_DAY + slotIndexKst(kst); }
+
+    private void incrementDelayBucket(User user, LocalDateTime stoppedAt) {
+        int idx = flatIndexKst(toKst(stoppedAt));
+        List<Long> slots = user.getDelayList();
+        slots.set(idx, slots.get(idx) + 1L);
+    }
+
+    private void incrementFocusBucketsTouching(User user,
+                                               LocalDateTime scheduledStart,
+                                               LocalDateTime stoppedAt,
+                                               long execMinutes) {
+        if (execMinutes < FOCUS_MINUTES_THRESHOLD || scheduledStart == null || stoppedAt == null) return;
+
+        LocalDateTime startKst = toKst(scheduledStart);
+        LocalDateTime endKst   = toKst(stoppedAt);
+        if (!endKst.isAfter(startKst)) return;
+
+        List<Long> bins = user.getFocusList();
+
+        LocalDateTime slotStart = bucketStartKst(startKst);
+        while (slotStart.isBefore(endKst)) {
+            LocalDateTime slotEnd = slotStart.plusHours(2);
+
+            LocalDateTime a = startKst.isAfter(slotStart) ? startKst : slotStart;
+            LocalDateTime b = endKst.isBefore(slotEnd) ? endKst : slotEnd;
+            if (a.isBefore(b)) {
+                int idx = flatIndexKst(slotStart);
+                bins.set(idx, bins.get(idx) + 1L);
+            }
+            slotStart = slotEnd;
+        }
+    }
 
     @Transactional
     public PlanCreateResponse createPlan(PlanCreateRequest request, User user) {
@@ -45,6 +124,24 @@ public class PlanCommandService {
 
         Plan savedPlan = planRepository.save(request.toEntity(user));
         return PlanCreateResponse.from(savedPlan);
+    }
+
+    @Transactional
+    public PlanStartResponse startPlan(Long planId, Long userId) {
+        Plan plan = planRepository.findByIdWithUserId(planId, userId)
+                .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
+
+        plan.updateStatus(Status.IN_PROGRESS);
+        return PlanStartResponse.fromPlan(plan);
+    }
+
+    @Transactional
+    public PlanStartResponse startAiPlan(Long aiPlanId, Long userId) {
+        AiPlan aiPlan = aiPlanRepository.findByIdAndUserId(aiPlanId, userId)
+                .orElseThrow(() -> new BaseException(AiPlanErrorCode.AIPLAN_NOT_FOUND));
+
+        aiPlan.updateStatus(Status.IN_PROGRESS);
+        return PlanStartResponse.fromAiPlan(aiPlan);
     }
 
     @Transactional
@@ -142,4 +239,163 @@ public class PlanCommandService {
         }
     }
 
+    @Transactional
+    public PlanDelayResponse delayPlan(Long planId, PlanDelayRequest request, User sessionUser) {
+        if (request.category() != Category.AI && request.category() != Category.BASIC) {
+            throw BaseException.type(PlanErrorCode.INVALID_CATEGORY);
+        }
+        if (request.actualStart() == null) {
+            throw BaseException.type(PlanErrorCode.ACTUAL_START_REQUIRED);
+        }
+        if (request.executeTime() < 0) {
+            throw BaseException.type(PlanErrorCode.INVALID_EXECUTE_MINUTES);
+        }
+
+        User user = userRepository.findWithSlotsById(sessionUser.getId())
+                .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
+        ensureSlotsInitialized(user);
+
+        Plan plan = planRepository.findByIdWithUserId(planId, user.getId())
+                .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
+
+        LocalDateTime originalStart = plan.getScheduledStart(); // 예정 시작시각
+        LocalDateTime originalEnd = plan.getScheduledEnd(); // 예정 시작시각
+        LocalDateTime stoppedAt = request.actualStart().plusMinutes(request.executeTime()); // 중지한 시각
+        LocalDateTime newStart = request.newStartDateTime(); // 재시작 시각(요청 값)
+
+        long expected = calcExpectedMinutes(originalStart, originalEnd);    // 예상 소요 시간
+        long remaining = Math.max(0, expected - request.executeTime()); // 남은 예상 소요 시간
+
+        int peanuts = calcPeanuts(request.executeTime(), expected);
+
+        int delayDelta;
+        if (originalStart != null && stoppedAt.isBefore(originalStart)) {
+            delayDelta = 0;
+        } else {
+            long between = ChronoUnit.MINUTES.between(stoppedAt, newStart);
+            delayDelta = toNonNegativeInt(between);
+        }
+
+        int execDelta;
+        if (originalStart == null) {
+            execDelta = 0;
+        } else if (stoppedAt.isBefore(originalStart)) {
+            execDelta = Math.max(request.executeTime(), 0); // 프론트 전달값 사용
+        } else {
+            long ran = ChronoUnit.MINUTES.between(originalStart, stoppedAt);
+            execDelta = toNonNegativeInt(ran);
+        }
+
+        // 엔티티 업데이트
+        plan.updateScheduleStart(newStart);
+        plan.updateScheduleEnd(newStart.plusMinutes(remaining));
+        plan.updateStatus(Status.PAUSED);
+        plan.updateStoppedAt(stoppedAt);
+
+        user.updateDelayTime(safePlusInt(user.getDelayTime(),  delayDelta) );
+        user.updateExecuteTime(safePlusInt(user.getExecuteTime(), execDelta) );
+        user.updatePeanutCount(safePlusInt(user.getPeanutCount(), peanuts));
+
+        incrementDelayBucket(user, stoppedAt);
+        incrementFocusBucketsTouching(user, originalStart, stoppedAt, execDelta);
+
+        return PlanDelayResponse.from(plan, delayDelta, execDelta, stoppedAt);
+    }
+
+    private long calcExpectedMinutes(LocalDateTime start, LocalDateTime end) {
+        if (start == null || end == null) return 0L;
+        long m = ChronoUnit.MINUTES.between(start, end);
+        return Math.max(m, 0L);
+    }
+
+    private static int safePlusInt(int current, int delta) {
+        if (delta <= 0) return current;
+        long sum = (long) current + (long) delta;
+        return (sum > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) sum;
+    }
+
+    private static int toNonNegativeInt(long minutes) {
+        if (minutes <= 0) return 0;
+        return (minutes > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) minutes;
+    }
+
+    @Transactional
+    public PlanDelayResponse delayAiPlan(Long aiPlanId, PlanDelayRequest request, User sessionUser) {
+        if (request.category() != Category.AI && request.category() != Category.BASIC) {
+            throw BaseException.type(PlanErrorCode.INVALID_CATEGORY);
+        }
+
+        if (request.actualStart() == null) {
+            throw BaseException.type(PlanErrorCode.ACTUAL_START_REQUIRED);
+        }
+        if (request.executeTime() < 0) {
+            throw BaseException.type(PlanErrorCode.INVALID_EXECUTE_MINUTES);
+        }
+
+        User user = userRepository.findWithSlotsById(sessionUser.getId())
+                .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
+        ensureSlotsInitialized(user);
+
+        AiPlan aiPlan = aiPlanRepository.findById(aiPlanId)
+                .filter(ap -> ap.getPlan() != null && ap.getPlan().getUser().getId().equals(user.getId()))
+                .orElseThrow(() -> new BaseException(AiPlanErrorCode.AIPLAN_NOT_FOUND));
+
+
+        LocalDateTime originalStart = aiPlan.getScheduledStart(); // 예정 시작시각
+        LocalDateTime originalEnd = aiPlan.getScheduledEnd();
+        LocalDateTime stoppedAt = request.actualStart().plusMinutes(request.executeTime()); // 중지한 시각
+        LocalDateTime newStart = request.newStartDateTime(); // 재시작 시각(요청 값)
+
+        int delayDelta;
+        if (originalStart != null && stoppedAt.isBefore(originalStart)) {
+            delayDelta = 0;
+        } else {
+            long between = ChronoUnit.MINUTES.between(stoppedAt, newStart);
+            delayDelta = toNonNegativeInt(between);
+        }
+
+        int execDelta;
+        if (originalStart == null) {
+            execDelta = 0;
+        } else if (stoppedAt.isBefore(originalStart)) {
+            execDelta = Math.max(request.executeTime(), 0);
+        } else {
+            long ran = ChronoUnit.MINUTES.between(originalStart, stoppedAt);
+            execDelta = toNonNegativeInt(ran);
+        }
+
+        long expected = (aiPlan.getExpectedDuration() != null)
+                ? aiPlan.getExpectedDuration()
+                : calcExpectedMinutes(originalStart, originalEnd);
+        long remaining = Math.max(0, expected - request.executeTime()); // 남은 예상 소요 시간
+
+        int peanuts = calcPeanuts(request.executeTime(), expected);
+
+        // 엔티티 업데이트
+        aiPlan.updateScheduleStart(newStart);
+        aiPlan.updateScheduleEnd(newStart.plusMinutes(remaining));
+        aiPlan.updateExpectedDuration(remaining);
+        aiPlan.updateStatus(Status.PAUSED);
+        aiPlan.updateStoppedAt(stoppedAt);
+        aiPlan.updateIsDelayed(true);
+
+        user.updateDelayTime(safePlusInt(user.getDelayTime(),  delayDelta) );
+        user.updateExecuteTime(safePlusInt(user.getExecuteTime(), execDelta) );
+        user.updatePeanutCount(safePlusInt(user.getPeanutCount(), peanuts));
+
+        incrementDelayBucket(user, stoppedAt);
+        incrementFocusBucketsTouching(user, originalStart, stoppedAt, execDelta);
+
+        return PlanDelayResponse.from(aiPlan, delayDelta, execDelta, stoppedAt);
+    }
+
+
+    private int calcPeanuts(long execMinutes, long expectedMinutes) {
+        if (expectedMinutes <= 0) return 0;
+        double ratio = (double) execMinutes / (double) expectedMinutes;
+        if (ratio < 0.30) return 0;
+        if (ratio < 0.65) return 1;
+        if (ratio < 1.00) return 2;
+        return 3;
+    }
 }
