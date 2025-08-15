@@ -1,12 +1,11 @@
 package dgu.umc_app.domain.plan.controller;
 
-import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
+import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
+import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.CustomUserDetails;
 import dgu.umc_app.global.exception.CustomErrorResponse;
+import dgu.umc_app.global.authorize.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,6 +14,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -188,7 +190,7 @@ public interface PlanApi {
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
-    @Operation(summary = "미룬 일정 조회 API", description = "수행날짜가 지났지만 완료되지 않은 일정을 조회합니다.")
+    @Operation(summary = "미룬 일정 조회", description = "수행날짜가 지났지만 완료되지 않은 일정을 조회합니다.")
     @SecurityRequirement(name = "JWT")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "미룬 일정 조회 성공",
@@ -240,7 +242,7 @@ public interface PlanApi {
             )
     })
     @GetMapping("/delayed")
-    List<DelayedPlanResponse> getDelayedPlans(
+    List<PausedPlanResponse> getDelayedPlans(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
@@ -537,117 +539,80 @@ public interface PlanApi {
                     )
             )
     })
-    @GetMapping("/unfinished")
-    List<UnstartedPlanResponse> getUnfinishedPlans(
+    List<UnstartedPlanResponse> getUnstartedPlans(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
     @Operation(summary = "일정 미루기 API", description = "일정을 수행하다가 수행예정 날짜와 소요시간을 설정해 미룹니다.")
-    @PatchMapping("/{planId}/delay")
     PlanDelayResponse delayPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanDelayRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
-    @Operation(summary = "일반/AI 일정 수정 API", description = "일정의 세부 정보들을 수정합니다.")
-    @SecurityRequirement(name = "JWT")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "일정 수정 성공",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = dgu.umc_app.global.response.ApiResponse.class),
-                            examples = @ExampleObject(
-                                    name = "성공 응답",
+    @Operation(summary = "일반/AI 일정 수정", description = "일정의 세부 정보들을 수정합니다.")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                    schema = @Schema(
+                            oneOf = { PlanUpdateRequest.class, AiPlanUpdateRequest.class },
+                            discriminatorProperty = "category"
+                    ),
+                    examples = {
+                            @ExampleObject(
+                                    name = "BASIC 요청 예시",
                                     value = """
-                    {
-                        "errorCode": null,
-                        "message": "OK",
-                        "result": {
-                            "title": "수정된 프로젝트 최종 발표 준비",
-                            "deadline": "2025-09-30T09:00:00",
-                            "taskRange": "전체 프로젝트 완성도 향상",
-                            "priority": "HIGH",
-                            "plans": [
-                                {
-                                    "id": 1,
-                                    "date": "2025-09-20",
-                                    "description": "수정된 프로젝트 기획 및 요구사항 분석",
-                                    "expectedDuration": 150,
-                                    "startTime": "09:00",
-                                    "endTime": "11:30"
-                                }
-                            ]
-                        }
-                    }
-                    """
-                            )
-                    )
-            ),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = CustomErrorResponse.class),
-                            examples = {
-                                    @ExampleObject(
-                                            name = "유효성 검증 실패",
-                                            value = """
-                    {
-                        "status": 400,
-                        "errorCode": "COMMON_002",
-                        "message": "입력값 검증에 실패했습니다."
-                    }
-                    """
-                                    ),
-                                    @ExampleObject(
-                                            name = "날짜 범위 오류",
-                                            value = """
-                    {
-                        "status": 400,
-                        "errorCode": "PLAN400_1",
-                        "message": "시작일은 종료일보다 이전이어야 합니다."
-                    }
-                    """
-                                    )
+                            {
+                              "category": "BASIC",
+                              "title": "일반 일정 제목 수정",
+                              "deadline": "2025-08-30T23:59:59",
+                              "priority": "HIGH",
+                              "scheduledStart" : "2025-08-30T23:59:59",
+                              "scheduledEnd" : "2025-08-30T23:59:59",
+                              "description" : "한줄설명",
+                              "delete" : false
                             }
-                    )
-            ),
-            @ApiResponse(responseCode = "401", description = "인증 실패",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = CustomErrorResponse.class),
-                            examples = @ExampleObject(
-                                    name = "인증 실패",
+                """
+                            ),
+                            @ExampleObject(
+                                    name = "AI 요청 예시(새로운 일정 id는 꼭 null로 입력)",
                                     value = """
-                    {
-                        "status": 401,
-                        "errorCode": "COMMON_003",
-                        "message": "인증이 필요합니다."
-                    }
-                    """
+{
+  "category": "AI",
+  "title": "AI 상위 일정 제목 수정",
+  "deadline": "2025-08-30T23:59:59",
+  "priority": "MEDIUM",
+  "taskRange": "UNIT",
+  "plans": [
+    {
+      "aiPlanId": 2,
+      "date": "2025-08-14",
+      "description": "세부 작업 내용 수정",
+      "expectedDuration": 120,
+      "startTime": "13:00:00",
+      "endTime": "14:30:00",
+      "delete": false
+    },
+    {
+      "aiPlanId": null,
+      "date": "2025-08-15",
+      "description": "새로운 AI 일정",
+      "expectedDuration": 90,
+      "startTime": "15:00:00",
+      "endTime": "16:30:00",
+      "delete": false
+    }
+  ]
+}
+                """
                             )
-                    )
-            ),
-            @ApiResponse(responseCode = "404", description = "일정을 찾을 수 없음",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = CustomErrorResponse.class),
-                            examples = @ExampleObject(
-                                    name = "일정 없음",
-                                    value = """
-                    {
-                        "status": 404,
-                        "errorCode": "PLAN404_1",
-                        "message": "해당 일정이 존재하지 않습니다."
                     }
-                    """
-                            )
-                    )
             )
-    })
-    @PatchMapping("/{planId}")
-    PlanDetailResponse updatePlan(
-            @Parameter(description = "수정할 일정 ID", example = "1", required = true) @PathVariable Long planId,
-            @RequestBody @Valid PlanUpdateRequest request,
-            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
+    )
+    UpdateResponse updatePlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid ScheduleUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     );
-
 
     @Operation(
             summary = "일정별 세부 조회 API",
@@ -724,9 +689,26 @@ public interface PlanApi {
                     )
             )
     })
-    PlanDetailResponse getPlanDetail(
+    ScheduleDetailResponse getPlanDetail(
             @Parameter(description = "조회할 일정 ID", example = "1", required = true) @PathVariable Long planId,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
     );
+
+    @Operation(
+            summary = "일정 삭제 API",
+            description = "일정/Ai일정을 삭제합니다."
+    )
+    PlanDeleteResponse bulkDelete(
+            @RequestBody @Valid PlanDeleteRequest req,
+            @LoginUser Long userId
+    );
+
+    @Operation(summary = "일정 상태 완료 변경", description = "일정의 상태를 '완료'로 변경하고 땅콩 개수를 반환합니다.")
+    PlanFinishResponse finishPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanFinishRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            );
+
 
 }

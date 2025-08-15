@@ -1,17 +1,14 @@
 package dgu.umc_app.domain.plan.controller;
 
-import dgu.umc_app.domain.plan.dto.request.PlanCreateRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanDelayRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
-import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
+import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.entity.Category;
 import dgu.umc_app.domain.plan.repository.AiPlanRepository;
 import dgu.umc_app.domain.plan.repository.PlanRepository;
 import dgu.umc_app.domain.plan.service.PlanCommandService;
 import dgu.umc_app.domain.plan.service.PlanQueryService;
-import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.global.authorize.CustomUserDetails;
+import dgu.umc_app.global.authorize.LoginUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,7 +21,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/schedule")
+@RequestMapping("/api/schedules")
 @RequiredArgsConstructor
 public class PlanController implements PlanApi{
 
@@ -40,7 +37,7 @@ public class PlanController implements PlanApi{
         return planCommandService.createPlan(request, userDetails.getUser());
     }
 
-    @GetMapping
+    @GetMapping("/monthly")
     public List<CalendarMonthResponse> getSchedulesByMonth(
             @RequestParam int year,
             @RequestParam int month,
@@ -50,13 +47,20 @@ public class PlanController implements PlanApi{
     }
 
     @GetMapping("/delayed")
-    public List<DelayedPlanResponse> getDelayedPlans(
+    public List<PausedPlanResponse> getDelayedPlans(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return planQueryService.getDelayedPlans(userDetails.getUser());
     }
 
-    @GetMapping("/day")
+    @GetMapping("/unstarted")
+    public List<UnstartedPlanResponse> getUnstartedPlans(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return planQueryService.getUnstartedPlans(userDetails.getUser());
+    }
+
+    @GetMapping("/daily")
     public CalendarDayWrapperResponse getSchedulesByDay(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate date,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -64,7 +68,7 @@ public class PlanController implements PlanApi{
         return planQueryService.getSchedulesByDate(date, userDetails.getUser());
     }
 
-    @PostMapping("/{planId}/split")
+    @PostMapping("/{planId}/aiplans")
     public List<PlanSplitResponse> splitPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanSplitRequest request,
@@ -74,31 +78,24 @@ public class PlanController implements PlanApi{
         return planCommandService.splitPlan(planId, request, userDetails.getUser());
     }
 
-    @GetMapping("/unfinished")
-    public List<UnstartedPlanResponse> getUnfinishedPlans(
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        return planQueryService.getUnstartedPlans(userDetails.getUser());
-    }
-
     @PatchMapping("/{planId}")
-    public PlanDetailResponse updatePlan(
+    public UpdateResponse updatePlan(
             @PathVariable Long planId,
-            @RequestBody @Valid PlanUpdateRequest request,
+            @RequestBody @Valid ScheduleUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return planCommandService.updatePlan(planId, request, userDetails.getUser());
+        return planCommandService.updateSchedule(planId, request, userDetails.getUser());
     }
 
     @GetMapping("/{planId}")
-    public PlanDetailResponse getPlanDetail(
+    public ScheduleDetailResponse getPlanDetail(
             @PathVariable Long planId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return planQueryService.getPlanDetail(planId, userDetails.getUser().getId());
     }
 
-    @PatchMapping("/{planId}/delay")
+    @PatchMapping("/{planId}/timeslot")
     public PlanDelayResponse delayPlan(
             @PathVariable Long planId,
             @RequestBody @Valid PlanDelayRequest request,
@@ -108,6 +105,34 @@ public class PlanController implements PlanApi{
                 ? planCommandService.delayAiPlan(planId, request, userDetails.getUser())
                 : planCommandService.delayPlan(planId, request, userDetails.getUser());
 
+    }
+
+    @PatchMapping("/{planId}/finished")
+    public PlanFinishResponse finishPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanFinishRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            ){
+        return planCommandService.finishPlanOrAiPlan(planId, request, userDetails.getUser());
+    }
+
+    @PatchMapping("/{planId}/status/in-progress")
+    public PlanStartResponse startPlan(
+            @PathVariable Long planId,
+            @RequestBody @Valid PlanStartRequest request,
+            @LoginUser Long userId
+    ) {
+        return (request.category() == Category.AI)
+                ? planCommandService.startAiPlan(planId, userId)
+                : planCommandService.startPlan(planId, userId);
+    }
+
+    @DeleteMapping
+    public PlanDeleteResponse bulkDelete(
+            @RequestBody @Valid PlanDeleteRequest req,
+            @LoginUser Long userId
+    ) {
+        return planCommandService.planDelete(req,userId);
     }
 
 }

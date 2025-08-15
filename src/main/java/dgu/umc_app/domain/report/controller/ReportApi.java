@@ -1,7 +1,9 @@
 package dgu.umc_app.domain.report.controller;
 
+import dgu.umc_app.domain.report.dto.response.ReportResponse;
 import dgu.umc_app.domain.report.dto.response.StoragePageResponse;
 import dgu.umc_app.global.authorize.CustomUserDetails;
+import dgu.umc_app.global.authorize.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,4 +22,19 @@ public interface ReportApi {
                                        @RequestParam int year,
                                        @RequestParam int month);
 
+    @Operation(summary = "이번달 리포트 오픈 API",
+            description = "리포트 오픈 조건을 만족할 경우 땅콩 갯수 30개를 차감하고 리포트를 오픈합니다.")
+    public ReportResponse openThisMonth(@LoginUser Long userId,
+                                        @PathVariable int year,
+                                        @PathVariable int month);
+
+    @Operation(summary = "이번달 리포트 조회 API",
+            description = "이번달 리포트를 오픈했다는 가정 하에 오픈 기준으로 정보를 갱신하여 리포트 정보를 반환합니다.")
+    public ReportResponse getReport(@LoginUser Long userId,
+                                    @PathVariable int year,
+                                    @PathVariable int month);
+
+    @Operation(summary = "저번달 리포트 조회 API",
+            description = "저번달에 리포트를 오픈했을 경우 저번달 리포트 정보를 반환합니다.")
+    public ReportResponse getLastMonth(@LoginUser Long userId);
 }

@@ -1,7 +1,7 @@
 package dgu.umc_app.domain.plan.controller;
 
 import dgu.umc_app.domain.plan.dto.response.HomeResponse;
-import dgu.umc_app.domain.plan.service.PlanQueryService;
+import dgu.umc_app.domain.plan.service.HomeQueryService;
 import dgu.umc_app.global.authorize.LoginUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class HomeController implements HomeApi {
 
-    private final PlanQueryService planQueryService;
+    private final HomeQueryService homeQueryService;
 
     @Override
     @GetMapping("/homePage")
     public HomeResponse getHomePage(@LoginUser Long userId) {
-        return planQueryService.getHomePage(userId);
+        return homeQueryService.getHomePage(userId);
     }
 }
