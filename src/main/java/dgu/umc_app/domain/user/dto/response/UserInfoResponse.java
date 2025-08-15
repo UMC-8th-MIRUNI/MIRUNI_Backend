@@ -10,7 +10,6 @@ public record UserInfoResponse(
         String email,
         String phoneNumber,
         String nickname,
-        boolean agreedPrivacyPolicy,
         String oauthProvider,
         ProfileImage profileImage
 ) {
@@ -22,7 +21,6 @@ public record UserInfoResponse(
                 user.getEmail(),
                 user.getPhoneNumber(),
                 user.getNickname(),
-                user.isAgreedPrivacyPolicy(),
                 user.getOauthProvider() != null ? user.getOauthProvider().name() : null,
                 user.getProfileImage()
         );

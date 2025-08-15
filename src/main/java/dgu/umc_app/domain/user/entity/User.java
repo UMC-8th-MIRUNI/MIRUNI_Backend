@@ -189,6 +189,10 @@ public class User extends BaseEntity {
         this.profileImage = profileImage;
     }
 
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
     public void completeSurvey() {
         this.surveyStatus = SurveyStatus.COMPLETED;
         this.status = Status.ACTIVE;
@@ -219,6 +223,12 @@ public class User extends BaseEntity {
         return this.delayLevel;
     }
 
+    public void updateUser(String name, String email, String birthday, String phoneNumber) {
+        this.name = name;
+        this.email = email;
+        this.birthday = birthday;
+        this.phoneNumber = phoneNumber;
+    }
     public void updateDelayTime(int delayTime) {this.delayTime = delayTime;}
     public void updateExecuteTime(int executeTime) {this.executeTime = executeTime;}
     public void updateDelayList(List<Long> delayTimeSlots) {this.delayList = delayTimeSlots;}
