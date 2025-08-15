@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,4 +51,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      //단일 회고 상세 조회
      Optional<Review> findByIdAndPlanUserId(Long id, Long userId);
 
+    // 해당 월(시작~끝) 사이에 작성된 회고 조회(리포트용)
+    List<Review> findByPlanUserIdAndCreatedAtBetween(Long userId,
+                                                     LocalDateTime start,
+                                                     LocalDateTime end);
 }

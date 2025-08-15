@@ -24,7 +24,7 @@ import java.util.List;
  * ReviewController - 회고 작성 API
  */
 @RestController
-@RequestMapping("/api/schedule/review")
+@RequestMapping("/api/reviews")
 @RequiredArgsConstructor
 public class ReviewController implements ReviewApi{
 
@@ -40,7 +40,7 @@ public class ReviewController implements ReviewApi{
      }
 
     //회고록 날짜별 갯수 조회
-    @GetMapping("/countByDate")
+    @GetMapping("/stats/days")
     public List<ReviewCountByDateResponse> getReviewCountByDate(@LoginUser Long userId) {
         return reviewQueryService.getReviewCountByDate(userId);
     }
@@ -54,7 +54,7 @@ public class ReviewController implements ReviewApi{
 
 
     // 특정 날짜의 회고 목록 조회
-    @GetMapping("/date")
+    @GetMapping
     public List<ReviewListResponse> getReviewListByDate(@LoginUser Long userId,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
@@ -62,15 +62,15 @@ public class ReviewController implements ReviewApi{
     }
 
     //날짜 검색으로 인한 회고 블럭 조회
-    @GetMapping("/search")
+    @GetMapping("/stats/days/{date}")
     public ReviewCountByDateResponse getReviewSearch( @LoginUser Long userId,
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+                                                      @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
         return reviewQueryService.getReviewSearch(userId, date);
     }
 
     //회고 수정
-    @PatchMapping("/update/{reviewId}")
+    @PatchMapping("/{reviewId}")
     public ReviewDetailResponse updateReview(@LoginUser Long userId,
                                              @PathVariable Long reviewId,
                                              @RequestBody @Valid ReviewUpdateRequest request) {

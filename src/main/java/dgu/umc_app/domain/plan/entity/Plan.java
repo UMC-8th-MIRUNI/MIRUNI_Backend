@@ -36,10 +36,11 @@ public class Plan extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime scheduledStart; // 수행시작 예정 날짜&시간(ex: 2025-05-01T21:00:00)
 
+
     @Column(nullable = false)
     private LocalDateTime scheduledEnd; // 수행종료 예정 날짜&시간(ex: 2025-05-01T22:00:00)
 
-    @Column(nullable = false)
+    @Column
     private boolean isDone; // 완료 체크
 
     @Column
@@ -80,4 +81,5 @@ public class Plan extends BaseEntity {
     public void updateDescription(String description) {this.description = description;}
     public void updateScheduledStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
     public void updateScheduledEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
+    public void touch() {this.updatedAt = LocalDateTime.now();}
 }

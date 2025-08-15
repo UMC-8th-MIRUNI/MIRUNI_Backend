@@ -18,7 +18,9 @@ public enum AiPlanErrorCode implements ErrorCode {
     INVALID_TIME_RANGE(HttpStatus.BAD_REQUEST, "AIPLAN_400_2", "시작/종료 시간이 올바르지 않습니다."),
     INVALID_REQUEST_STATE(HttpStatus.BAD_REQUEST, "COMMON_400_1", "요청 상태가 올바르지 않습니다."),
 
-    AFTER_DEADLINE(HttpStatus.BAD_REQUEST, "AIPLAN_400_3", "세부 일정이 마감기한 이후입니다.");
+    AFTER_DEADLINE(HttpStatus.BAD_REQUEST, "AIPLAN_400_3", "세부 일정이 마감기한 이후입니다."),
+    AIPLAN_IDS_REQUIRED(HttpStatus.BAD_REQUEST, "AIPLAN_400", "삭제할 AI 일정 ID 목록이 필요합니다.");
+
 
     private final HttpStatus status;
     private final String errorCode;
