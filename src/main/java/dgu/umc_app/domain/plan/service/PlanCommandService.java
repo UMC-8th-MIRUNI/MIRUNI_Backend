@@ -277,8 +277,8 @@ public class PlanCommandService {
         plan.updateStatus(Status.PAUSED);
         plan.updateStoppedAt(stoppedAt);
 
-        user.updateDelayTimes(safePlusInt(user.getDelayTime(),  delayDelta) );
-        user.updateExecuteTimes(safePlusInt(user.getExecuteTime(), execDelta) );
+        user.updateDelayTime(safePlusInt(user.getDelayTime(),  delayDelta) );
+        user.updateExecuteTime(safePlusInt(user.getExecuteTime(), execDelta) );
         user.updatePeanutCount(safePlusInt(user.getPeanutCount(), peanuts));
 
         incrementDelayBucket(user, stoppedAt);
@@ -364,8 +364,8 @@ public class PlanCommandService {
         aiPlan.updateStoppedAt(stoppedAt);
         aiPlan.updateIsDelayed(true);
 
-        user.updateDelayTimes(safePlusInt(user.getDelayTime(),  delayDelta) );
-        user.updateExecuteTimes(safePlusInt(user.getExecuteTime(), execDelta) );
+        user.updateDelayTime(safePlusInt(user.getDelayTime(),  delayDelta) );
+        user.updateExecuteTime(safePlusInt(user.getExecuteTime(), execDelta) );
         user.updatePeanutCount(safePlusInt(user.getPeanutCount(), peanuts));
 
         incrementDelayBucket(user, stoppedAt);

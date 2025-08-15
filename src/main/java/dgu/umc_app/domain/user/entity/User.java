@@ -219,8 +219,8 @@ public class User extends BaseEntity {
         return this.delayLevel;
     }
 
-    public void updateDelayTimes(int delayTimes) {this.delayTime = delayTime;}
-    public void updateExecuteTimes(int executeTimes) {this.executeTime = executeTime;}
+    public void updateDelayTime(int delayTime) {this.delayTime = delayTime;}
+    public void updateExecuteTime(int executeTime) {this.executeTime = executeTime;}
     public void updateDelayList(List<Long> delayTimeSlots) {this.delayList = delayTimeSlots;}
     public void updateFocusList(List<Long> focusSlots) {this.focusList = focusSlots;}
     public void updatePeanutCount(int peanutCount) {this.peanutCount = peanutCount;}
