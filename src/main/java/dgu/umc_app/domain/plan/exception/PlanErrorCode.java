@@ -15,6 +15,7 @@ public enum PlanErrorCode implements ErrorCode {
     INVALID_EXECUTE_MINUTES(HttpStatus.BAD_REQUEST, "PLAN400_2", "수행시간 입력값이 음수입니다."),
     ACTUAL_START_REQUIRED(HttpStatus.BAD_REQUEST, "PLAN400_3", "시작시간은 필수값입니다.");
 
+
     private final HttpStatus status;
     private final String errorCode;
     private final String message;

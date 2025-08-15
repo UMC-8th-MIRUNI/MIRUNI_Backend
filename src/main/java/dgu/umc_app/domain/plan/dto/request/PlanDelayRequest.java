@@ -12,10 +12,10 @@ public record PlanDelayRequest(
         @NotNull
         LocalDateTime newStartDateTime,
 
-        @Schema(description = "예상 소요 시간")
-        @NotNull
-        @PositiveOrZero
-        Integer expectedMinutes,
+//        @Schema(description = "예상 소요 시간")
+//        @NotNull
+//        @PositiveOrZero
+//        Integer expectedMinutes,
 
         @Schema(description = "일정 유형(미루기 일정 판단 위함, BASIC or AI)")
         @NotNull
@@ -23,6 +23,10 @@ public record PlanDelayRequest(
 
         @Schema(description = "수행 시간")
         @NotNull
-        int executeTime
+        int executeTime,
+
+        @Schema(description = "실제로 시작한 시각")
+        @NotNull
+        LocalDateTime actualStart
 ) {}
 

@@ -6,7 +6,6 @@ import dgu.umc_app.domain.plan.dto.request.PlanSplitRequest;
 import dgu.umc_app.domain.plan.dto.request.PlanUpdateRequest;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.dto.request.*;
-import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.entity.*;
 import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
@@ -268,6 +267,12 @@ public class PlanCommandService {
         if (request.category() != Category.AI && request.category() != Category.BASIC) {
             throw BaseException.type(PlanErrorCode.INVALID_CATEGORY);
         }
+        if (request.actualStart() == null) {
+            throw BaseException.type(PlanErrorCode.ACTUAL_START_REQUIRED);
+        }
+        if (request.executeTime() < 0) {
+            throw BaseException.type(PlanErrorCode.INVALID_EXECUTE_MINUTES);
+        }
 
         User user = userRepository.findWithSlotsById(sessionUser.getId())
                 .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
@@ -276,13 +281,15 @@ public class PlanCommandService {
         Plan plan = planRepository.findByIdWithUserId(planId, user.getId())
                 .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
 
-        if (request.expectedMinutes() == null) {
-            throw BaseException.type(AiPlanErrorCode.EXPECTED_MINUTES_REQUIRED);
-        }
-
-        LocalDateTime stoppedAt = LocalDateTime.now(); // 중지 시각
-        LocalDateTime newStart = request.newStartDateTime(); // 재시작 시각(요청 값)
         LocalDateTime originalStart = plan.getScheduledStart(); // 예정 시작시각
+        LocalDateTime originalEnd = plan.getScheduledEnd(); // 예정 시작시각
+        LocalDateTime stoppedAt = request.actualStart().plusMinutes(request.executeTime()); // 중지한 시각
+        LocalDateTime newStart = request.newStartDateTime(); // 재시작 시각(요청 값)
+
+        long expected = calcExpectedMinutes(originalStart, originalEnd);    // 예상 소요 시간
+        long remaining = Math.max(0, expected - request.executeTime()); // 남은 예상 소요 시간
+
+        int peanuts = calcPeanuts(request.executeTime(), expected);
 
         int delayDelta;
         if (originalStart != null && stoppedAt.isBefore(originalStart)) {
@@ -304,17 +311,24 @@ public class PlanCommandService {
 
         // 엔티티 업데이트
         plan.updateScheduleStart(newStart);
-        plan.updateScheduleEnd(newStart.plusMinutes(request.expectedMinutes()));
+        plan.updateScheduleEnd(newStart.plusMinutes(remaining));
         plan.updateStatus(Status.PAUSED);
         plan.updateStoppedAt(stoppedAt);
 
         user.updateDelayTime(safePlusInt(user.getDelayTime(),  delayDelta) );
         user.updateExecuteTime(safePlusInt(user.getExecuteTime(), execDelta) );
+        user.updatePeanutCount(safePlusInt(user.getPeanutCount(), peanuts));
 
         incrementDelayBucket(user, stoppedAt);
         incrementFocusBucketsTouching(user, originalStart, stoppedAt, execDelta);
 
         return PlanDelayResponse.from(plan, delayDelta, execDelta, stoppedAt);
+    }
+
+    private long calcExpectedMinutes(LocalDateTime start, LocalDateTime end) {
+        if (start == null || end == null) return 0L;
+        long m = ChronoUnit.MINUTES.between(start, end);
+        return Math.max(m, 0L);
     }
 
     private static int safePlusInt(int current, int delta) {
@@ -334,6 +348,13 @@ public class PlanCommandService {
             throw BaseException.type(PlanErrorCode.INVALID_CATEGORY);
         }
 
+        if (request.actualStart() == null) {
+            throw BaseException.type(PlanErrorCode.ACTUAL_START_REQUIRED);
+        }
+        if (request.executeTime() < 0) {
+            throw BaseException.type(PlanErrorCode.INVALID_EXECUTE_MINUTES);
+        }
+
         User user = userRepository.findWithSlotsById(sessionUser.getId())
                 .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
         ensureSlotsInitialized(user);
@@ -342,13 +363,11 @@ public class PlanCommandService {
                 .filter(ap -> ap.getPlan() != null && ap.getPlan().getUser().getId().equals(user.getId()))
                 .orElseThrow(() -> new BaseException(AiPlanErrorCode.AIPLAN_NOT_FOUND));
 
-        if (request.expectedMinutes() == null) {
-            throw BaseException.type(AiPlanErrorCode.EXPECTED_MINUTES_REQUIRED);
-        }
 
-        LocalDateTime stoppedAt = LocalDateTime.now();
-        LocalDateTime newStart = request.newStartDateTime();
-        LocalDateTime originalStart = aiPlan.getScheduledStart();
+        LocalDateTime originalStart = aiPlan.getScheduledStart(); // 예정 시작시각
+        LocalDateTime originalEnd = aiPlan.getScheduledEnd();
+        LocalDateTime stoppedAt = request.actualStart().plusMinutes(request.executeTime()); // 중지한 시각
+        LocalDateTime newStart = request.newStartDateTime(); // 재시작 시각(요청 값)
 
         int delayDelta;
         if (originalStart != null && stoppedAt.isBefore(originalStart)) {
@@ -368,21 +387,24 @@ public class PlanCommandService {
             execDelta = toNonNegativeInt(ran);
         }
 
-        // 예상 소요시간: 있으면 갱신, 아니면 기존 유지
-        if (request.expectedMinutes() != null) {
-            Long effectiveExpected = request.expectedMinutes().longValue();
-            aiPlan.updateExpectedDuration(effectiveExpected);
-        }
+        long expected = (aiPlan.getExpectedDuration() != null)
+                ? aiPlan.getExpectedDuration()
+                : calcExpectedMinutes(originalStart, originalEnd);
+        long remaining = Math.max(0, expected - request.executeTime()); // 남은 예상 소요 시간
+
+        int peanuts = calcPeanuts(request.executeTime(), expected);
 
         // 엔티티 업데이트
         aiPlan.updateScheduleStart(newStart);
-        aiPlan.updateScheduleEnd(newStart.plusMinutes(request.expectedMinutes()));
+        aiPlan.updateScheduleEnd(newStart.plusMinutes(remaining));
+        aiPlan.updateExpectedDuration(remaining);
         aiPlan.updateStatus(Status.PAUSED);
         aiPlan.updateStoppedAt(stoppedAt);
         aiPlan.updateIsDelayed(true);
 
         user.updateDelayTime(safePlusInt(user.getDelayTime(),  delayDelta) );
         user.updateExecuteTime(safePlusInt(user.getExecuteTime(), execDelta) );
+        user.updatePeanutCount(safePlusInt(user.getPeanutCount(), peanuts));
 
         incrementDelayBucket(user, stoppedAt);
         incrementFocusBucketsTouching(user, originalStart, stoppedAt, execDelta);
@@ -477,12 +499,6 @@ public class PlanCommandService {
         if (delta <= 0) return;
         int cur = nvl(user.getPeanutCount());
         user.updatePeanutCount(safePlusInt(cur, delta));
-    }
-
-    private long calcExpectedMinutes(LocalDateTime start, LocalDateTime end) {
-        if (start == null || end == null) return 0L;
-        long m = ChronoUnit.MINUTES.between(start, end);
-        return Math.max(m, 0L);
     }
 
     private int calcPeanuts(long execMinutes, long expectedMinutes) {
