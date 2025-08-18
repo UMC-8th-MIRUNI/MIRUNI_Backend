@@ -2,8 +2,6 @@ package dgu.umc_app.domain.plan.repository;
 
 import dgu.umc_app.domain.plan.dto.response.HomeTaskRow;
 import dgu.umc_app.domain.plan.entity.AiPlan;
-import dgu.umc_app.domain.plan.entity.Plan;
-import dgu.umc_app.domain.plan.entity.PlanType;
 import dgu.umc_app.domain.plan.entity.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -59,6 +57,7 @@ public interface AiPlanRepository extends JpaRepository<AiPlan, Long> {
       left join dgu.umc_app.domain.review.entity.Review r
              on (r.aiPlan.id = a.id) or (r.plan.id = p.id and r.aiPlan is null)
       where p.user.id = :userId
+        and p.isHidden = false
         and a.scheduledStart between :start and :end
     """)
     List<HomeTaskRow> findTodayAiPlanRows(Long userId, LocalDateTime start, LocalDateTime end);

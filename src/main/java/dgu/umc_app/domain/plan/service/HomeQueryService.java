@@ -43,7 +43,7 @@ public class HomeQueryService {
 
         // 오늘 할 일 리스트화
         List<HomeTaskRow> aiRows = aiPlanRepository.findTodayAiPlanRows(userId, start, end);
-        List<HomeTaskRow> pRows = planRepository.findTodayStandalonePlanRows(userId, start, end);
+        List<HomeTaskRow> pRows = planRepository.findTodayPlanRows(userId, start, end);
         List<HomeTaskRow> rows = new ArrayList<>(aiRows.size() + pRows.size());
         rows.addAll(aiRows);
         rows.addAll(pRows);
