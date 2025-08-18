@@ -1,5 +1,6 @@
 package dgu.umc_app.domain.plan.service;
 
+import dgu.umc_app.domain.fcm.service.NotificationScheduleService;
 import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.dto.request.*;
@@ -38,6 +39,7 @@ public class PlanCommandService {
     private static final int TOTAL_BUCKETS = DAYS * SLOTS_PER_DAY;
     private static final long FOCUS_MINUTES_THRESHOLD = 30;
     private static final int SLOT_COUNT = 84;
+    private final NotificationScheduleService notificationScheduleService;
 
     private void ensureSlotsInitialized(User user) {
         // delay
@@ -527,7 +529,12 @@ public class PlanCommandService {
         if (plan == null) {
             return new PlanDeleteResponse(1, 0, List.of(planId), List.of());
         }
+        notificationScheduleService.cancelNotification(plan); // Plan alarm 삭제
+        List<AiPlan> aiPlanList = plan.getAiPlans();
+        aiPlanList.forEach(notificationScheduleService::cancelNotification); //Ai Plan alarm 삭제
+
         planRepository.delete(plan); // AiPlan은 cascade/orphanRemoval로 같이 제거
+
         return new PlanDeleteResponse(1, 1, List.of(), List.of());
     }
 
@@ -541,6 +548,8 @@ public class PlanCommandService {
         // notFound 계산
         List<Long> notFound = new ArrayList<>(ids);
         notFound.removeAll(foundIds);
+
+        targets.forEach(notificationScheduleService::cancelNotification);
 
         // 실제 삭제 (연관 편의 메서드로 제거해서 stepOrder 재정렬)
         targets.forEach(plan::removeAiPlan);
