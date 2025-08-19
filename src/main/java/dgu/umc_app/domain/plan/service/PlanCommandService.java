@@ -552,6 +552,7 @@ public class PlanCommandService {
         return new PlanDeleteResponse(ids.size(), foundIds.size(), notFound, List.of());
     }
 
+    @Transactional
     public PlanFinishResponse finishPlanOrAiPlan(Long planId, PlanFinishRequest request, User sessionUser) {
         log.info("[FINISH>REQ] planId={}, category={}, execMinutes={}, actualStart={}",
                 planId, request.category(), request.executeTime(), request.actualStart());
