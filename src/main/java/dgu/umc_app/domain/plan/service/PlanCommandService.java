@@ -195,6 +195,8 @@ public class PlanCommandService {
 
         planRepository.save(plan);
 
+        notificationScheduleService.cancelNotification(plan);
+
         return splitResponses;
     }
 
