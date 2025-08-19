@@ -380,6 +380,23 @@ public class UserCommandService {
         );    
     }
 
+    public SurveyResponse updateSurvey(SurveyRequest request, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        // 설문 응답을 수정하거나 최초 설정
+        user.updateSurveyInfo(request.situations(), request.level(), request.reasons());
+
+        log.info("설문조사 수정: userId={}, Q1: {}, Q2: {}, Q3: {}",
+                userId, request.situations(), request.level(), request.reasons());
+
+        return SurveyResponse.of(
+                "설문조사가 수정되었습니다!",
+                LocalDateTime.now(),
+                "UPDATED"
+        );
+    }
+
     public UserInfoResponse updateAccount(Long userId, AccountUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));

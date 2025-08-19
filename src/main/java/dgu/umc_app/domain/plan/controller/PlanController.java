@@ -135,4 +135,8 @@ public class PlanController implements PlanApi{
         return planCommandService.planDelete(req,userId);
     }
 
+    @PatchMapping("/{planId}/hidden")
+    public void hidePlan(@LoginUser Long userId, @PathVariable Long planId) {
+        planCommandService.hidePlan(userId, planId);
+    }
 }

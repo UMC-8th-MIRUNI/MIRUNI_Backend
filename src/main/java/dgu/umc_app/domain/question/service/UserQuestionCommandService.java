@@ -3,6 +3,7 @@ package dgu.umc_app.domain.question.service;
 import dgu.umc_app.domain.question.dto.request.CreateUserQuestionRequestDto;
 import dgu.umc_app.domain.question.dto.response.CreateUserQuestionResponseDto;
 import dgu.umc_app.domain.question.entity.UserQuestion;
+import dgu.umc_app.domain.question.exception.QuestionErrorCode;
 import dgu.umc_app.domain.question.repository.UserQuestionRepository;
 import dgu.umc_app.domain.user.entity.User;
 import dgu.umc_app.domain.user.exception.UserErrorCode;
@@ -23,6 +24,14 @@ public class UserQuestionCommandService {
     public CreateUserQuestionResponseDto createQuestion(Long userId, CreateUserQuestionRequestDto request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> BaseException.type(UserErrorCode.USER_NOT_FOUND));
+
+        if (!Boolean.TRUE.equals(request.agreeToPersonalInfo())) {
+            throw BaseException.type(QuestionErrorCode.PERSONAL_INFO_NOT_AGREED);
+        }
+
+        if (!user.getPhoneNumber().equals(request.phoneNumber())) {
+            throw BaseException.type(QuestionErrorCode.PHONE_NUMBER_MISMATCH);
+        }
 
         UserQuestion userQuestion = request.toEntity(user);
 

@@ -54,6 +54,9 @@ public class Plan extends BaseEntity {
     @Column
     private LocalDateTime stoppedAt;
 
+    @Column(nullable = false)
+    private boolean isHidden = false;
+
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("stepOrder ASC")
     private List<AiPlan> aiPlans = new ArrayList<>();
@@ -82,4 +85,5 @@ public class Plan extends BaseEntity {
     public void updateScheduledStart(LocalDateTime scheduledStart) {this.scheduledStart = scheduledStart;}
     public void updateScheduledEnd(LocalDateTime scheduledEnd) {this.scheduledEnd = scheduledEnd;}
     public void touch() {this.updatedAt = LocalDateTime.now();}
+    public void setHidden(boolean hidden) {this.isHidden = hidden;}
 }

@@ -1,7 +1,9 @@
 package dgu.umc_app.domain.user.controller;
 
 import dgu.umc_app.domain.user.dto.request.AccountUpdateRequest;
+import dgu.umc_app.domain.user.dto.request.SurveyRequest;
 import dgu.umc_app.domain.user.dto.response.PeanutCountResponse;
+import dgu.umc_app.domain.user.dto.response.SurveyResponse;
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
 import dgu.umc_app.domain.user.dto.response.UserSurveyResponse;
 import dgu.umc_app.domain.user.entity.ProfileImage;
@@ -42,6 +44,12 @@ public class UserController implements UserApi {
     @GetMapping("/survey")
     public UserSurveyResponse getUserSurveyResult(@LoginUser Long userId) {
         return userQueryService.getUserSurveyResult(userId);
+    }
+    
+    @Override
+    @PatchMapping("/survey")
+    public SurveyResponse updateSurvey(@LoginUser Long userId, @RequestBody @Valid SurveyRequest request) {
+        return userCommandService.updateSurvey(request, userId);
     }
     
     @Override

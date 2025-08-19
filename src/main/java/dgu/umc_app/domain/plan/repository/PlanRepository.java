@@ -5,6 +5,7 @@ import dgu.umc_app.domain.plan.entity.Plan;
 import dgu.umc_app.domain.plan.entity.Status;
 import dgu.umc_app.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -55,8 +56,15 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
       left join dgu.umc_app.domain.review.entity.Review r
              on r.plan.id = p.id and r.aiPlan is null
       where p.user.id = :userId
+        and p.isHidden = false
         and p.scheduledStart between :start and :end
         and not exists (select 1 from AiPlan a where a.plan.id = p.id)
     """)
-    List<HomeTaskRow> findTodayStandalonePlanRows(Long userId, LocalDateTime start, LocalDateTime end);
+    List<HomeTaskRow> findTodayPlanRows(Long userId, LocalDateTime start, LocalDateTime end);
+
+    Optional<Plan> findByIdAndUserId(Long planId, Long userId);
+
+    @Modifying
+    @Query("UPDATE Plan p SET p.isHidden = false WHERE p.isHidden = true")
+    void resetHiddenPlan();
 }
