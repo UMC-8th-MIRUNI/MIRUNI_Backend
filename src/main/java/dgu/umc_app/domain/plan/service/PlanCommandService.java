@@ -2,7 +2,6 @@ package dgu.umc_app.domain.plan.service;
 
 import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
-import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.entity.*;
 import dgu.umc_app.domain.plan.exception.AiPlanErrorCode;
 import dgu.umc_app.domain.plan.exception.PlanErrorCode;
@@ -15,6 +14,7 @@ import dgu.umc_app.global.exception.BaseException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -647,5 +647,19 @@ public class PlanCommandService {
         if (ratio < 0.65) return 1;
         if (ratio < 1.00) return 2;
         return 3;
+    }
+
+    @Transactional
+    public void hidePlan(Long userId, Long planId) {
+        Plan plan = planRepository.findByIdAndUserId(planId, userId)
+                .orElseThrow(() -> BaseException.type(PlanErrorCode.PLAN_NOT_FOUND));
+
+        plan.setHidden(true);
+    }
+
+    @Scheduled(cron = "0 0 0 * * *") // 매일 자정
+    @Transactional
+    public void resetHiddenPlans() {
+        planRepository.resetHiddenPlan();
     }
 }
