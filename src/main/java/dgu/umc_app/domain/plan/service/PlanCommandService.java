@@ -1,5 +1,6 @@
 package dgu.umc_app.domain.plan.service;
 
+import dgu.umc_app.domain.fcm.service.NotificationScheduleService;
 import dgu.umc_app.domain.plan.dto.request.*;
 import dgu.umc_app.domain.plan.dto.response.*;
 import dgu.umc_app.domain.plan.entity.*;
@@ -31,6 +32,7 @@ public class PlanCommandService {
     private final PlanRepository planRepository;
     private final AiPlanRepository aiPlanRepository;
     private final AiSplitService aiSplitService;
+    private final NotificationScheduleService notificationScheduleService;
 
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
     private static final int SLOTS_PER_DAY = 12;
@@ -139,6 +141,7 @@ public class PlanCommandService {
         }
 
         Plan savedPlan = planRepository.save(request.toEntity(user));
+        notificationScheduleService.scheduleNotification(savedPlan);
         return PlanCreateResponse.from(savedPlan);
     }
 
@@ -187,9 +190,12 @@ public class PlanCommandService {
                 request.planType(),
                 request.taskRange()
         );
+        aiPlans.forEach(notificationScheduleService::scheduleNotification);
         aiPlanRepository.saveAll(aiPlans);
 
         planRepository.save(plan);
+
+        notificationScheduleService.cancelNotification(plan);
 
         return splitResponses;
     }
@@ -251,10 +257,15 @@ public class PlanCommandService {
         assertNotBeforeToday(newStart, PlanErrorCode.PAST_START_NOT_ALLOWED);
         assertNotBeforeToday(newEnd,   PlanErrorCode.PAST_END_NOT_ALLOWED);
 
+        notificationScheduleService.cancelNotification(base);
+
         base.updateScheduledStart(newStart);
         base.updateScheduledEnd(newEnd);
 
         base.touch();
+
+        notificationScheduleService.scheduleNotification(base);
+
         return UpdateResponse.fromPlan(planId, base.getUpdatedAt());
     }
 
@@ -323,12 +334,16 @@ public class PlanCommandService {
                             .isDelayed(false)
                             .build();
 
+                    notificationScheduleService.scheduleNotification(ai);
+
                     plan.addAiPlan(ai);
                     continue;
                 }
                 // 수정
                 AiPlan target = existing.get(d.aiPlanId());
                 if (target == null) continue;
+
+                notificationScheduleService.cancelNotification(target);
 
                 // 부분 수정 허용(널은 유지)
                 if (d.description() != null) target.updateDescription(d.description());
@@ -343,6 +358,8 @@ public class PlanCommandService {
                 assertNotBeforeToday(target.getScheduledEnd(),   PlanErrorCode.PAST_END_NOT_ALLOWED);
                 assertTimeOrder(target.getScheduledStart(), target.getScheduledEnd());
                 assertWithinDeadline(plan.getDeadline(), target.getScheduledEnd());
+
+                notificationScheduleService.scheduleNotification(target);
             }
 
             plan.getAiPlans().sort(java.util.Comparator.comparing(AiPlan::getScheduledStart));
@@ -401,6 +418,8 @@ public class PlanCommandService {
             execDelta = toNonNegativeInt(ran);
         }
 
+        notificationScheduleService.cancelNotification(plan);
+
         // 엔티티 업데이트
         plan.updateScheduleStart(newStart);
         plan.updateScheduleEnd(newStart.plusMinutes(remaining));
@@ -410,6 +429,8 @@ public class PlanCommandService {
         user.updateDelayTime(safePlusInt(user.getDelayTime(),  delayDelta) );
         user.updateExecuteTime(safePlusInt(user.getExecuteTime(), execDelta) );
         user.updatePeanutCount(safePlusInt(user.getPeanutCount(), peanuts));
+
+        notificationScheduleService.scheduleNotification(plan);
 
         incrementDelayBucket(user, stoppedAt);
         incrementFocusBucketsTouching(user, originalStart, stoppedAt, execDelta);
@@ -455,7 +476,6 @@ public class PlanCommandService {
                 .filter(ap -> ap.getPlan() != null && ap.getPlan().getUser().getId().equals(user.getId()))
                 .orElseThrow(() -> new BaseException(AiPlanErrorCode.AIPLAN_NOT_FOUND));
 
-
         LocalDateTime originalStart = aiPlan.getScheduledStart(); // 예정 시작시각
         LocalDateTime originalEnd = aiPlan.getScheduledEnd();
         LocalDateTime stoppedAt = request.actualStart().plusMinutes(request.executeTime()); // 중지한 시각
@@ -486,6 +506,8 @@ public class PlanCommandService {
 
         int peanuts = calcPeanuts(request.executeTime(), expected);
 
+        notificationScheduleService.cancelNotification(aiPlan);
+
         // 엔티티 업데이트
         aiPlan.updateScheduleStart(newStart);
         aiPlan.updateScheduleEnd(newStart.plusMinutes(remaining));
@@ -499,6 +521,8 @@ public class PlanCommandService {
 
         incrementDelayBucket(user, stoppedAt);
         incrementFocusBucketsTouching(user, originalStart, stoppedAt, execDelta);
+
+        notificationScheduleService.scheduleNotification(aiPlan);
 
         return PlanDelayResponse.from(aiPlan, delayDelta, execDelta, stoppedAt);
     }
@@ -527,7 +551,12 @@ public class PlanCommandService {
         if (plan == null) {
             return new PlanDeleteResponse(1, 0, List.of(planId), List.of());
         }
+        notificationScheduleService.cancelNotification(plan); // Plan alarm 삭제
+        List<AiPlan> aiPlanList = plan.getAiPlans();
+        aiPlanList.forEach(notificationScheduleService::cancelNotification); //Ai Plan alarm 삭제
+
         planRepository.delete(plan); // AiPlan은 cascade/orphanRemoval로 같이 제거
+
         return new PlanDeleteResponse(1, 1, List.of(), List.of());
     }
 
@@ -541,6 +570,8 @@ public class PlanCommandService {
         // notFound 계산
         List<Long> notFound = new ArrayList<>(ids);
         notFound.removeAll(foundIds);
+
+        targets.forEach(notificationScheduleService::cancelNotification);
 
         // 실제 삭제 (연관 편의 메서드로 제거해서 stepOrder 재정렬)
         targets.forEach(plan::removeAiPlan);
@@ -606,6 +637,8 @@ public class PlanCommandService {
 
             incrementFocusBucketsTouching(user, request.actualStart(), stop, execDelta);
 
+            notificationScheduleService.cancelNotification(plan);
+
             return PlanFinishResponse.from(plan, peanuts);
 
         } else if (request.category() == Category.AI) {
@@ -626,6 +659,8 @@ public class PlanCommandService {
 
             LocalDateTime stop = request.actualStart().plusMinutes(execDelta);
             incrementFocusBucketsTouching(user, request.actualStart(), stop, execDelta);
+
+            notificationScheduleService.cancelNotification(ai);
 
             return PlanFinishResponse.from(ai, peanuts);
         }
