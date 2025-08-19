@@ -30,10 +30,9 @@ public interface UserQuestionApi {
             {
                 "errorCode" : null,
                 "message" : "OK",
-                "result" :{
-                    "title": "앱 오류",
-                    "content": "작동이 안돼요",
-                    "createdAt": "2025-07-11T16:07:22.9435417"
+                "result" : {
+                    "content": "시간표 기능은 어떻게 수정하나요?",
+                    "createdAt": "2025-08-16T14:00:00"
                 }
             }
             """
