@@ -716,4 +716,11 @@ public interface PlanApi {
             @RequestBody @Valid PlanStartRequest request,
             @LoginUser Long userId
     );
+
+    @Operation(summary = "일정 숨기기 (홈페이지 일정 삭제)",
+            description = """
+                    aiPlan이 아닌 일반(BASIC) 일정 planId를 입력 받고,
+                    오늘의 일정을 숨깁니다. 일정을 숨길 시 홈화면에서 해당 일정(대주제)는 조회되지 않습니다.
+                    """)
+    void hidePlan(@LoginUser Long userId, @PathVariable Long planId);
 }

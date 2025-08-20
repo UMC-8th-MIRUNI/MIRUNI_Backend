@@ -1,7 +1,9 @@
 package dgu.umc_app.domain.user.controller;
 
 import dgu.umc_app.domain.user.dto.request.AccountUpdateRequest;
+import dgu.umc_app.domain.user.dto.request.SurveyRequest;
 import dgu.umc_app.domain.user.dto.response.PeanutCountResponse;
+import dgu.umc_app.domain.user.dto.response.SurveyResponse;
 import dgu.umc_app.domain.user.dto.response.UserInfoResponse;
 import dgu.umc_app.domain.user.dto.response.UserSurveyResponse;
 import dgu.umc_app.domain.user.entity.ProfileImage;
@@ -283,6 +285,79 @@ public interface UserApi {
             )
     })
     UserSurveyResponse getUserSurveyResult(@LoginUser Long userId);
+
+    @Operation(
+            summary = "설문조사 응답 수정 API",
+            description = "사용자의 설문 응답을 수정합니다. 한 번 제출한 뒤에도 설문 응답을 바꿀 수 있습니다."
+    )
+    @SecurityRequirement(name = "JWT")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "설문조사 응답 수정 성공",
+                    content = @Content(mediaType = "applicatio  n/json",
+                            schema = @Schema(implementation = dgu.umc_app.global.response.ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "성공 응답",
+                                    value = """
+                    {
+                        "errorCode": null,
+                        "message": "OK",
+                        "result": {
+                            "message": "설문조사가 수정되었습니다!",
+                            "completedAt": "2024-01-01T12:00:00",
+                            "status": "UPDATED"
+                        }
+                    }
+                    """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "입력값 검증 실패",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CustomErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "검증 실패",
+                                    value = """
+                    {
+                        "status": 400,
+                        "errorCode": "COMMON_002",
+                        "message": "입력값 검증에 실패했습니다."
+                    }
+                    """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CustomErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "인증 실패",
+                                    value = """
+                    {
+                        "status": 401,
+                        "errorCode": "COMMON_003",
+                        "message": "인증이 필요합니다."
+                    }
+                    """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CustomErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "사용자 없음",
+                                    value = """
+                    {
+                        "status": 404,
+                        "errorCode": "USER404_1",
+                        "message": "해당 사용자가 존재하지 않습니다."
+                    }
+                    """
+                            )
+                    )
+            )
+    })
+    SurveyResponse updateSurvey(@LoginUser Long userId, SurveyRequest request);
 
     @Operation(
             summary = "계정 개인정보 수정 API",
