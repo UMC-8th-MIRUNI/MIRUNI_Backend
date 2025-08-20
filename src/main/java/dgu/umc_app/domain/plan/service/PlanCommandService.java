@@ -391,7 +391,7 @@ public class PlanCommandService {
                 .orElseThrow(() -> new BaseException(PlanErrorCode.PLAN_NOT_FOUND));
 
         LocalDateTime originalStart = plan.getScheduledStart(); // 예정 시작시각
-        LocalDateTime originalEnd = plan.getScheduledEnd(); // 예정 시작시각
+        LocalDateTime originalEnd = plan.getScheduledEnd(); // 예정 종료시각
         LocalDateTime stoppedAt = request.actualStart().plusMinutes(request.executeTime()); // 중지한 시각
         LocalDateTime newStart = request.newStartDateTime(); // 재시작 시각(요청 값)
 
@@ -583,6 +583,7 @@ public class PlanCommandService {
         return new PlanDeleteResponse(ids.size(), foundIds.size(), notFound, List.of());
     }
 
+    @Transactional
     public PlanFinishResponse finishPlanOrAiPlan(Long planId, PlanFinishRequest request, User sessionUser) {
         log.info("[FINISH>REQ] planId={}, category={}, execMinutes={}, actualStart={}",
                 planId, request.category(), request.executeTime(), request.actualStart());

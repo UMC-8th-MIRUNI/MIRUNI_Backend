@@ -1,9 +1,6 @@
 package dgu.umc_app.domain.plan.dto.response;
 
-import dgu.umc_app.domain.plan.entity.AiPlan;
-import dgu.umc_app.domain.plan.entity.Category;
-import dgu.umc_app.domain.plan.entity.Plan;
-import dgu.umc_app.domain.plan.entity.Priority;
+import dgu.umc_app.domain.plan.entity.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
@@ -18,8 +15,14 @@ public record AiPlanDetailResponse(
         @NotNull
         Category category,
 
+        @Schema(description = "업무 유형", example = "IMMERSIVE")
+        PlanType planType,
+
         @Schema(description = "상위 일정 제목", example = "모바일 앱 개발")
         String title,
+
+        @Schema(description = "상위 일정 한줄 소개", example = "기획부터 배포까지 준비")
+        String description,
 
         @Schema(description = "마감기한", example = "2025-08-20T23:59:00")
         LocalDateTime deadline,
@@ -57,7 +60,9 @@ public record AiPlanDetailResponse(
 
         return new AiPlanDetailResponse(
                 Category.AI,
+                aiPlans.get(0).getPlanType(),
                 plan.getTitle(),
+                plan.getDescription(),
                 plan.getDeadline(),
                 range,
                 plan.getPriority(),

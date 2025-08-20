@@ -56,10 +56,18 @@ public class AiSplitService {
     private String buildPrompt(String title, LocalDateTime deadline, LocalDateTime scheduledStart, LocalDateTime scheduledEnd,
                                Priority priority, PlanType planType, String taskRange, String detailRequest) {
         return String.format("""
-            아래 일정을 참고하여 최소 2개에서 최대 10개 단계로 나눠줘. 단계갯수는 너가 생각해서 정해줘.
-            **응답은 반드시 아래 JSON 형식의 배열로 작성해줘.**
-            각 단계는 아래 예시와 같은 형식으로 작성하되, 내용은 내가 같은 질문을 해도 매번 새롭게 생성해줘:
+            JSON 배열만 출력해줘. 설명·코드블록·마크업 금지. 최소 2개, 최대 10개 단계.
+            각 단계는 아래 예시와 같은 형식으로 작성하되, 내용은 내가 같은 내용의 입력을 보내도 매번 새롭게 생성해줘:
             
+            [스키마]
+            - stepOrder: number(1..10, 오름차순)
+            - scheduledDate: string(yyyy-MM-dd)
+            - description: string(12자 초과 시 '\\n' 삽입)
+            - expectedDuration: number(분)
+            - startTime: string(HH:mm)
+            - endTime: string(HH:mm)
+            
+            [형식 예시 - 단일 예시만, 실제 출력은 여러 단계]
             [
               {
                 "stepOrder": 1,
@@ -68,28 +76,10 @@ public class AiSplitService {
                 "expectedDuration": 60,
                 "startTime": "09:00",
                 "endTime": "10:00"
-              },
-              {
-                "stepOrder": 2,
-                "scheduledDate": "2025-08-03",
-                "description": "UI 시안 작업",
-                "expectedDuration": 90,
-                "startTime": "10:00",
-                "endTime": "11:30"
               }
             ]
             
-            **필드는 반드시 모두 포함하고, 순서도 유지해줘.**
-            
-            - stepOrder: 실행 순서 (숫자)
-            - scheduledDate: yyyy-MM-dd 형식의 실행 날짜
-            - description: 일정 내용
-            - expectedDuration: 예상 소요 시간 (분 단위)
-            - startTime: HH:mm 형식의 시작 시간
-            - endTime: HH:mm 형식의 종료 시간
-            
-            ---
-            참고할 정보:
+            [입력]
             - 제목: %s
             - 마감기한: %s
             - 수행시작일자: %s
@@ -122,7 +112,7 @@ public class AiSplitService {
         Map<String, Object> requestBody = Map.of(
                 "model", "sonar-pro",
                 "messages", List.of(systemMessage, userMessage),
-                "max_tokens", 1200,
+                "max_tokens", 700,
                 "temperature", 0.0
         );
 
