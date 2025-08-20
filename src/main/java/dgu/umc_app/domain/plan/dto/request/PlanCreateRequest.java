@@ -49,7 +49,6 @@ public record PlanCreateRequest(
                 .scheduledEnd(scheduledEnd)
                 .priority(priority)
                 .status(Status.NOT_STARTED)
-                .isDone(false)
                 .user(user)
                 .build();
     }

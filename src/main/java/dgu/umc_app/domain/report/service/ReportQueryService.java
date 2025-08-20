@@ -183,7 +183,7 @@ public class ReportQueryService {
         int total = independentPlans.size() + aiPlans.size();
 
         long independentDone = independentPlans.stream()
-                .filter(Plan::isDone)
+                .filter(p -> p.getStatus() == Status.FINISHED)
                 .count();
 
         long aiDone = aiPlans.stream()

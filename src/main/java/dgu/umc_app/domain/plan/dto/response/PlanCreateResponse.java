@@ -22,8 +22,8 @@ public record PlanCreateResponse(
         @Schema(description = "일정 수행 종료날짜")
         LocalDateTime scheduledEnd,
 
-        @Schema(description = "일정 완료 여부")
-        boolean isDone
+        @Schema(description = "일정 한 줄 소개")
+        String description
 
 ) {
     public static PlanCreateResponse from(Plan plan) {
@@ -33,7 +33,7 @@ public record PlanCreateResponse(
                 plan.getDeadline(),
                 plan.getScheduledStart(),
                 plan.getScheduledEnd(),
-                plan.isDone()
+                plan.getDescription()
         );
     }
 }
