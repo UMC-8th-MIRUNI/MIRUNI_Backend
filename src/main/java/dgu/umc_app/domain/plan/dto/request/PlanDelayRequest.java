@@ -12,11 +12,6 @@ public record PlanDelayRequest(
         @NotNull
         LocalDateTime newStartDateTime,
 
-//        @Schema(description = "예상 소요 시간")
-//        @NotNull
-//        @PositiveOrZero
-//        Integer expectedMinutes,
-
         @Schema(description = "일정 유형(미루기 일정 판단 위함, BASIC or AI)")
         @NotNull
         Category category,

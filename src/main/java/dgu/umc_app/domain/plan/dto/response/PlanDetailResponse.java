@@ -34,7 +34,7 @@ public record PlanDetailResponse(
         @Schema(description = "실행종료날짜", example = "2025-08-18T10:00:00")
         LocalDateTime scheduledEnd,
 
-        @Schema(description = "일정 간단 설명", example = "축하 영상 제작")
+        @Schema(description = "일정 한줄소개", example = "축하 영상 제작")
         String description
 ) implements ScheduleDetailResponse{
     public static PlanDetailResponse fromPlan(Plan plan) {

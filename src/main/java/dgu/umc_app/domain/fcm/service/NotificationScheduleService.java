@@ -49,7 +49,7 @@ public class NotificationScheduleService {
     //Plan 알림 등록
     public void scheduleNotification(Plan plan){
 
-        if(plan.isDone()){
+        if(plan.getStatus().equals("FINISHED")){
             throw BaseException.type(FcmErrorCode.ALREADY_FINISHED_TASK);
         }
 

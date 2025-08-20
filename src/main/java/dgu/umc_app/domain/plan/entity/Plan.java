@@ -41,9 +41,6 @@ public class Plan extends BaseEntity {
     private LocalDateTime scheduledEnd; // 수행종료 예정 날짜&시간(ex: 2025-05-01T22:00:00)
 
     @Column
-    private boolean isDone; // 완료 체크
-
-    @Column
     @Enumerated(EnumType.STRING)
     private Status status;  // 미완료, 진행중, 중지, 완료
 
