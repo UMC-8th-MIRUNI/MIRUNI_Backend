@@ -91,7 +91,7 @@ jobs:
               # EC2의 8080 포트를 컨테이너에 연결
               # application.yml을 컨테이너 안으로 마운트
               # Redis 연결을 위한 환경변수 추가
-              # Perplexity API 환경변수 추가
+              # Perplexity API 환경변수 추가 -> api키 교체
             docker run -d \
               --name spring-miruni-backend \
               --network miruni-network \
